@@ -13,6 +13,7 @@ require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.find.js");
 require("core-js/modules/esnext.iterator.for-each.js");
 require("core-js/modules/esnext.iterator.map.js");
+require("core-js/modules/esnext.json.parse.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 var _react = _interopRequireWildcard(require("react"));
 var _Close = _interopRequireDefault(require("@mui/icons-material/Close"));

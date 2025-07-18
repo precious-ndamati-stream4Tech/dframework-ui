@@ -69,7 +69,6 @@ const Field = /*#__PURE__*/React.memo(_ref => {
   }, /*#__PURE__*/React.createElement(_Autocomplete.default, _extends({}, otherProps, {
     multiple: true,
     id: field,
-    limitTags: column.limitTags || consts.limitTags,
     options: options || [],
     getOptionLabel: option => option.label || '',
     defaultValue: filteredCombos,

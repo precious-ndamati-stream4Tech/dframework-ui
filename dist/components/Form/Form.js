@@ -18,6 +18,7 @@ require("core-js/modules/es.string.trim.js");
 require("core-js/modules/esnext.iterator.constructor.js");
 require("core-js/modules/esnext.iterator.find.js");
 require("core-js/modules/esnext.iterator.for-each.js");
+require("core-js/modules/esnext.json.parse.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 require("core-js/modules/web.url-search-params.js");
 require("core-js/modules/web.url-search-params.delete.js");

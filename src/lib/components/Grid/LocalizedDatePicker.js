@@ -14,7 +14,7 @@ const componentMap = {
     date: DatePicker,
     datetime: DateTimePicker,
     dateTimeLocal: DateTimePicker
-};
+}
 const LocalizedDatePicker = (props) => {
     const { fixedFilterFormat } = utils;
     const { item, applyValue, convert } = props;
@@ -52,7 +52,7 @@ const LocalizedDatePicker = (props) => {
             const parts = format.split('-');
             return parts.length === 3 ? parts[1] : null;
         }
-    };
+    }
     const ComponentToRender = componentMap[columnType];
     const Dateformatvalue = columnType === "dateTimeLocal"
         ? item?.value ? dayjs(item?.value.$d) : null
@@ -69,18 +69,18 @@ const LocalizedDatePicker = (props) => {
                     fieldMonthPlaceholder: () => {
                         const monthAbbreviation = getMonthAbbreviation(format);
                         return monthAbbreviation === "MMM" ? 'MMM' : 'MM';
-                    }
+                    },
                 }}
             />
         </LocalizationProvider>
     );
-};
+}
 
 const localizedDateFormat = (colProps) => getGridDateOperators().map((operator) => ({
     ...operator,
     InputComponent: operator.InputComponent
         ? (props) => <LocalizedDatePicker {...props} {...colProps} />
-        : undefined
+        : undefined,
 }));
 
 export default localizedDateFormat;

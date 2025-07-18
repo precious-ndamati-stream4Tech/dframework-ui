@@ -85,4 +85,3 @@ const Field = ({ isAdd, column, field, formik, otherProps, fieldConfigs = {}, mo
 }
 
 export default Field;
-

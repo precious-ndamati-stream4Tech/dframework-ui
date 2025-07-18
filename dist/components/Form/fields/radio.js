@@ -20,17 +20,20 @@ const Field = _ref => {
       orientation = "row",
       label,
       lookups,
-      fieldConfigs = {},
+      fieldConfigs,
       mode
     } = _ref,
     otherProps = _objectWithoutProperties(_ref, _excluded);
   const handleChange = event => {
     formik.setFieldValue(field, event.target.value);
   };
-  const options = lookups ? lookups[otherProps.column.lookup] : [];
+  const options = lookups ? lookups[otherProps === null || otherProps === void 0 ? void 0 : otherProps.column.lookup] : [];
   const theme = (0, _material.useTheme)();
   const isError = formik.touched[field] && Boolean(formik.errors[field]);
-  const isDisabled = mode !== 'copy' && fieldConfigs.disabled;
+  let isDisabled;
+  if (mode !== 'copy') {
+    isDisabled = fieldConfigs === null || fieldConfigs === void 0 ? void 0 : fieldConfigs.disabled;
+  }
   return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(_material.FormControl, {
     component: "fieldset",
     error: isError

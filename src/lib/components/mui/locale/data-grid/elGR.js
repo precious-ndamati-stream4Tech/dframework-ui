@@ -1,4 +1,4 @@
-import * as locales from '@mui/x-data-grid-premium';
+import * as locales from '@mui/x-data-grid';
 export const elGRGrid = {
     Jumptopage: 'Μετάβαση στη σελίδα',
     Go: 'Πηγαίνω',

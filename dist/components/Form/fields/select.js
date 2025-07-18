@@ -82,24 +82,26 @@ const SelectField = /*#__PURE__*/_react.default.memo(_ref => {
   return /*#__PURE__*/_react.default.createElement(_FormControl.default, {
     fullWidth: true,
     key: field,
-    error: formik.touched[field] && formik.errors[field],
     variant: "standard"
-  }, /*#__PURE__*/_react.default.createElement(_InputLabel.default, null, placeHolder ? placeHolder : ""), /*#__PURE__*/_react.default.createElement(_Select.default, _extends({
+  }, /*#__PURE__*/_react.default.createElement(_InputLabel.default, null, fieldLabel), /*#__PURE__*/_react.default.createElement(_Select.default, _extends({
     IconComponent: _KeyboardArrowDown.default
   }, otherProps, {
     name: field,
     multiple: column.multiSelect === true,
     readOnly: column.readOnly === true,
-    value: "".concat(inputValue),
-    onChange: handleChange,
+    value: inputValue
+    // label={fieldLabel}
+    ,
+    onChange: formik.handleChange
+    // onChange={onChange}
+    ,
     onBlur: formik.handleBlur,
     sx: {
       backgroundColor: column.readOnly ? (_theme$palette = theme.palette) === null || _theme$palette === void 0 || (_theme$palette = _theme$palette.action) === null || _theme$palette === void 0 ? void 0 : _theme$palette.disabled : ''
     }
   }), Array.isArray(options) && options.map(option => /*#__PURE__*/_react.default.createElement(_MenuItem.default, {
     key: option.value,
-    value: option.value,
-    disabled: option.isDisabled
+    value: option.value
   }, option.label))), /*#__PURE__*/_react.default.createElement(_material.FormHelperText, null, formik.touched[field] && formik.errors[field]));
 });
-var _default = exports.default = SelectField;
+var _default = exports.default = field;

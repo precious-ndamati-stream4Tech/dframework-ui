@@ -70,13 +70,9 @@ const stateReducer = (state, action) => {
       return _objectSpread(_objectSpread({}, state), {}, {
         loaderOpen: action.payload
       });
-    case _actions.default.PASS_FILTERS_TO_HEADER:
+    case _actions.default.PASS_FILTERS_TOHEADER:
       return _objectSpread(_objectSpread({}, state), {}, {
         filtersInHeader: action.payload
-      });
-    case _actions.default.SET_TIMEZONE:
-      return _objectSpread(_objectSpread({}, state), {}, {
-        timeZone: action.payload
       });
     default:
       return state;

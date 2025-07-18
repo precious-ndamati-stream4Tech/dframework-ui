@@ -2,6 +2,7 @@
 
 require("core-js/modules/es.array.push.js");
 require("core-js/modules/es.weak-map.js");
+require("core-js/modules/esnext.iterator.constructor.js");
 require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.for-each.js");
 Object.defineProperty(exports, "__esModule", {
@@ -11,17 +12,15 @@ exports.UiModel = void 0;
 require("core-js/modules/es.error.cause.js");
 require("core-js/modules/es.object.assign.js");
 require("core-js/modules/es.regexp.exec.js");
-require("core-js/modules/es.regexp.test.js");
 require("core-js/modules/es.string.match.js");
 require("core-js/modules/es.string.replace.js");
 require("core-js/modules/es.string.replace-all.js");
 require("core-js/modules/es.string.trim.js");
-require("core-js/modules/esnext.iterator.constructor.js");
-require("core-js/modules/esnext.iterator.find.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 var _index = _interopRequireDefault(require("./index"));
 var _react = _interopRequireDefault(require("react"));
 var yup = _interopRequireWildcard(require("yup"));
+var _Paper = _interopRequireDefault(require("@mui/material/Paper"));
 var _material = require("@mui/material");
 var _Form = _interopRequireDefault(require("../Form/Form"));
 const _excluded = ["match"],
@@ -36,12 +35,7 @@ function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t =
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == typeof i ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-const regexConfig = {
-  password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,50}$/,
-  nonAlphaNumeric: /[^a-zA-Z0-9]/g,
-  compareValidatorRegex: /^compare:(.+)$/,
-  email: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
-};
+const nonAlphaNumeric = /[^a-zA-Z0-9]/g;
 const customStyle = {};
 const showRowsSelected = true;
 const defaultValueConfigs = {
@@ -67,10 +61,10 @@ class UiModel {
           match
         } = _ref2,
         props = _objectWithoutProperties(_ref2, _excluded2);
-      return /*#__PURE__*/_react.default.createElement(_index.default, _extends({
+      return /*#__PURE__*/_react.default.createElement(_Paper.default, null, /*#__PURE__*/_react.default.createElement(_index.default, _extends({
         model: this,
         showRowsSelected: showRowsSelected
-      }, props));
+      }, props)));
     });
     _defineProperty(this, "ChildGrid", props => {
       return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(_index.default, _extends({
@@ -86,52 +80,35 @@ class UiModel {
       }));
     });
     const {
-      title = "",
+      title,
       controllerType
     } = modelConfig;
     let {
       api,
       idProperty = api + 'Id'
     } = modelConfig;
-    const module = "module" in modelConfig ? modelConfig.module : title.replace(/[^\w\s]/gi, "");
     if (!api) {
-      api = "".concat(title.replaceAll(regexConfig.nonAlphaNumeric, '-').toLowerCase());
+      api = "".concat(title.replaceAll(nonAlphaNumeric, '-').toLowerCase());
       idProperty = title.replaceAll(' ', '') + 'Id';
     }
     api = controllerType === 'cs' ? "".concat(api, ".ashx") : "".concat(api);
     const defaultValues = _objectSpread({}, modelConfig.defaultValues);
-    const name = module || title;
     Object.assign(this, _objectSpread(_objectSpread({
       standard: true,
-      name,
-      permissions: _objectSpread({}, UiModel.defaultPermissions),
-      idProperty,
-      linkColumn: "".concat(name, "Name"),
-      overrideFileName: title,
-      preferenceId: name,
-      tableName: name,
-      module
+      idProperty
     }, modelConfig), {}, {
       api
     }));
-    this.columnVisibilityModel = this._getColumnVisibilityModel();
-    this.defaultValues = this._getDefaultValues(defaultValues);
-  }
-  _getColumnVisibilityModel() {
     const columnVisibilityModel = {};
     for (const col of this.columns) {
+      const name = col.field || col.id;
       if (col.hide === true) {
         columnVisibilityModel[col.id || col.field] = false;
       }
-    }
-    return columnVisibilityModel;
-  }
-  _getDefaultValues(defaultValues) {
-    for (const col of this.columns) {
-      const name = col.field || col.id;
       defaultValues[name] = col.defaultValue === undefined ? defaultValueConfigs[col.type] || "" : col.defaultValue;
     }
-    return defaultValues;
+    this.columnVisibilityModel = columnVisibilityModel;
+    this.defaultValues = defaultValues;
   }
   getValidationSchema(_ref3) {
     let {
@@ -140,7 +117,7 @@ class UiModel {
     const {
       columns
     } = this;
-    const validationConfig = {};
+    let validationConfig = {};
     for (const column of columns) {
       const {
         field,
@@ -151,24 +128,21 @@ class UiModel {
         required = false,
         min = '',
         max = '',
-        validate
+        validationLength = 0
       } = column;
-      const formLabel = label || header || field;
+      const formLabel = label || header;
       if (!formLabel) {
         continue;
       }
       let config;
       switch (type) {
         case 'string':
-          config = yup.string().nullable().trim().label(formLabel);
-          if (min && !isNaN(Number(min))) {
+          config = yup.string().trim().label(formLabel);
+          if (min) {
             config = config.min(Number(min), "".concat(formLabel, " must be at least ").concat(min, " characters long"));
           }
-          if (max && !isNaN(Number(max))) {
+          if (max) {
             config = config.max(Number(max), "".concat(formLabel, " must be at most ").concat(max, " characters long"));
-          }
-          if (required) {
-            config = config.trim().required("".concat(formLabel, " is required"));
           }
           break;
         case 'boolean':
@@ -187,78 +161,23 @@ class UiModel {
             return value;
           }).label(formLabel).required("".concat(formLabel, " is required"));
           break;
-        case 'dateTime':
-          config = yup.date().nullable() // Allow null values
-          .transform((value, originalValue) => {
-            // Transform empty strings or null values into null
-            if (originalValue === '' || originalValue === null) return null;
-            return value;
-          }).label(formLabel); // Set a label for better error messages
-          break;
-        case 'select':
         case 'autocomplete':
-          if (required) {
-            config = yup.string().trim().label(formLabel).required("Select at least one ".concat(formLabel));
-          } else {
-            config = yup.string().nullable();
-          }
-          break;
-        case 'password':
-          config = yup.string().label(formLabel).test("ignore-asterisks", "".concat(formLabel, " must be a valid password."), value => {
-            // Skip further validations if value is exactly "******"
-            if (value === "******") return true;
-            const minlength = Number(min) || 8;
-            const maxlength = Number(max) || 50;
-            const regex = column.regex || regexConfig.password;
-            // Check minimum length, maximum length, and pattern if not "******"
-            return yup.string().min(minlength, "".concat(formLabel, " must be at least ").concat(minlength, " characters")).max(maxlength, "".concat(formLabel, " must be at most ").concat(maxlength, " characters")).matches(regex, "".concat(formLabel, " must contain at least one lowercase letter, one uppercase letter, one digit, and one special character")).isValidSync(value);
-          });
-          break;
-        case 'email':
-          config = yup.string().trim().matches(column.regex || regexConfig.email, 'Email must be a valid email');
-          break;
-        case 'number':
-          if (required) {
-            config = yup.number().label(formLabel).required("".concat(formLabel, " is required."));
-          } else {
-            config = yup.number().nullable();
-          }
-          if (min !== undefined && min !== '' && !isNaN(Number(min))) {
-            config = config.min(Number(min), "".concat(formLabel, " must be greater than or equal to ").concat(min));
-          }
-          if (max !== undefined && max !== '' && !isNaN(Number(max))) {
-            config = config.max(Number(max), "".concat(formLabel, " must be less than or equal to ").concat(max));
-          }
-          break;
-        case 'fileUpload':
-          config = yup.string().trim().label(formLabel);
+          config = yup.string().trim().label(formLabel).required("Select at least one ".concat(formLabel));
           break;
         default:
-          config = yup.mixed().nullable().label(formLabel);
+          config = yup.mixed().label(formLabel);
           break;
       }
-      if (required && type !== "string") {
-        config = config.required("".concat(formLabel, " is required"));
+      if (required) {
+        config = config.trim().required("".concat(formLabel, " is required"));
       }
       if (requiredIfNew && (!id || id === '')) {
         config = config.trim().required("".concat(formLabel, " is required"));
       }
-      if (validate) {
-        const compareValidator = regexConfig.compareValidatorRegex.exec(validate);
-        if (compareValidator) {
-          const compareFieldName = compareValidator[1];
-          const compareField = columns.find(f => (f.formField === compareFieldName || f.field) === compareFieldName);
-          config = config.oneOf([yup.ref(compareFieldName)], "".concat(formLabel, " must match ").concat(compareField.label));
-        }
-      }
       validationConfig[field] = config;
     }
-    return yup.object(_objectSpread(_objectSpread({}, validationConfig), this.validationSchema));
+    let validationSchema = yup.object(_objectSpread(_objectSpread({}, validationConfig), this.validationSchema));
+    return validationSchema;
   }
 }
 exports.UiModel = UiModel;
-_defineProperty(UiModel, "defaultPermissions", {
-  add: true,
-  edit: true,
-  delete: true
-});

@@ -1,5 +1,5 @@
 
-import * as locales from '@mui/x-data-grid-premium';
+import * as locales from '@mui/x-data-grid';
 export const itITGrid = {
     Jumptopage: 'Vai alla pagina',
     Go: 'Andare',

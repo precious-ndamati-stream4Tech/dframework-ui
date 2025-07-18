@@ -95,12 +95,6 @@ Object.defineProperty(exports, "frFRGrid", {
     return _frFR.frFRGrid;
   }
 });
-Object.defineProperty(exports, "httpRequest", {
-  enumerable: true,
-  get: function get() {
-    return _httpRequest.default;
-  }
-});
 Object.defineProperty(exports, "itITGrid", {
   enumerable: true,
   get: function get() {
@@ -173,6 +167,5 @@ var _ptPT = _interopRequireDefault(require("./components/mui/locale/data-grid/pt
 var _trTR = require("./components/mui/locale/data-grid/trTR");
 var _StateProvider = require("./components/useRouter/StateProvider");
 var _useMobile = _interopRequireDefault(require("./components/useMobile"));
-var _httpRequest = _interopRequireDefault(require("./components/Grid/httpRequest"));
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }

@@ -10,7 +10,10 @@ var _react = _interopRequireWildcard(require("react"));
 var _material = require("@mui/material");
 var _colors = require("@mui/material/colors");
 var _CustomRenderCell = require("./CustomRenderCell");
+const _excluded = ["name", "field", "formik", "expired"];
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
+function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 const days = [{
   label: 'Sunday',
   value: 0,
@@ -72,11 +75,12 @@ const DayAvatar = _ref2 => {
 };
 const DaySelection = _ref3 => {
   let {
-    name,
-    field,
-    formik,
-    expired
-  } = _ref3;
+      name,
+      field,
+      formik,
+      expired
+    } = _ref3,
+    props = _objectWithoutProperties(_ref3, _excluded);
   const {
     setFieldValue
   } = formik;

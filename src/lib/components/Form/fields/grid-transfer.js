@@ -1,5 +1,5 @@
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { makeStyles } from "@material-ui/core";
 import { useCallback } from "react";
 
 const useStyles = makeStyles({
@@ -9,7 +9,7 @@ const useStyles = makeStyles({
         fontSize: '20px'
     }
 });
-const TransferField = ({ component, name, formik, field, column }) => {
+const TransferField = ({ component, name, formik, field, type, column, ...props }) => {
     const { value } = formik.getFieldProps(name || field);
     const { setFieldValue } = formik;
     const Component = component || column.relation;
@@ -20,9 +20,9 @@ const TransferField = ({ component, name, formik, field, column }) => {
     return (
         <div>
             <div className={`${classes.divSpacing} `}>{`${"Available"} ${column.label}`}</div>
-            <Component selected={value} available={true} onAssignChange={onAssignChange} disableCellRedirect={column.disableCellRedirect} readOnly={column.readOnly} />
+            <Component selected={value} available={true} onAssignChange={onAssignChange} disableCellRedirect={column.disableCellRedirect} useLinkColumn={column.useLinkColumn} readOnly={column.readOnly} />
             <div className={`${classes.divSpacing} `}>{`${"Assigned"} ${column.label}`}</div>
-            <Component selected={value} assigned={true} onAssignChange={onAssignChange} disableCellRedirect={column.disableCellRedirect} readOnly={column.readOnly} />
+            <Component selected={value} assigned={true} onAssignChange={onAssignChange} disableCellRedirect={column.disableCellRedirect} useLinkColumn={column.useLinkColumn} readOnly={column.readOnly} />
         </div>
     );
 }

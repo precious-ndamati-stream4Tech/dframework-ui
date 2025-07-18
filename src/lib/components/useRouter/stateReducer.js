@@ -20,17 +20,15 @@ const stateReducer = (state, action) => {
         case actionsStateProvider.USER_DATA:
             return { ...state, getUserData: action.payload };
         case actionsStateProvider.UDPATE_PREFERENCES:
-            return { ...state, preferences: action.payload };
+            return { ...state, preferences: action.payload }
         case actionsStateProvider.SET_CURRENT_PREFERENCE_NAME:
-            return { ...state, currentPreference: action.payload };
+            return { ...state, currentPreference: action.payload }
         case actionsStateProvider.TOTAL_PREFERENCES:
-            return { ...state, totalPreferences: action.payload };
+            return { ...state, totalPreferences: action.payload }
         case actionsStateProvider.UPDATE_LOADER_STATE:
-            return { ...state, loaderOpen: action.payload };
-        case actionsStateProvider.PASS_FILTERS_TO_HEADER:
-            return { ...state, filtersInHeader: action.payload };
-        case actionsStateProvider.SET_TIMEZONE:
-            return { ...state, timeZone: action.payload };
+            return { ...state, loaderOpen: action.payload }
+        case actionsStateProvider.PASS_FILTERS_TOHEADER:
+                return { ...state, filtersInHeader: action.payload }
         default:
             return state;
     }

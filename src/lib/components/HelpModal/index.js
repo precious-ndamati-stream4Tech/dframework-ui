@@ -3,7 +3,7 @@ import {
     Grid, Typography,
     Dialog, DialogContent, DialogTitle,
 } from '@mui/material';
-import { Replay, Close } from '@mui/icons-material';
+import { Replay, Close } from '@material-ui/icons';
 import { useStateContext } from '../useRouter/StateProvider';
 import actionsStateProvider from '../useRouter/actions';
 
@@ -56,11 +56,11 @@ const HelpModal = () => {
                 }} >
                     <DialogTitle className='pt-2 pb-0'>
                         <Grid container spacing={1}>
-                            <Grid size={11} >
+                            <Grid item className="" xs={11} sm={11} md={11} lg={11} >
                                 <Typography variant="h7" component='div'> {openModal?.data?.title || ''}</Typography>
                                 <Typography variant="caption" component='div'>{openModal?.data?.subTitle || <>&nbsp;</>}</Typography>
                             </Grid>
-                            <Grid className="text-right" size={1} >
+                            <Grid item className="text-right" xs={1} sm={1} md={1} lg={1} >
                                 <Replay className='cursor_pointer mt-2 mr-2' onClick={resetIframe} />
                                 <Close className='cursor_pointer mt-2' onClick={() => {
                                     dispatchData({

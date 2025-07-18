@@ -15,8 +15,10 @@ const field = _ref => {
   let {
     column,
     field,
+    fieldLabel,
     formik,
-    otherProps
+    otherProps,
+    classes
   } = _ref;
   let inputValue = formik.values[field];
   if (column.isUtc) {
@@ -24,7 +26,7 @@ const field = _ref => {
   }
   return /*#__PURE__*/_react.default.createElement(_TimePicker.TimePicker, _extends({}, otherProps, {
     variant: "standard",
-    readOnly: column.readOnly === true,
+    readOnly: (column === null || column === void 0 ? void 0 : column.readOnly) === true,
     key: field,
     fullWidth: true,
     name: field,

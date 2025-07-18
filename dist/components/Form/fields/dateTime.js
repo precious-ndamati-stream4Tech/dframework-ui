@@ -12,12 +12,14 @@ var _dayjs = _interopRequireDefault(require("dayjs"));
 var _StateProvider = require("../../useRouter/StateProvider");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-const Field = _ref => {
+const field = _ref => {
   let {
     column,
     field,
+    fieldLabel,
     formik,
-    otherProps
+    otherProps,
+    classes
   } = _ref;
   const {
     systemDateTimeFormat,
@@ -34,8 +36,7 @@ const Field = _ref => {
     onChange: value => formik.setFieldValue(field, value),
     onBlur: formik.handleBlur,
     helperText: formik.touched[field] && formik.errors[field],
-    minDateTime: column.min ? (0, _dayjs.default)(column.min) : null,
-    maxDateTime: column.max ? (0, _dayjs.default)(column.max) : null,
+    disablePast: column === null || column === void 0 ? void 0 : column.disablePast,
     slotProps: {
       textField: {
         fullWidth: true,
@@ -45,4 +46,4 @@ const Field = _ref => {
     }
   }));
 };
-var _default = exports.default = Field;
+var _default = exports.default = field;

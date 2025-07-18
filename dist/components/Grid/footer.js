@@ -16,6 +16,7 @@ var _TextField = _interopRequireDefault(require("@mui/material/TextField"));
 var _Button = _interopRequireDefault(require("@mui/material/Button"));
 var _reactI18next = require("react-i18next");
 var _react = _interopRequireWildcard(require("react"));
+var _StateProvider = require("../useRouter/StateProvider");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 const Footer = _ref => {
@@ -37,6 +38,12 @@ const Footer = _ref => {
     i18n
   };
   const [pageNumber, setPageNumber] = (0, _react.useState)(page + 1);
+  const {
+    useLocalization
+  } = (0, _StateProvider.useStateContext)();
+  const {
+    getLocalizedString
+  } = useLocalization();
   const handleChange = function handleChange(e) {
     var _e$target;
     let value = (_e$target = e.target) === null || _e$target === void 0 ? void 0 : _e$target.value;

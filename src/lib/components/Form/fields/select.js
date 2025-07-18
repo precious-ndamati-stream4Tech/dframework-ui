@@ -48,31 +48,28 @@ const SelectField = React.memo(({ column, field, formik, lookups, dependsOn = []
         <FormControl
             fullWidth
             key={field}
-            error={formik.touched[field] && formik.errors[field]}
             variant="standard">
-            <InputLabel>{placeHolder ? placeHolder : ""}</InputLabel> 
+            <InputLabel>{fieldLabel}</InputLabel>
             <Select
                 IconComponent={KeyboardArrowDownIcon}
                 {...otherProps}
                 name={field}
                 multiple={column.multiSelect === true}
                 readOnly={column.readOnly === true}
-                value={`${inputValue}`}
-                onChange={handleChange}
+                value={inputValue}
+                // label={fieldLabel}
+                onChange={formik.handleChange}
+                // onChange={onChange}
                 onBlur={formik.handleBlur}
                 sx={{
                     backgroundColor: column.readOnly ? theme.palette?.action?.disabled : ''
                 }}
             >
-                {Array.isArray(options) && options.map(option => (
-                    <MenuItem key={option.value} value={option.value} disabled={option.isDisabled}>
-                        {option.label}
-                    </MenuItem>
-                ))}
+                {Array.isArray(options) && options.map(option => <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>)}
             </Select>
             <FormHelperText>{formik.touched[field] && formik.errors[field]}</FormHelperText>
         </FormControl>
     );
 });
 
-export default SelectField;
+export default field;

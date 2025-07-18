@@ -7,10 +7,9 @@ exports.RenderDayCell = RenderDayCell;
 exports.brandColor = exports.brandBackgroundColor = void 0;
 require("core-js/modules/esnext.iterator.constructor.js");
 require("core-js/modules/esnext.iterator.map.js");
-var _makeStyles = _interopRequireDefault(require("@mui/styles/makeStyles"));
+var _core = require("@material-ui/core");
 var _material = require("@mui/material");
-function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
-const useStyles = (0, _makeStyles.default)({
+const useStyles = (0, _core.makeStyles)({
   root: {
     display: 'flex'
   }

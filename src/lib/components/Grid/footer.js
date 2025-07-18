@@ -8,14 +8,17 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect, useState } from 'react';
+import { useStateContext } from '../useRouter/StateProvider';
 const Footer = ({ pagination, apiRef, tTranslate = (key) => key }) => {
     const page = apiRef.current.state.pagination.paginationModel.page;
     const rowsPerPage = apiRef.current.state.pagination.paginationModel.pageSize;
     const totalRows = apiRef.current.state.rows.totalRowCount;
     const totalPages = Math.ceil(totalRows / rowsPerPage);
-    const { t: translate, i18n } = useTranslation();
+    const { t: translate, i18n } = useTranslation()
     const tOpts = { t: translate, i18n };
     const [pageNumber, setPageNumber] = useState(page + 1);
+    const { useLocalization } = useStateContext();
+    const { getLocalizedString } = useLocalization();
 
     const handleChange = function (e) {
         let value = e.target?.value;
@@ -27,7 +30,7 @@ const Footer = ({ pagination, apiRef, tTranslate = (key) => key }) => {
             value = isNaN(value) || value < 1 ? 1 : value;
             setPageNumber(value);
         }
-    };
+    }
 
     useEffect(() => {
         setPageNumber(page + 1);
@@ -42,12 +45,12 @@ const Footer = ({ pagination, apiRef, tTranslate = (key) => key }) => {
         if (pageNumber === '') {
             setPageNumber(1);
         }
-    };
+    }
     const handleKeyPress = (event) => {
         const keyCode = event.which || event.keyCode;
         const keyValue = String.fromCharCode(keyCode);
         if (!/\d/.test(keyValue)) event.preventDefault();
-    };
+    }
 
     return (
         <GridFooterContainer>
@@ -81,5 +84,5 @@ const Footer = ({ pagination, apiRef, tTranslate = (key) => key }) => {
             <GridFooter />
         </GridFooterContainer>
     );
-};
+}
 export { Footer };

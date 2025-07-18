@@ -23,7 +23,7 @@ const field = _ref => {
   const rows = column.rows || (column.multiline ? 5 : 1);
   return /*#__PURE__*/_react.default.createElement(_TextField.default, _extends({
     type: "text",
-    variant: column.variant || "standard",
+    variant: "standard",
     InputProps: {
       readOnly: column.readOnly === true,
       sx: column.readOnly ? {
@@ -32,19 +32,14 @@ const field = _ref => {
       : undefined
     },
     key: field,
-    required: column.required,
-    multiline: column.multiline,
-    rows: rows,
+    required: column === null || column === void 0 ? void 0 : column.required,
     fullWidth: true,
     name: field,
     value: formik.values[field],
     onChange: formik.handleChange,
     onBlur: formik.handleBlur,
     error: formik.touched[field] && Boolean(formik.errors[field]),
-    helperText: formik.touched[field] && formik.errors[field],
-    autoComplete: column.autoComplete
-  }, otherProps, {
-    defaultValue: column.defaultValue
-  }));
+    helperText: formik.touched[field] && formik.errors[field]
+  }, otherProps));
 };
 var _default = exports.default = field;
