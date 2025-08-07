@@ -94,7 +94,7 @@ const ExportMenuItem = ({ tTranslate, tOpts, handleExport, contentType, type, is
             data-content-type={contentType}
             data-is-pivot-export={isPivotExport}
         >
-            <Box className="grid-icons">{icon}</Box>
+            <Box className="grid-icons" sx={{ pointerEvents: 'none' }}>{icon}</Box>
             {type}
         </MenuItem>
     );

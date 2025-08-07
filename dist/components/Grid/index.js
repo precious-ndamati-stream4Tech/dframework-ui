@@ -145,7 +145,10 @@ const ExportMenuItem = _ref => {
     "data-content-type": contentType,
     "data-is-pivot-export": isPivotExport
   }, /*#__PURE__*/_react.default.createElement(_Box.default, {
-    className: "grid-icons"
+    className: "grid-icons",
+    sx: {
+      pointerEvents: 'none'
+    }
   }, icon), type);
 };
 ExportMenuItem.propTypes = {
