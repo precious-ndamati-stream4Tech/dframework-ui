@@ -174,7 +174,6 @@ const GridPreferences = ({ tTranslate = (key) => key, preferenceName, gridRef, c
             const params = {
                 action: 'load',
                 id: preferenceName,
-                Username,
                 prefId
             };
             const response = await request({ url: preferenceApi, params, history: navigate, dispatchData }) || {};

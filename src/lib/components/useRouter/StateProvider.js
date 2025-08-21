@@ -34,7 +34,7 @@ const StateProvider = ({ children }) => {
     }
     return isDateFormatOnly ? 'DD-MM-YYYY' : 'DD-MM-YYYY hh:mm:ss A';
   }
-  async function getAllSavedPreferences({ preferenceName, Username, history, dispatchData, preferenceApi, tablePreferenceEnums }) {
+  async function getAllSavedPreferences({ preferenceName, Username, history, dispatchData, preferenceApi }) {
     const params = {
       action: 'list',
       id: preferenceName,
@@ -45,14 +45,13 @@ const StateProvider = ({ children }) => {
       "prefId": 0,
       "GridId": preferenceName,
       "GridPreferenceId": 0,
-      "prefValue": tablePreferenceEnums[preferenceName],
     }
     const response = await request({ url: preferenceApi, params, history, dispatchData });
     let preferences = response?.preferences ? [defaultCoolrPref,...response?.preferences] : defaultCoolrPref
     dispatchData({ type: actionsStateProvider.UDPATE_PREFERENCES, payload: preferences });
     dispatchData({ type: actionsStateProvider.TOTAL_PREFERENCES, payload: response?.preferences?.length });
   }
-  async function applyDefaultPreferenceIfExists({ gridRef, history, dispatchData, Username, preferenceName, setIsGridPreferenceFetched, preferenceApi, tablePreferenceEnums }) {
+  async function applyDefaultPreferenceIfExists({ gridRef, history, dispatchData, Username, preferenceName, setIsGridPreferenceFetched, preferenceApi }) {
     const params = {
       action: 'default',
       id: preferenceName,
@@ -60,7 +59,7 @@ const StateProvider = ({ children }) => {
     }
 
     const response = await request({ url: preferenceApi, params, history, dispatchData });
-    let userPreferenceCharts = response?.prefValue ? JSON.parse(response.prefValue) : tablePreferenceEnums[preferenceName];
+    let userPreferenceCharts = response?.prefValue ? JSON.parse(response.prefValue) : null;
     if (userPreferenceCharts && gridRef?.current) {
       userPreferenceCharts?.gridColumn.forEach(ele => {
 				if (gridRef.current.getColumnIndex(ele.field) !== -1) {

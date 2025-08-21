@@ -219,7 +219,7 @@ const areEqual = function areEqual() {
   return equal;
 };
 const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
-  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _stateData$gridSettin4, _model$tTranslate, _stateData$gridSettin5;
+  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4;
   let {
     useLinkColumn = true,
     model,
@@ -342,7 +342,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const url = stateData === null || stateData === void 0 || (_stateData$gridSettin2 = stateData.gridSettings) === null || _stateData$gridSettin2 === void 0 || (_stateData$gridSettin2 = _stateData$gridSettin2.permissions) === null || _stateData$gridSettin2 === void 0 ? void 0 : _stateData$gridSettin2.Url;
   const withControllersUrl = stateData === null || stateData === void 0 || (_stateData$gridSettin3 = stateData.gridSettings) === null || _stateData$gridSettin3 === void 0 || (_stateData$gridSettin3 = _stateData$gridSettin3.permissions) === null || _stateData$gridSettin3 === void 0 ? void 0 : _stateData$gridSettin3.withControllersUrl;
   const currentPreference = stateData === null || stateData === void 0 ? void 0 : stateData.currentPreference;
-  const tablePreferenceEnums = stateData === null || stateData === void 0 || (_stateData$gridSettin4 = stateData.gridSettings) === null || _stateData$gridSettin4 === void 0 || (_stateData$gridSettin4 = _stateData$gridSettin4.permissions) === null || _stateData$gridSettin4 === void 0 ? void 0 : _stateData$gridSettin4.tablePreferenceEnums;
   const emptyIsAnyOfOperatorFilters = ["isEmpty", "isNotEmpty", "isAnyOf"];
   const filterFieldDataTypes = {
     Number: 'number',
@@ -353,7 +352,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const OrderSuggestionHistoryFields = {
     OrderStatus: 'OrderStatusId'
   };
-  const preferenceApi = stateData === null || stateData === void 0 || (_stateData$gridSettin5 = stateData.gridSettings) === null || _stateData$gridSettin5 === void 0 || (_stateData$gridSettin5 = _stateData$gridSettin5.permissions) === null || _stateData$gridSettin5 === void 0 ? void 0 : _stateData$gridSettin5.preferenceApi;
+  const preferenceApi = stateData === null || stateData === void 0 || (_stateData$gridSettin4 = stateData.gridSettings) === null || _stateData$gridSettin4 === void 0 || (_stateData$gridSettin4 = _stateData$gridSettin4.permissions) === null || _stateData$gridSettin4 === void 0 ? void 0 : _stateData$gridSettin4.preferenceApi;
   const gridColumnTypes = {
     "radio": {
       "type": "singleSelect",
@@ -911,8 +910,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       history: navigate,
       dispatchData,
       Username,
-      preferenceApi,
-      tablePreferenceEnums
+      preferenceApi
     });
     applyDefaultPreferenceIfExists({
       preferenceName: model.preferenceId,
@@ -921,8 +919,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       Username,
       gridRef: apiRef,
       setIsGridPreferenceFetched,
-      preferenceApi,
-      tablePreferenceEnums
+      preferenceApi
     });
   }, []);
   const CustomToolbar = function CustomToolbar(props) {

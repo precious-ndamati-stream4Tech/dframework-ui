@@ -105,11 +105,15 @@ const GridPreferences = _ref => {
   var _stateData$gridSettin, _stateData$gridSettin2;
   let {
     tTranslate = key => key,
-    preferenceName,
+    model,
     gridRef,
     columns = [],
-    setIsGridPreferenceFetched
-  } = _ref;
+    setIsGridPreferenceFetched,
+    initialGridRef
+  } = _ref2;
+  const {
+    preferenceId: preferenceName
+  } = model;
   const {
     stateData,
     dispatchData,
@@ -287,7 +291,6 @@ const GridPreferences = _ref => {
       const params = {
         action: 'load',
         id: preferenceName,
-        Username,
         prefId
       };
       const response = (await (0, _httpRequest.default)({

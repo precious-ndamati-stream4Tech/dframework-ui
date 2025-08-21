@@ -57,8 +57,7 @@ const StateProvider = _ref => {
       Username,
       history,
       dispatchData,
-      preferenceApi,
-      tablePreferenceEnums
+      preferenceApi
     } = _ref2;
     const params = {
       action: 'list',
@@ -69,8 +68,7 @@ const StateProvider = _ref => {
       "prefName": "CoolR Default",
       "prefId": 0,
       "GridId": preferenceName,
-      "GridPreferenceId": 0,
-      "prefValue": tablePreferenceEnums[preferenceName]
+      "GridPreferenceId": 0
     };
     const response = await (0, _httpRequest.default)({
       url: preferenceApi,
@@ -96,8 +94,7 @@ const StateProvider = _ref => {
       Username,
       preferenceName,
       setIsGridPreferenceFetched,
-      preferenceApi,
-      tablePreferenceEnums
+      preferenceApi
     } = _ref3;
     const params = {
       action: 'default',
@@ -110,7 +107,7 @@ const StateProvider = _ref => {
       history,
       dispatchData
     });
-    let userPreferenceCharts = response !== null && response !== void 0 && response.prefValue ? JSON.parse(response.prefValue) : tablePreferenceEnums[preferenceName];
+    let userPreferenceCharts = response !== null && response !== void 0 && response.prefValue ? JSON.parse(response.prefValue) : null;
     if (userPreferenceCharts && gridRef !== null && gridRef !== void 0 && gridRef.current) {
       userPreferenceCharts === null || userPreferenceCharts === void 0 || userPreferenceCharts.gridColumn.forEach(ele => {
         if (gridRef.current.getColumnIndex(ele.field) !== -1) {

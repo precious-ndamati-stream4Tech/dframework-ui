@@ -210,7 +210,6 @@ const GridBase = memo(({
     const url = stateData?.gridSettings?.permissions?.Url;
     const withControllersUrl = stateData?.gridSettings?.permissions?.withControllersUrl;
     const currentPreference = stateData?.currentPreference;
-    const tablePreferenceEnums = stateData?.gridSettings?.permissions?.tablePreferenceEnums;
     const emptyIsAnyOfOperatorFilters = ["isEmpty", "isNotEmpty", "isAnyOf"];
     const filterFieldDataTypes = {
         Number: 'number',
@@ -662,8 +661,8 @@ const GridBase = memo(({
 
     useEffect(() => {
         removeCurrentPreferenceName({ dispatchData });
-        getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi, tablePreferenceEnums });
-        applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi, tablePreferenceEnums });
+        getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi });
+        applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
     }, [])
 
     const CustomToolbar = function (props) {
