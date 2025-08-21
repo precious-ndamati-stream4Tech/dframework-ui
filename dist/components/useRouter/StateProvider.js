@@ -120,7 +120,12 @@ const StateProvider = _ref => {
       gridRef.current.setFilterModel(userPreferenceCharts === null || userPreferenceCharts === void 0 ? void 0 : userPreferenceCharts.filterModel);
       dispatchData({
         type: _actions.default.SET_CURRENT_PREFERENCE_NAME,
-        payload: response !== null && response !== void 0 && response.prefValue ? response.prefName : 'CoolR Default'
+        payload: response.prefName
+      });
+    } else {
+      dispatchData({
+        type: _actions.default.SET_CURRENT_PREFERENCE_NAME,
+        payload: 'CoolR Default'
       });
     }
     if (setIsGridPreferenceFetched) {
