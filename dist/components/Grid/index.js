@@ -953,7 +953,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       sx: {
         ml: 1
       }
-    }, tTranslate('Applied Preference', tOpts), " - ", currentPreference), (isReadOnly || !effectivePermissions.add && !forAssignment) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
+    }, tTranslate('Applied Preference', tOpts), " - ", tTranslate(currentPreference, tOpts)), (isReadOnly || !effectivePermissions.add && !forAssignment) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
       variant: "h6",
       component: "h3",
       textAlign: "center",
