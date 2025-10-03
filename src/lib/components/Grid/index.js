@@ -164,7 +164,8 @@ const GridBase = memo(({
     onRowClick = () => { },
     gridStyle,
     reRenderKey,
-    additionalFilters
+    additionalFilters,
+    selectedClients = null,
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -485,7 +486,8 @@ const GridBase = memo(({
             showFullScreenLoader,
             history: navigate,
             baseFilters,
-            isElasticExport
+            isElasticExport,
+            selectedClients: clientsSelected,
         });
     };
     const openForm = (id, { mode } = {}) => {
