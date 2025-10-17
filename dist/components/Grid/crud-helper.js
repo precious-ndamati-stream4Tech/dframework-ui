@@ -57,9 +57,7 @@ const getList = async _ref => {
     oderStatusId = 0,
     modelConfig = null,
     baseFilters = null,
-    isElasticExport,
-    t = null,
-    tOpts = null
+    isElasticExport
   } = _ref;
   if (!contentType) {
     setIsLoading(true);
@@ -137,7 +135,7 @@ const getList = async _ref => {
   if (baseFilters) {
     where.push(...baseFilters);
   }
-  console.log("fileanamedata<<", t(modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.overrideFileName, tOpts));
+  console.log("filename<<<<", modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.overrideFileName);
   const requestData = _objectSpread(_objectSpread({
     start: page * pageSize,
     limit: isElasticExport ? modelConfig.exportSize : pageSize
@@ -147,7 +145,7 @@ const getList = async _ref => {
     where,
     oderStatusId: oderStatusId,
     isElasticExport,
-    fileName: t(modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.overrideFileName, tOpts)
+    fileName: modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.overrideFileName
   });
   if (lookups.length) {
     requestData.lookups = lookups.join(',');

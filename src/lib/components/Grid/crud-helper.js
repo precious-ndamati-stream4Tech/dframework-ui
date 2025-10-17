@@ -60,6 +60,7 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     if (baseFilters) {
         where.push(...baseFilters);
     }
+    console.log("filename<<<<",modelConfig?.overrideFileName);
     const requestData = {
         start: page * pageSize,
         limit: isElasticExport ? modelConfig.exportSize : pageSize,
