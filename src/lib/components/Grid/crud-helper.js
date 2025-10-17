@@ -6,7 +6,7 @@ const dateDataTypes = ['date', 'dateTime'];
 
 const exportRecordSize = 10000;
 
-const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport }) => {
+const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport,t = null, tOpts = null}) => {
     if (!contentType) {
         setIsLoading(true);
         if (showFullScreenLoader) {
@@ -60,7 +60,6 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     if (baseFilters) {
         where.push(...baseFilters);
     }
-    console.log("filename<<<<",modelConfig?.overrideFileName);
     const requestData = {
         start: page * pageSize,
         limit: isElasticExport ? modelConfig.exportSize : pageSize,
@@ -70,7 +69,7 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
         where,
         oderStatusId: oderStatusId,
         isElasticExport,
-        fileName: modelConfig?.overrideFileName
+        fileName:t(modelConfig?.overrideFileName, tOpts)
     };
 
     if (lookups.length) {
