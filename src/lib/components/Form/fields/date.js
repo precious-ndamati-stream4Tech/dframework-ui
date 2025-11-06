@@ -5,6 +5,8 @@ import { useStateContext } from '../../useRouter/StateProvider';
 const field = ({ column, field, fieldLabel, formik, otherProps, classes, fieldConfigs, model, mode }) => {
     let isDisabled;
     const { systemDateTimeFormat, stateData } = useStateContext(); //provider
+    console.log("systemDateTimeFormat: - ",systemDateTimeFormat);
+    console.log("stateData.dateTime: - ",stateData.dateTime);
     if (mode !== 'copy') {
         isDisabled = fieldConfigs?.disabled;
     }
