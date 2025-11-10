@@ -9,8 +9,8 @@ const field = ({ column, field, fieldLabel, formik, otherProps, classes, fieldCo
     const { systemDateTimeFormat, stateData } = useStateContext(); //provider
     let dateFormat = stateData.dateTime.split(/[-/. ]/);
     const dayPlaceholder = dateFormat.find(part => part.includes('D')) || "DD";
-	const monthPlaceholder = dateFormat.find(part => part.includes('M')) || "MMM";
-	const yearPlaceholder = dateFormat.find(part => part.includes('Y')) || "YYYY";
+    const monthPlaceholder = dateFormat.find(part => part.includes('M')) || "MMM";
+    const yearPlaceholder = dateFormat.find(part => part.includes('Y')) || "YYYY";
     if (mode !== 'copy') {
         isDisabled = fieldConfigs?.disabled;
     }
