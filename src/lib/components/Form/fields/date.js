@@ -7,7 +7,7 @@ import AdapterDayjs from '@mui/x-date-pickers/AdapterDayjs';
 const field = ({ column, field, fieldLabel, formik, otherProps, classes, fieldConfigs, model, mode }) => {
     let isDisabled;
     const { systemDateTimeFormat, stateData } = useStateContext(); //provider
-    let dateFormat = stateData.dateTime.split(/[-/. ]/);
+    const dateFormat = stateData.dateTime.split(/[-/. ]/);
     const dayPlaceholder = dateFormat.find(part => part.includes('D')) || "DD";
     const monthPlaceholder = dateFormat.find(part => part.includes('M')) || "MMM";
     const yearPlaceholder = dateFormat.find(part => part.includes('Y')) || "YYYY";
