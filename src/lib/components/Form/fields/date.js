@@ -43,7 +43,7 @@ const field = ({ column, field, fieldLabel, formik, otherProps, classes, fieldCo
                     const adjustedDate = dayjs(value).hour(12);
                     const isoString = adjustedDate.toISOString();
                     formik.setFieldValue(field, isoString);
-                }}  
+                }}
                 onBlur={formik.handleBlur}
                 helperText={formik.touched[field] && formik.errors[field]}
                 disablePast={column?.disablePast}
