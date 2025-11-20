@@ -442,6 +442,15 @@ const GridPreferences = ({ tTranslate = (key) => key, preferenceName, gridRef, c
                                 disableRowGrouping={true}
                                 disableRowSelectionOnClick={true}
                                 autoHeight
+                                    localeText={{
+                                        toolbarColumnsLabel: tTranslate('Select columns', tOpts),
+                                        toolbarExportLabel: tTranslate('Export', tOpts),
+                                        booleanCellFalseLabel: tTranslate('No', tOpts),
+                                        paginationRowsPerPage: tTranslate('Rows per page', tOpts),
+                                        paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} ${tTranslate('of', tOpts)} ${count}`,
+                                        toolbarQuickFilterLabel: tTranslate('Search', tOpts),
+                                        columnsManagementSearchTitle: tTranslate('Search', tOpts)
+                                    }}
                             />
                         </Grid>
                         <Grid size={12}>
