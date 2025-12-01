@@ -56,6 +56,7 @@ var _CustomDropdownmenu = _interopRequireDefault(require("./CustomDropdownmenu")
 var _reactI18next = require("react-i18next");
 var _iconsMaterial = require("@mui/icons-material");
 var _Box = _interopRequireDefault(require("@mui/material/Box"));
+var _utils = _interopRequireDefault(require("../utils"));
 const _excluded = ["row", "field", "id"],
   _excluded2 = ["filterField"];
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
@@ -69,6 +70,7 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const defaultPageSize = 10;
+const t = _utils.default.t;
 const sortRegex = /(\w+)( ASC| DESC)?/i;
 const recordCounts = 60000;
 const actionTypes = {
@@ -980,7 +982,15 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       size: "medium",
       variant: "contained",
       className: classes.buttons
-    }, "Remove"), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarContainer, props, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), /*#__PURE__*/_react.default.createElement(_Button.default, {
+    }, "Remove"), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarContainer, props, /*#__PURE__*/_react.default.createElement(_Box.default, {
+      sx: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 2,
+        alignItems: 'center',
+        width: '100%'
+      }
+    }, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), /*#__PURE__*/_react.default.createElement(_Button.default, {
       startIcon: /*#__PURE__*/_react.default.createElement(_FilterListOff.default, null),
       onClick: clearFilters,
       size: "small"
@@ -998,7 +1008,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       model: model,
       initialGridRef: initialGridRef,
       setIsLoading: setIsLoading
-    })));
+    }))));
   };
   const getGridRowId = row => {
     return row[idProperty];
@@ -1154,8 +1164,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     });
     setSortModel(sort);
   };
-  return /*#__PURE__*/_react.default.createElement("div", {
-    style: gridStyle || customStyle
+  return /*#__PURE__*/_react.default.createElement(_Box.default, {
+    style: gridStyle || customStyle,
+    sx: {
+      maxHeight: '75vh'
+    }
   }, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.DataGridPremium, {
     headerFilters: showHeaderFilters,
     checkboxSelection: forAssignment,
