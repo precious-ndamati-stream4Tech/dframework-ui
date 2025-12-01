@@ -874,10 +874,7 @@ const GridBase = memo(({
                             pagination: true,
                             apiRef,
                             tTranslate: tTranslate
-                        },
-                        panel: {
-                            placement: "bottom-end"
-                        },
+                        }
                     }}
                     hideFooterSelectedRowCount={rowsSelected}
                     density="compact"
