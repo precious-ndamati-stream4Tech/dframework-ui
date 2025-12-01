@@ -6,7 +6,7 @@ const dateDataTypes = ['date', 'dateTime'];
 
 const exportRecordSize = 10000;
 
-const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, selectedClients = [] }) => {
+const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport }) => {
     if (!contentType) {
         setIsLoading(true);
         if (showFullScreenLoader) {
@@ -69,8 +69,7 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
         where,
         oderStatusId: oderStatusId,
         isElasticExport,
-        fileName: modelConfig?.overrideFileName,
-        selectedClients
+        fileName: modelConfig?.overrideFileName
     };
 
     if (lookups.length) {

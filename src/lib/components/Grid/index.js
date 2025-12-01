@@ -488,8 +488,7 @@ const GridBase = memo(({
             showFullScreenLoader,
             history: navigate,
             baseFilters,
-            isElasticExport,
-            selectedClients: clientsSelected,
+            isElasticExport
         });
     };
     const openForm = (id, { mode } = {}) => {

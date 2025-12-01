@@ -699,8 +699,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       showFullScreenLoader,
       history: navigate,
       baseFilters,
-      isElasticExport,
-      selectedClients: clientsSelected
+      isElasticExport
     });
   };
   const openForm = function openForm(id) {
