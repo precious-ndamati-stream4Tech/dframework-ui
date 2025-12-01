@@ -362,35 +362,23 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       "type": "singleSelect",
       "valueOptions": "lookup"
     },
+    "string": {
+      "filterOperators": (0, _xDataGridPremium.getGridStringOperators)().filter(op => !['doesNotContain', 'doesNotEqual'].includes(op.value))
+    },
     "date": {
-      "valueFormatter": _ref3 => {
-        let {
-          value
-        } = _ref3;
-        return formatDate(value, true, false, stateData.dateTime);
-      },
+      "valueFormatter": value => formatDate(value, true, false, stateData.dateTime),
       "filterOperators": (0, _LocalizedDatePicker.default)({
         columnType: "date"
       })
     },
     "dateTime": {
-      "valueFormatter": _ref4 => {
-        let {
-          value
-        } = _ref4;
-        return formatDate(value, false, false, stateData.dateTime);
-      },
+      "valueFormatter": value => formatDate(value, false, false, stateData.dateTime),
       "filterOperators": (0, _LocalizedDatePicker.default)({
         columnType: "datetime"
       })
     },
     "dateTimeLocal": {
-      "valueFormatter": _ref5 => {
-        let {
-          value
-        } = _ref5;
-        return formatDate(value, false, false, stateData.dateTime);
-      },
+      "valueFormatter": value => formatDate(value, false, false, stateData.dateTime),
       "filterOperators": (0, _LocalizedDatePicker.default)({
         type: "dateTimeLocal",
         convert: true
@@ -441,13 +429,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     }
   }, [customFilters]);
-  const lookupOptions = _ref6 => {
+  const lookupOptions = _ref3 => {
     let {
         row,
         field,
         id
-      } = _ref6,
-      others = _objectWithoutProperties(_ref6, _excluded);
+      } = _ref3,
+      others = _objectWithoutProperties(_ref3, _excluded);
     const lookupData = dataRef.current.lookups || {};
     return lookupData[lookupMap[field].lookup] || [];
   };
@@ -699,9 +687,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       showFullScreenLoader,
       history: navigate,
       baseFilters,
-      isElasticExport,
-      tTranslate,
-      tOpts
+      isElasticExport
     });
   };
   const openForm = function openForm(id) {
@@ -897,11 +883,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     }
   };
-  const updateAssignment = _ref7 => {
+  const updateAssignment = _ref4 => {
     let {
       unassign,
       assign
-    } = _ref7;
+    } = _ref4;
     const assignedValues = Array.isArray(selected) ? selected : selected.length ? selected.split(',') : [];
     const finalValues = unassign ? assignedValues.filter(id => !unassign.includes(parseInt(id))) : [...assignedValues, ...assign];
     onAssignChange(typeof selected === 'string' ? finalValues.join(',') : finalValues);
@@ -1232,12 +1218,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       footerTotalRows: "".concat(t('Total rows', tOpts), ":"),
       MuiTablePagination: {
         labelRowsPerPage: t('Rows per page', tOpts),
-        labelDisplayedRows: _ref8 => {
+        labelDisplayedRows: _ref5 => {
           let {
             from,
             to,
             count
-          } = _ref8;
+          } = _ref5;
           return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
         }
       },
@@ -1324,12 +1310,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       columnsManagementSearchTitle: t('Search', tOpts),
       columnsManagementNoColumns: t('No columns', tOpts),
       paginationRowsPerPage: t('Rows per page', tOpts),
-      paginationDisplayedRows: _ref9 => {
+      paginationDisplayedRows: _ref6 => {
         let {
           from,
           to,
           count
-        } = _ref9;
+        } = _ref6;
         return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
       },
       toolbarQuickFilterLabel: t('Search', tOpts),

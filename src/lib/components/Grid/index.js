@@ -231,20 +231,23 @@ const GridBase = memo(({
             "type": "singleSelect",
             "valueOptions": "lookup"
         },
+        "string": {
+            "filterOperators": getGridStringOperators().filter(op => !['doesNotContain', 'doesNotEqual'].includes(op.value))
+        },
         "date": {
-            "valueFormatter": ({ value }) => (
+            "valueFormatter": (value) => (
                 formatDate(value, true, false, stateData.dateTime)
             ),
             "filterOperators": LocalizedDatePicker({ columnType: "date" }),
         },
         "dateTime": {
-            "valueFormatter": ({ value }) => (
+            "valueFormatter": (value) => (
                 formatDate(value, false, false, stateData.dateTime)
             ),
             "filterOperators": LocalizedDatePicker({ columnType: "datetime" }),
         },
         "dateTimeLocal": {
-            "valueFormatter": ({ value }) => (
+            "valueFormatter": (value) => (
                 formatDate(value, false, false, stateData.dateTime)
             ),
             "filterOperators": LocalizedDatePicker({ type: "dateTimeLocal", convert: true }),
