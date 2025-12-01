@@ -98,7 +98,18 @@ const LocalizedDatePicker = props => {
     slotProps: {
       textField: {
         variant: "standard",
-        label: "Value"
+        label: "Value",
+        sx: {
+          minHeight: '45px',
+          marginBottom: '-16px',
+          marginTop: '0px',
+          '& .MuiInputLabel-root': {
+            marginTop: '-5px'
+          },
+          '& .MuiInput-root': {
+            marginTop: '5px'
+          }
+        }
       }
     },
     localeText: {
