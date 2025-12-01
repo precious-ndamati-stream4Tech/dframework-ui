@@ -700,7 +700,7 @@ const GridBase = memo(({
                     <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '100%' }}>
                     <GridToolbarColumnsButton />
                     <GridToolbarFilterButton />
-                    <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small">{tTranslate("CLEAR FILTER", tOpts)}</Button>
+                    <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{tTranslate("CLEAR FILTER", tOpts)}</Button>
                     {effectivePermissions.export && (
                         <CustomExportButton tTranslate={tTranslate} tOpts={tOpts} handleExport={handleExport} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} />
                     )}
@@ -831,183 +831,185 @@ const GridBase = memo(({
     }
 
     return (
-        <Box style={gridStyle || customStyle} sx={{ maxHeight: '75vh' }}>
-            <DataGridPremium
-                headerFilters={showHeaderFilters}
-                checkboxSelection={forAssignment}
-                loading={isLoading}
-                showToolbar={true}
-                className="pagination-fix"
-                onCellClick={onCellClickHandler}
-                onCellDoubleClick={onCellDoubleClick}
-                columns={gridColumns}
-                paginationModel={paginationModel}
-                pageSizeOptions={[5, 10, 20, 50, 100]}
-                onPaginationModelChange={setPaginationModel}
-                pagination
-                rowCount={data.recordCount}
-                rows={data.records}
-                sortModel={sortModel}
-                paginationMode={isClient}
-                sortingMode={isClient}
-                filterMode={isClient}
-                keepNonExistentRowsSelected
-                onSortModelChange={updateSort}
-                onFilterModelChange={updateFilters}
-                rowSelection={selection}
-                onRowSelectionModelChange={setSelection}
-                filterModel={filterModel}
-                getRowId={getGridRowId}
-                onRowClick={onRowClick}
-                slots={{
-                    headerFilterMenu: false,
-                    toolbar: CustomToolbar,
-                    footer: Footer
-                }}
-                slotProps={{
-                    footer: {
-                        pagination: true,
-                        apiRef,
-                        tTranslate: tTranslate
-                    },
-                    panel: {
-                        placement: "bottom-end"
-                    },
-                }}
-                hideFooterSelectedRowCount={rowsSelected}
-                density="compact"
-                disableDensitySelector={true}
-                apiRef={apiRef}
-                disableAggregation={true}
-                disableRowGrouping={true}
-                disableRowSelectionOnClick={disableRowSelectionOnClick}
-                initialState={{
-                    columns: {
-                        columnVisibilityModel: visibilityModel
-                    },
-                    pinnedColumns: pinnedColumns
-                }}
-                localeText={{
-                    noRowsLabel: t('No data', tOpts),
-                    footerTotalRows: `${t('Total rows', tOpts)}:`,
-                    MuiTablePagination: {
-                        labelRowsPerPage: t('Rows per page', tOpts),
-                        labelDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
-                    },
-                    toolbarQuickFilterPlaceholder: t(model?.searchPlaceholder || 'Search...', tOpts),
-                    toolbarColumns: t('Columns', tOpts),
-                    toolbarFilters: t('Filters', tOpts),
-                    toolbarExport: t('Export', tOpts),
-                    filterPanelAddFilter: t('Add filter', tOpts),
-                    filterPanelRemoveAll: t('Remove all', tOpts),
-                    filterPanelDeleteIconLabel: t('Delete', tOpts),
-                    filterPanelColumns: t('Columns', tOpts),
-                    filterPanelOperator: t('Operator', tOpts),
-                    filterPanelValue: t('Value', tOpts),
-                    filterPanelInputLabel: t('Value', tOpts),
-                    filterPanelInputPlaceholder: t('Filter value', tOpts),
-                    columnMenuLabel: t('Menu', tOpts),
-                    columnMenuShowColumns: t('Show columns', tOpts),
-                    columnMenuManageColumns: t('Manage columns', tOpts),
-                    columnMenuFilter: t('Filter', tOpts),
-                    columnMenuHideColumn: t('Hide column', tOpts),
-                    columnMenuManagePivot: t('Manage pivot', tOpts),
-                    toolbarColumnsLabel: t('Select columns', tOpts),
-                    toolbarExportLabel: t('Export', tOpts),
-                    pivotDragToColumns: t('Drag here to pivot by', tOpts),
-                    pivotDragToRows: t('Drag here to group by', tOpts),
-                    pivotDragToValues: t('Drag here to create values', tOpts),
-                    pivotColumns: t('Pivot columns', tOpts),
-                    pivotRows: t('Row groups', tOpts),
-                    pivotValues: t('Values', tOpts),
-                    pivotMenuRows: t('Rows', tOpts),
-                    pivotMenuColumns: t('Columns', tOpts),
-                    pivotMenuValues: t('Values', tOpts),
-                    pivotToggleLabel: t('Pivot', tOpts),
-                    pivotSearchControlPlaceholder: t('Search pivot columns', tOpts),
-                    columnMenuUnsort: t('Unsort', tOpts),
-                    columnMenuSortAsc: t('Sort by ascending', tOpts),
-                    columnMenuSortDesc: t('Sort by descending', tOpts),
-                    columnMenuUnpin: t('Unpin', tOpts),
-                    columnsPanelTextFieldLabel: t('Find column', tOpts),
-                    columnsPanelTextFieldPlaceholder: t('Column title', tOpts),
-                    columnsPanelHideAllButton: t('Hide all', tOpts),
-                    columnsPanelShowAllButton: t('Show all', tOpts),
-                    pinToLeft: t('Pin to left', tOpts),
-                    pinToRight: t('Pin to right', tOpts),
-                    unpin: t('Unpin', tOpts),
-                    filterValueAny: t('any', tOpts),
-                    filterValueTrue: t('true', tOpts),
-                    filterValueFalse: t('false', tOpts),
-                    filterOperatorIs: t('is', tOpts),
-                    filterOperatorNot: t('is not', tOpts),
-                    filterOperatorIsAnyOf: t('is any of', tOpts),
-                    filterOperatorContains: t('contains', tOpts),
-                    filterOperatorDoesNotContain: t('does not contain', tOpts),
-                    filterOperatorEquals: t('equals', tOpts),
-                    filterOperatorDoesNotEqual: t('does not equal', tOpts),
-                    filterOperatorStartsWith: t('starts with', tOpts),
-                    filterOperatorEndsWith: t('ends with', tOpts),
-                    filterOperatorIsEmpty: t('is empty', tOpts),
-                    filterOperatorIsNotEmpty: t('is not empty', tOpts),
-                    filterOperatorAfter: t('is after', tOpts),
-                    filterOperatorOnOrAfter: t('is on or after', tOpts),
-                    filterOperatorBefore: t('is before', tOpts),
-                    filterOperatorOnOrBefore: t('is on or before', tOpts),
-                    toolbarFiltersTooltipHide: t('Hide filters', tOpts),
-                    toolbarFiltersTooltipShow: t('Show filters', tOpts),
+        <div style={gridStyle || customStyle}>
+            <Box sx={{ maxHeight: '75vh' }}>
+                <DataGridPremium
+                    headerFilters={showHeaderFilters}
+                    checkboxSelection={forAssignment}
+                    loading={isLoading}
+                    showToolbar={true}
+                    className="pagination-fix"
+                    onCellClick={onCellClickHandler}
+                    onCellDoubleClick={onCellDoubleClick}
+                    columns={gridColumns}
+                    paginationModel={paginationModel}
+                    pageSizeOptions={[5, 10, 20, 50, 100]}
+                    onPaginationModelChange={setPaginationModel}
+                    pagination
+                    rowCount={data.recordCount}
+                    rows={data.records}
+                    sortModel={sortModel}
+                    paginationMode={isClient}
+                    sortingMode={isClient}
+                    filterMode={isClient}
+                    keepNonExistentRowsSelected
+                    onSortModelChange={updateSort}
+                    onFilterModelChange={updateFilters}
+                    rowSelection={selection}
+                    onRowSelectionModelChange={setSelection}
+                    filterModel={filterModel}
+                    getRowId={getGridRowId}
+                    onRowClick={onRowClick}
+                    slots={{
+                        headerFilterMenu: false,
+                        toolbar: CustomToolbar,
+                        footer: Footer
+                    }}
+                    slotProps={{
+                        footer: {
+                            pagination: true,
+                            apiRef,
+                            tTranslate: tTranslate
+                        },
+                        panel: {
+                            placement: "bottom-end"
+                        },
+                    }}
+                    hideFooterSelectedRowCount={rowsSelected}
+                    density="compact"
+                    disableDensitySelector={true}
+                    apiRef={apiRef}
+                    disableAggregation={true}
+                    disableRowGrouping={true}
+                    disableRowSelectionOnClick={disableRowSelectionOnClick}
+                    initialState={{
+                        columns: {
+                            columnVisibilityModel: visibilityModel
+                        },
+                        pinnedColumns: pinnedColumns
+                    }}
+                    localeText={{
+                        noRowsLabel: t('No data', tOpts),
+                        footerTotalRows: `${t('Total rows', tOpts)}:`,
+                        MuiTablePagination: {
+                            labelRowsPerPage: t('Rows per page', tOpts),
+                            labelDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
+                        },
+                        toolbarQuickFilterPlaceholder: t(model?.searchPlaceholder || 'Search...', tOpts),
+                        toolbarColumns: t('Columns', tOpts),
+                        toolbarFilters: t('Filters', tOpts),
+                        toolbarExport: t('Export', tOpts),
+                        filterPanelAddFilter: t('Add filter', tOpts),
+                        filterPanelRemoveAll: t('Remove all', tOpts),
+                        filterPanelDeleteIconLabel: t('Delete', tOpts),
+                        filterPanelColumns: t('Columns', tOpts),
+                        filterPanelOperator: t('Operator', tOpts),
+                        filterPanelValue: t('Value', tOpts),
+                        filterPanelInputLabel: t('Value', tOpts),
+                        filterPanelInputPlaceholder: t('Filter value', tOpts),
+                        columnMenuLabel: t('Menu', tOpts),
+                        columnMenuShowColumns: t('Show columns', tOpts),
+                        columnMenuManageColumns: t('Manage columns', tOpts),
+                        columnMenuFilter: t('Filter', tOpts),
+                        columnMenuHideColumn: t('Hide column', tOpts),
+                        columnMenuManagePivot: t('Manage pivot', tOpts),
+                        toolbarColumnsLabel: t('Select columns', tOpts),
+                        toolbarExportLabel: t('Export', tOpts),
+                        pivotDragToColumns: t('Drag here to pivot by', tOpts),
+                        pivotDragToRows: t('Drag here to group by', tOpts),
+                        pivotDragToValues: t('Drag here to create values', tOpts),
+                        pivotColumns: t('Pivot columns', tOpts),
+                        pivotRows: t('Row groups', tOpts),
+                        pivotValues: t('Values', tOpts),
+                        pivotMenuRows: t('Rows', tOpts),
+                        pivotMenuColumns: t('Columns', tOpts),
+                        pivotMenuValues: t('Values', tOpts),
+                        pivotToggleLabel: t('Pivot', tOpts),
+                        pivotSearchControlPlaceholder: t('Search pivot columns', tOpts),
+                        columnMenuUnsort: t('Unsort', tOpts),
+                        columnMenuSortAsc: t('Sort by ascending', tOpts),
+                        columnMenuSortDesc: t('Sort by descending', tOpts),
+                        columnMenuUnpin: t('Unpin', tOpts),
+                        columnsPanelTextFieldLabel: t('Find column', tOpts),
+                        columnsPanelTextFieldPlaceholder: t('Column title', tOpts),
+                        columnsPanelHideAllButton: t('Hide all', tOpts),
+                        columnsPanelShowAllButton: t('Show all', tOpts),
+                        pinToLeft: t('Pin to left', tOpts),
+                        pinToRight: t('Pin to right', tOpts),
+                        unpin: t('Unpin', tOpts),
+                        filterValueAny: t('any', tOpts),
+                        filterValueTrue: t('true', tOpts),
+                        filterValueFalse: t('false', tOpts),
+                        filterOperatorIs: t('is', tOpts),
+                        filterOperatorNot: t('is not', tOpts),
+                        filterOperatorIsAnyOf: t('is any of', tOpts),
+                        filterOperatorContains: t('contains', tOpts),
+                        filterOperatorDoesNotContain: t('does not contain', tOpts),
+                        filterOperatorEquals: t('equals', tOpts),
+                        filterOperatorDoesNotEqual: t('does not equal', tOpts),
+                        filterOperatorStartsWith: t('starts with', tOpts),
+                        filterOperatorEndsWith: t('ends with', tOpts),
+                        filterOperatorIsEmpty: t('is empty', tOpts),
+                        filterOperatorIsNotEmpty: t('is not empty', tOpts),
+                        filterOperatorAfter: t('is after', tOpts),
+                        filterOperatorOnOrAfter: t('is on or after', tOpts),
+                        filterOperatorBefore: t('is before', tOpts),
+                        filterOperatorOnOrBefore: t('is on or before', tOpts),
+                        toolbarFiltersTooltipHide: t('Hide filters', tOpts),
+                        toolbarFiltersTooltipShow: t('Show filters', tOpts),
 
-                    //filter textfield labels
-                    headerFilterOperatorContains: t('contains', tOpts),
-                    headerFilterOperatorEquals: t('equals', tOpts),
-                    headerFilterOperatorStartsWith: t('starts with', tOpts),
-                    headerFilterOperatorEndsWith: t('ends with', tOpts),
-                    headerFilterOperatorIsEmpty: t('is empty', tOpts),
-                    headerFilterOperatorIsNotEmpty: t('is not empty', tOpts),
-                    headerFilterOperatorAfter: t('is after', tOpts),
-                    headerFilterOperatorOnOrAfter: t('is on or after', tOpts),
-                    headerFilterOperatorBefore: t('is before', tOpts),
-                    headerFilterOperatorOnOrBefore: t('is on or before', tOpts),
-                    headerFilterOperatorIs: t('is', tOpts),
-                    'headerFilterOperator=': t('equals', tOpts),
-                    'headerFilterOperator!=': t('does not equal', tOpts),
-                    'headerFilterOperator>': t('greater than', tOpts),
-                    'headerFilterOperator>=': t('greater than or equal to', tOpts),
-                    'headerFilterOperator<': t('less than', tOpts),
-                    'headerFilterOperator<=': t('less than or equal to', tOpts),
-                    columnsManagementSearchTitle: t('Search', tOpts),
-                    columnsManagementNoColumns: t('No columns', tOpts),
-                    paginationRowsPerPage: t('Rows per page', tOpts),
-                    paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
-                    toolbarQuickFilterLabel: t('Search', tOpts),
-                    toolbarFiltersTooltipActive: (count) => `${count} ${t(`active filter${count > 1 ? 's' : ''}`, tOpts)}`,
-                    columnHeaderSortIconLabel: t('Sort', tOpts),
-                    filterPanelOperatorAnd: t('And', tOpts),
-                    filterPanelOperatorOr: t('Or', tOpts),
-                    noResultsOverlayLabel: t('No results found', tOpts),
-                    columnHeaderFiltersTooltipActive: (count) => `${count} ${t(count === 1 ? 'active filter' : 'active filters', tOpts)}`,
-                    detailPanelToggle: t("Detail panel toggle", tOpts),
-                    checkboxSelectionHeaderName: t('Checkbox selection', tOpts),
-                    columnsManagementShowHideAllText: t('Show/Hide all', tOpts),
-                    noColumnsOverlayLabel: t('No columns', tOpts),
-                    noColumnsOverlayManageColumns: t('Manage columns', tOpts),
-                    columnsManagementReset: t('Reset', tOpts),
-                    groupColumn: (name) => `${t('Group by', tOpts)} ${name}`,
-                    unGroupColumn: (name) => `${t('Ungroup', tOpts)} ${name}`,
-                    footerRowSelected: (count) =>
-                        count !== 1
-                            ? `${count.toLocaleString()} ${t('items selected', tOpts)}`
-                            : `1 ${t('item selected', tOpts)}`,
-                }}
-                columnHeaderHeight={70}
-                sx={{
-                    "& .MuiDataGrid-toolbarContainer": {
-                        flexShrink: 0,
-                        marginTop: 1,
-                        borderBottom: 'none !important'
-                    }
-                }}
-            />
+                        //filter textfield labels
+                        headerFilterOperatorContains: t('contains', tOpts),
+                        headerFilterOperatorEquals: t('equals', tOpts),
+                        headerFilterOperatorStartsWith: t('starts with', tOpts),
+                        headerFilterOperatorEndsWith: t('ends with', tOpts),
+                        headerFilterOperatorIsEmpty: t('is empty', tOpts),
+                        headerFilterOperatorIsNotEmpty: t('is not empty', tOpts),
+                        headerFilterOperatorAfter: t('is after', tOpts),
+                        headerFilterOperatorOnOrAfter: t('is on or after', tOpts),
+                        headerFilterOperatorBefore: t('is before', tOpts),
+                        headerFilterOperatorOnOrBefore: t('is on or before', tOpts),
+                        headerFilterOperatorIs: t('is', tOpts),
+                        'headerFilterOperator=': t('equals', tOpts),
+                        'headerFilterOperator!=': t('does not equal', tOpts),
+                        'headerFilterOperator>': t('greater than', tOpts),
+                        'headerFilterOperator>=': t('greater than or equal to', tOpts),
+                        'headerFilterOperator<': t('less than', tOpts),
+                        'headerFilterOperator<=': t('less than or equal to', tOpts),
+                        columnsManagementSearchTitle: t('Search', tOpts),
+                        columnsManagementNoColumns: t('No columns', tOpts),
+                        paginationRowsPerPage: t('Rows per page', tOpts),
+                        paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
+                        toolbarQuickFilterLabel: t('Search', tOpts),
+                        toolbarFiltersTooltipActive: (count) => `${count} ${t(`active filter${count > 1 ? 's' : ''}`, tOpts)}`,
+                        columnHeaderSortIconLabel: t('Sort', tOpts),
+                        filterPanelOperatorAnd: t('And', tOpts),
+                        filterPanelOperatorOr: t('Or', tOpts),
+                        noResultsOverlayLabel: t('No results found', tOpts),
+                        columnHeaderFiltersTooltipActive: (count) => `${count} ${t(count === 1 ? 'active filter' : 'active filters', tOpts)}`,
+                        detailPanelToggle: t("Detail panel toggle", tOpts),
+                        checkboxSelectionHeaderName: t('Checkbox selection', tOpts),
+                        columnsManagementShowHideAllText: t('Show/Hide all', tOpts),
+                        noColumnsOverlayLabel: t('No columns', tOpts),
+                        noColumnsOverlayManageColumns: t('Manage columns', tOpts),
+                        columnsManagementReset: t('Reset', tOpts),
+                        groupColumn: (name) => `${t('Group by', tOpts)} ${name}`,
+                        unGroupColumn: (name) => `${t('Ungroup', tOpts)} ${name}`,
+                        footerRowSelected: (count) =>
+                            count !== 1
+                                ? `${count.toLocaleString()} ${t('items selected', tOpts)}`
+                                : `1 ${t('item selected', tOpts)}`,
+                    }}
+                    columnHeaderHeight={70}
+                    sx={{
+                        "& .MuiDataGrid-toolbarContainer": {
+                            flexShrink: 0,
+                            marginTop: 1,
+                            borderBottom: 'none !important'
+                        }
+                    }}
+                />
+            </Box>
             {isOrderDetailModalOpen && selectedOrder && model.OrderModal && (
                 <model.OrderModal
                     orderId={selectedOrder.OrderId}
@@ -1024,7 +1026,7 @@ const GridBase = memo(({
             {errorMessage && (<DialogComponent open={!!errorMessage} onConfirm={clearError} onCancel={clearError} title="Info" hideCancelButton={true} > {errorMessage}</DialogComponent>)
             }
             {isDeleting && !errorMessage && (<DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => setIsDeleting(false)} title="Confirm Delete"> {`${'Are you sure you want to delete'} ${record?.name}?`}</DialogComponent>)}
-        </Box >
+        </div >
     );
 }, areEqual);
 

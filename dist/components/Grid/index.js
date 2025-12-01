@@ -993,7 +993,10 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), /*#__PURE__*/_react.default.createElement(_Button.default, {
       startIcon: /*#__PURE__*/_react.default.createElement(_FilterListOff.default, null),
       onClick: clearFilters,
-      size: "small"
+      size: "small",
+      sx: {
+        width: 'max-content'
+      }
     }, tTranslate("CLEAR FILTER", tOpts)), effectivePermissions.export && /*#__PURE__*/_react.default.createElement(CustomExportButton, {
       tTranslate: tTranslate,
       tOpts: tOpts,
@@ -1164,8 +1167,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     });
     setSortModel(sort);
   };
-  return /*#__PURE__*/_react.default.createElement(_Box.default, {
-    style: gridStyle || customStyle,
+  return /*#__PURE__*/_react.default.createElement("div", {
+    style: gridStyle || customStyle
+  }, /*#__PURE__*/_react.default.createElement(_Box.default, {
     sx: {
       maxHeight: '75vh'
     }
@@ -1354,7 +1358,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         borderBottom: 'none !important'
       }
     }
-  }), isOrderDetailModalOpen && selectedOrder && model.OrderModal && /*#__PURE__*/_react.default.createElement(model.OrderModal, {
+  })), isOrderDetailModalOpen && selectedOrder && model.OrderModal && /*#__PURE__*/_react.default.createElement(model.OrderModal, {
     orderId: selectedOrder.OrderId,
     isOpen: true,
     orderTotal: selectedOrder.OrderTotal,
