@@ -15,7 +15,6 @@ const CustomToolbar = function (props) {
         customHeaderComponent,
         currentPreference,
         isReadOnly,
-        modelPermissions,
         forAssignment,
         showAddIcon,
         showCreateButton,
@@ -50,16 +49,16 @@ const CustomToolbar = function (props) {
                 {model.hasCustomHeaderComponent && customHeaderComponent}
                 {model.gridSubTitle && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }}> {t(model.gridSubTitle, tOpts)}</Typography>}
                 {(currentPreference?.[model.preferenceId] && model.preferenceId) && <Typography className="preference-name-text" variant="h6" component="h6" textAlign="center" sx={{ ml: 1 }} > {t(currentPreference?.[model.preferenceId], tOpts)}</Typography>}
-                {(isReadOnly || (!modelPermissions.add && !forAssignment) && !model.hideSubTitle) && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }} > {isReadOnly ? "" : t(model.title, tOpts)}</Typography>}
-                {!forAssignment && modelPermissions.add && !isReadOnly && !showCreateButton && (<Button startIcon={showAddIcon ? <AddIcon /> : null} onClick={onAdd} size="medium" variant="contained" className={classes.buttons} >{model?.customAddTextTitle ? t(model.customAddTextTitle, tOpts) : ` ${showAddIcon ? `${t("Add", tOpts)}` : ""} ${t(model.title, tOpts)}`}</Button>)}
+                {(isReadOnly || (!effectivePermissions?.add && !forAssignment) && !model.hideSubTitle) && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }} > {isReadOnly ? "" : t(model.title, tOpts)}</Typography>}
+                {!forAssignment && effectivePermissions?.add && !isReadOnly && !showCreateButton && (<Button startIcon={showAddIcon ? <AddIcon /> : null} onClick={onAdd} size="medium" variant="contained" className={classes.buttons} >{model?.customAddTextTitle ? t(model.customAddTextTitle, tOpts) : ` ${showAddIcon ? `${t("Add", tOpts)}` : ""} ${t(model.title, tOpts)}`}</Button>)}
                 {available && <Button startIcon={!showAddIcon ? null : <AddIcon />} onClick={onAssign} size="medium" variant="contained" className={classes.buttons}  >{t("Assign", tOpts)}</Button>}
                 {assigned && !(model?.childTabs || model?.isChildGrid) && <Button startIcon={!showAddIcon ? null : <RemoveIcon />} onClick={onUnassign} size="medium" variant="contained" className={classes.buttons}  >{t("Remove", tOpts)}</Button>}
             </div>
             <GridToolbarContainer>
                 <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '100%' }}>
-                    {modelPermissions.columns && <GridToolbarColumnsButton />}
-                    {modelPermissions.filter && <GridToolbarFilterButton />}
-                    {modelPermissions.filter && <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{t("CLEAR FILTER", tOpts)}</Button>}
+                    {effectivePermissions?.columns && <GridToolbarColumnsButton />}
+                    {effectivePermissions?.filter && <GridToolbarFilterButton />}
+                    {effectivePermissions?.filter && <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{t("CLEAR FILTER", tOpts)}</Button>}
                     {effectivePermissions.export && (
                         <CustomExportButton tTranslate={tTranslate} tOpts={tOpts} handleExport={handleExport} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} />
                     )}

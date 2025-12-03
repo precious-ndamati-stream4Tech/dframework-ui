@@ -23,7 +23,6 @@ const CustomToolbar = function CustomToolbar(props) {
     customHeaderComponent,
     currentPreference,
     isReadOnly,
-    modelPermissions,
     forAssignment,
     showAddIcon,
     showCreateButton,
@@ -70,14 +69,14 @@ const CustomToolbar = function CustomToolbar(props) {
     sx: {
       ml: 1
     }
-  }, " ", t(currentPreference === null || currentPreference === void 0 ? void 0 : currentPreference[model.preferenceId], tOpts)), (isReadOnly || !modelPermissions.add && !forAssignment && !model.hideSubTitle) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
+  }, " ", t(currentPreference === null || currentPreference === void 0 ? void 0 : currentPreference[model.preferenceId], tOpts)), (isReadOnly || !(effectivePermissions !== null && effectivePermissions !== void 0 && effectivePermissions.add) && !forAssignment && !model.hideSubTitle) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
     variant: "h6",
     component: "h3",
     textAlign: "center",
     sx: {
       ml: 1
     }
-  }, " ", isReadOnly ? "" : t(model.title, tOpts)), !forAssignment && modelPermissions.add && !isReadOnly && !showCreateButton && /*#__PURE__*/_react.default.createElement(_Button.default, {
+  }, " ", isReadOnly ? "" : t(model.title, tOpts)), !forAssignment && (effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.add) && !isReadOnly && !showCreateButton && /*#__PURE__*/_react.default.createElement(_Button.default, {
     startIcon: showAddIcon ? /*#__PURE__*/_react.default.createElement(_Add.default, null) : null,
     onClick: onAdd,
     size: "medium",
@@ -103,7 +102,7 @@ const CustomToolbar = function CustomToolbar(props) {
       alignItems: 'center',
       width: '100%'
     }
-  }, modelPermissions.columns && /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), modelPermissions.filter && /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), modelPermissions.filter && /*#__PURE__*/_react.default.createElement(_Button.default, {
+  }, (effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.columns) && /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), (effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.filter) && /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), (effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.filter) && /*#__PURE__*/_react.default.createElement(_Button.default, {
     startIcon: /*#__PURE__*/_react.default.createElement(_FilterListOff.default, null),
     onClick: clearFilters,
     size: "small",
