@@ -865,7 +865,9 @@ const GridBase = memo(({
                             setIsGridPreferenceFetched,
                             initialGridRef,
                             setIsLoading,
-                            CustomExportButton
+                            CustomExportButton,
+                            effectivePermissions,
+                            tTranslate
                         },
                         footer: {
                             pagination: true,

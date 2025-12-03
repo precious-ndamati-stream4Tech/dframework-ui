@@ -39,7 +39,9 @@ const CustomToolbar = function (props) {
         setIsGridPreferenceFetched,
         initialGridRef,
         setIsLoading,
-        CustomExportButton
+        CustomExportButton,
+        effectivePermissions,
+        tTranslate
     } = props;
 
     return (
@@ -58,11 +60,11 @@ const CustomToolbar = function (props) {
                     {modelPermissions.columns && <GridToolbarColumnsButton />}
                     {modelPermissions.filter && <GridToolbarFilterButton />}
                     {modelPermissions.filter && <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{t("CLEAR FILTER", tOpts)}</Button>}
-                    {modelPermissions.export && (
-                        <CustomExportButton onExportMenuClick={onExportMenuClick} handleExport={handleExport} showInFieldStatusPivotExportBtn={model?.showInFieldStatusPivotExportBtn} showInstallationPivotExportBtn={model?.showInstallationPivotExportBtn} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} showExportWithDetails={model?.showExportWithDetails} hideExcelExport={hideExcelExport} hideXmlExport={hideXmlExport} hideHtmlExport={hideHtmlExport} hideJsonExport={hideJsonExport} showExportWithLatestData={model?.showExportWithLatestData} detailExportLabel={model?.detailExportLabel} t={t} tOpts={tOpts} />
+                    {effectivePermissions.export && (
+                        <CustomExportButton tTranslate={tTranslate} tOpts={tOpts} handleExport={handleExport} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} />
                     )}
                     {model.preferenceId &&
-                        <GridPreferences gridRef={apiRef} columns={gridColumns} setIsGridPreferenceFetched={setIsGridPreferenceFetched} model={model} initialGridRef={initialGridRef} setIsLoading={setIsLoading} />
+                       <GridPreferences tTranslate={tTranslate} gridRef={apiRef} columns={gridColumns} setIsGridPreferenceFetched={setIsGridPreferenceFetched} model={model} initialGridRef={initialGridRef} setIsLoading={setIsLoading} />
                     }
                 </Box>
             </GridToolbarContainer>

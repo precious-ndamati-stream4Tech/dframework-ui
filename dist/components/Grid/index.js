@@ -1152,7 +1152,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         setIsGridPreferenceFetched,
         initialGridRef,
         setIsLoading,
-        CustomExportButton
+        CustomExportButton,
+        effectivePermissions,
+        tTranslate
       },
       footer: {
         pagination: true,

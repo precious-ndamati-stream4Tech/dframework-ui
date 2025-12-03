@@ -47,7 +47,9 @@ const CustomToolbar = function CustomToolbar(props) {
     setIsGridPreferenceFetched,
     initialGridRef,
     setIsLoading,
-    CustomExportButton
+    CustomExportButton,
+    effectivePermissions,
+    tTranslate
   } = props;
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "grid-header-alignment"
@@ -108,23 +110,14 @@ const CustomToolbar = function CustomToolbar(props) {
     sx: {
       width: 'max-content'
     }
-  }, t("CLEAR FILTER", tOpts)), modelPermissions.export && /*#__PURE__*/_react.default.createElement(CustomExportButton, {
-    onExportMenuClick: onExportMenuClick,
+  }, t("CLEAR FILTER", tOpts)), effectivePermissions.export && /*#__PURE__*/_react.default.createElement(CustomExportButton, {
+    tTranslate: tTranslate,
+    tOpts: tOpts,
     handleExport: handleExport,
-    showInFieldStatusPivotExportBtn: model === null || model === void 0 ? void 0 : model.showInFieldStatusPivotExportBtn,
-    showInstallationPivotExportBtn: model === null || model === void 0 ? void 0 : model.showInstallationPivotExportBtn,
     showPivotExportBtn: model === null || model === void 0 ? void 0 : model.showPivotExportBtn,
-    showOnlyExcelExport: model.showOnlyExcelExport,
-    showExportWithDetails: model === null || model === void 0 ? void 0 : model.showExportWithDetails,
-    hideExcelExport: hideExcelExport,
-    hideXmlExport: hideXmlExport,
-    hideHtmlExport: hideHtmlExport,
-    hideJsonExport: hideJsonExport,
-    showExportWithLatestData: model === null || model === void 0 ? void 0 : model.showExportWithLatestData,
-    detailExportLabel: model === null || model === void 0 ? void 0 : model.detailExportLabel,
-    t: t,
-    tOpts: tOpts
+    showOnlyExcelExport: model.showOnlyExcelExport
   }), model.preferenceId && /*#__PURE__*/_react.default.createElement(_GridPreference.default, {
+    tTranslate: tTranslate,
     gridRef: apiRef,
     columns: gridColumns,
     setIsGridPreferenceFetched: setIsGridPreferenceFetched,
