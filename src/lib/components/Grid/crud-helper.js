@@ -33,13 +33,13 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     const where = [];
     if (filterModel?.items?.length) {
         filterModel.items.forEach(filter => {
-            if (["isEmpty", "isNotEmpty"].includes(filter.operator) || filter.value) {
+            if (["isEmpty", "isNotEmpty"].includes(filter.operator) || filter.value || filter.value === false) {
                 const { field, operator, filterField } = filter;
                 let { value } = filter;
                 const column = gridColumns.filter((item) => item.field === filter.field);
                 const type = column[0]?.type;
                 if (type === 'boolean') {
-                    value = value === 'true' ? 1 : 0;
+                    value = Boolean(value) ? 1 : 0;
                 } else if (type === 'number') {
                     value = Array.isArray(value) ? value.filter(e => e) : value;
                 }

@@ -26,7 +26,6 @@ require("core-js/modules/esnext.iterator.for-each.js");
 require("core-js/modules/esnext.iterator.map.js");
 require("core-js/modules/esnext.json.parse.js");
 require("core-js/modules/web.dom-collections.iterator.js");
-var _Button = _interopRequireDefault(require("@mui/material/Button"));
 var _react = _interopRequireWildcard(require("react"));
 var _xDataGridPremium = require("@mui/x-data-grid-premium");
 var _Delete = _interopRequireDefault(require("@mui/icons-material/Delete"));
@@ -47,20 +46,19 @@ var _material = require("@mui/material");
 var _Check = _interopRequireDefault(require("@mui/icons-material/Check"));
 var _Close = _interopRequireDefault(require("@mui/icons-material/Close"));
 var _core = require("@material-ui/core");
-var _PageTitle = _interopRequireDefault(require("../PageTitle"));
 var _StateProvider = require("../useRouter/StateProvider");
 var _LocalizedDatePicker = _interopRequireDefault(require("./LocalizedDatePicker"));
 var _actions = _interopRequireDefault(require("../useRouter/actions"));
-var _GridPreference = _interopRequireDefault(require("./GridPreference"));
 var _CustomDropdownmenu = _interopRequireDefault(require("./CustomDropdownmenu"));
 var _reactI18next = require("react-i18next");
 var _iconsMaterial = require("@mui/icons-material");
 var _Box = _interopRequireDefault(require("@mui/material/Box"));
 var _utils = _interopRequireDefault(require("../utils"));
+var _CustomToolbar = _interopRequireDefault(require("./CustomToolbar"));
 const _excluded = ["row", "field", "id"],
   _excluded2 = ["filterField"];
-function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
+function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _objectWithoutProperties(e, t) { if (null == e) return {}; var o, r, i = _objectWithoutPropertiesLoose(e, t); if (Object.getOwnPropertySymbols) { var n = Object.getOwnPropertySymbols(e); for (r = 0; r < n.length; r++) o = n[r], -1 === t.indexOf(o) && {}.propertyIsEnumerable.call(e, o) && (i[o] = e[o]); } return i; }
 function _objectWithoutPropertiesLoose(r, e) { if (null == r) return {}; var t = {}; for (var n in r) if ({}.hasOwnProperty.call(r, n)) { if (-1 !== e.indexOf(n)) continue; t[n] = r[n]; } return t; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -232,6 +230,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     parentFilters,
     parent,
     where,
+    customHeaderComponent,
     title,
     showModal,
     OrderModal,
@@ -316,7 +315,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     hideBackButton = false,
     hideTopFilters = true,
     updatePageTitle = true,
-    isElasticScreen = false
+    isElasticScreen = false,
+    enablePivoting = false,
+    showCreateButton,
+    hideExcelExport = false,
+    hideXmlExport = false,
+    hideHtmlExport = false,
+    hideJsonExport = false
   } = model;
   const isReadOnly = model.readOnly === true;
   const isDoubleClicked = model.doubleClicked === false;
@@ -343,6 +348,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     Username
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
   const routesWithNoChildRoute = ((_stateData$gridSettin = stateData.gridSettings.permissions) === null || _stateData$gridSettin === void 0 ? void 0 : _stateData$gridSettin.routesWithNoChildRoute) || [];
+  const disablePivoting = !enablePivoting;
   const url = stateData === null || stateData === void 0 || (_stateData$gridSettin2 = stateData.gridSettings) === null || _stateData$gridSettin2 === void 0 || (_stateData$gridSettin2 = _stateData$gridSettin2.permissions) === null || _stateData$gridSettin2 === void 0 ? void 0 : _stateData$gridSettin2.Url;
   const withControllersUrl = stateData === null || stateData === void 0 || (_stateData$gridSettin3 = stateData.gridSettings) === null || _stateData$gridSettin3 === void 0 || (_stateData$gridSettin3 = _stateData$gridSettin3.permissions) === null || _stateData$gridSettin3 === void 0 ? void 0 : _stateData$gridSettin3.withControllersUrl;
   const currentPreference = stateData === null || stateData === void 0 ? void 0 : stateData.currentPreference;
@@ -925,83 +931,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       preferenceApi
     });
   }, []);
-  const CustomToolbar = function CustomToolbar(props) {
-    return /*#__PURE__*/_react.default.createElement("div", {
-      style: {
-        display: 'flex',
-        justifyContent: 'space-between'
-      }
-    }, model.gridSubTitle && /*#__PURE__*/_react.default.createElement(_Typography.default, {
-      variant: "h6",
-      component: "h3",
-      textAlign: "center",
-      sx: {
-        ml: 1
-      }
-    }, " ", tTranslate(model.gridSubTitle, tOpts)), currentPreference && /*#__PURE__*/_react.default.createElement(_Typography.default, {
-      className: "preference-name-text",
-      variant: "h6",
-      component: "h6",
-      textAlign: "center",
-      sx: {
-        ml: 1
-      }
-    }, tTranslate('Applied Preference', tOpts), " - ", tTranslate(currentPreference, tOpts)), (isReadOnly || !effectivePermissions.add && !forAssignment) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
-      variant: "h6",
-      component: "h3",
-      textAlign: "center",
-      sx: {
-        ml: 1
-      }
-    }, " ", isReadOnly ? "" : model.title), !forAssignment && effectivePermissions.add && !isReadOnly && !showAddIcon && /*#__PURE__*/_react.default.createElement(_Button.default, {
-      startIcon: !showAddIcon ? null : /*#__PURE__*/_react.default.createElement(_Add.default, null),
-      onClick: onAdd,
-      size: "medium",
-      variant: "contained",
-      className: classes.buttons
-    }, model !== null && model !== void 0 && model.customAddTextTitle ? model.customAddTextTitle : " ".concat(!showAddIcon ? "" : "Add", " ").concat(model.title)), available && /*#__PURE__*/_react.default.createElement(_Button.default, {
-      startIcon: !showAddIcon ? null : /*#__PURE__*/_react.default.createElement(_Add.default, null),
-      onClick: onAssign,
-      size: "medium",
-      variant: "contained",
-      className: classes.buttons
-    }, "Assign"), assigned && /*#__PURE__*/_react.default.createElement(_Button.default, {
-      startIcon: !showAddIcon ? null : /*#__PURE__*/_react.default.createElement(_Remove.default, null),
-      onClick: onUnassign,
-      size: "medium",
-      variant: "contained",
-      className: classes.buttons
-    }, "Remove"), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarContainer, props, /*#__PURE__*/_react.default.createElement(_Box.default, {
-      sx: {
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 2,
-        alignItems: 'center',
-        width: '100%'
-      }
-    }, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarColumnsButton, null), /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarFilterButton, null), /*#__PURE__*/_react.default.createElement(_Button.default, {
-      startIcon: /*#__PURE__*/_react.default.createElement(_FilterListOff.default, null),
-      onClick: clearFilters,
-      size: "small",
-      sx: {
-        width: 'max-content'
-      }
-    }, tTranslate("CLEAR FILTER", tOpts)), effectivePermissions.export && /*#__PURE__*/_react.default.createElement(CustomExportButton, {
-      tTranslate: tTranslate,
-      tOpts: tOpts,
-      handleExport: handleExport,
-      showPivotExportBtn: model === null || model === void 0 ? void 0 : model.showPivotExportBtn,
-      showOnlyExcelExport: model.showOnlyExcelExport
-    }), model.preferenceId && /*#__PURE__*/_react.default.createElement(_GridPreference.default, {
-      tTranslate: tTranslate,
-      gridRef: apiRef,
-      columns: gridColumns,
-      setIsGridPreferenceFetched: setIsGridPreferenceFetched,
-      model: model,
-      initialGridRef: initialGridRef,
-      setIsLoading: setIsLoading
-    }))));
-  };
   const getGridRowId = row => {
     return row[idProperty];
   };
@@ -1179,6 +1108,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     paginationMode: isClient,
     sortingMode: isClient,
     filterMode: isClient,
+    disablePivoting: disablePivoting,
     keepNonExistentRowsSelected: true,
     onSortModelChange: updateSort,
     onFilterModelChange: updateFilters,
@@ -1189,10 +1119,40 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     onRowClick: onRowClick,
     slots: {
       headerFilterMenu: false,
-      toolbar: CustomToolbar,
+      toolbar: _CustomToolbar.default,
       footer: _footer.Footer
     },
     slotProps: {
+      toolbar: {
+        model,
+        customHeaderComponent,
+        currentPreference,
+        isReadOnly,
+        forAssignment,
+        showAddIcon,
+        showCreateButton,
+        available,
+        assigned,
+        t,
+        tOpts,
+        classes,
+        onAdd,
+        onAssign,
+        onUnassign,
+        clearFilters,
+        handleExport,
+        onExportMenuClick,
+        hideExcelExport,
+        hideXmlExport,
+        hideHtmlExport,
+        hideJsonExport,
+        apiRef,
+        gridColumns,
+        setIsGridPreferenceFetched,
+        initialGridRef,
+        setIsLoading,
+        CustomExportButton
+      },
       footer: {
         pagination: true,
         apiRef,
