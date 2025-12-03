@@ -14,7 +14,7 @@ var _xDataGridPremium = require("@mui/x-data-grid-premium");
 var _Add = _interopRequireDefault(require("@mui/icons-material/Add"));
 var _Remove = _interopRequireDefault(require("@mui/icons-material/Remove"));
 var _FilterListOff = _interopRequireDefault(require("@mui/icons-material/FilterListOff"));
-var _GridPreference = _interopRequireDefault(require("../GridPreference"));
+var _GridPreference = _interopRequireDefault(require("./GridPreference"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 // CustomToolbar component - defined outside GridBase to prevent remounting
 const CustomToolbar = function CustomToolbar(props) {

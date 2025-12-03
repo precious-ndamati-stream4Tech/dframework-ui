@@ -6,7 +6,7 @@ import { GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import FilterListOffIcon from '@mui/icons-material/FilterListOff';
-import GridPreferences from "../GridPreference";
+import GridPreferences from "./GridPreference";
 
 // CustomToolbar component - defined outside GridBase to prevent remounting
 const CustomToolbar = function (props) {
