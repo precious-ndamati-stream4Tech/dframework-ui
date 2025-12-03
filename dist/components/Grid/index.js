@@ -253,7 +253,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     gridStyle,
     reRenderKey,
     additionalFilters,
-    selectedClients = null
+    selectedClients = null,
+    onExportMenuClick
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,

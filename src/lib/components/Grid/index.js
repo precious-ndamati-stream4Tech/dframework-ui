@@ -165,6 +165,7 @@ const GridBase = memo(({
     reRenderKey,
     additionalFilters,
     selectedClients = null,
+    onExportMenuClick 
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
