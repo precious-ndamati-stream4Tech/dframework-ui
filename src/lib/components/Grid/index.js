@@ -248,7 +248,7 @@ const GridBase = memo(({
     const { pathname, navigate } = useRouter()
     const apiRef = useGridApiRef();
     const initialGridRef = useRef(null);
-    const { idProperty = "id", showHeaderFilters = true, disableRowSelectionOnClick = true, createdOnKeepLocal = true, hideBackButton = false, hideTopFilters = true, updatePageTitle = true, isElasticScreen = false, enablePivoting = false, showCreateButton, hideExcelExport = false, hideXmlExport = false, hideHtmlExport = false, hideJsonExport = false, disableRowGrouping = true, applyDefaultClientFilter = true } = model;
+    const { idProperty = "id", showHeaderFilters = true, disableRowSelectionOnClick = true, createdOnKeepLocal = true, hideBackButton = false, hideTopFilters = true, updatePageTitle = true, isElasticScreen = false, enablePivoting = false, showCreateButton, hideExcelExport = false, hideXmlExport = false, hideHtmlExport = false, hideJsonExport = false, disableRowGrouping = true, applyDefaultClientFilter = true, isPivotGrid = false, groupBy: modelGroupBy = '',  } = model;
     const isReadOnly = model.readOnly === true;
     const isDoubleClicked = model.doubleClicked === false;
     const dataRef = useRef(data);
@@ -805,8 +805,7 @@ const GridBase = memo(({
             exportFileName: t(model?.exportFileName || model?.title, tOpts),
             t,
             tOpts,
-            languageSelected: constants.supportedLanguageCodes[i18n.language || constants.defaultLanguage],
-            dispatchData
+            languageSelected: constants.supportedLanguageCodes[i18n.language || constants.defaultLanguage]
         });
     };
     const openForm = (id, { mode } = {}) => {
