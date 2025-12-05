@@ -1,10 +1,7 @@
-import Button from '@mui/material/Button';
+
 import React from 'react';
 import {
     DataGridPremium,
-    GridToolbarContainer,
-    GridToolbarColumnsButton,
-    GridToolbarFilterButton,
     GridToolbarExportContainer,
     getGridDateOperators,
     GRID_CHECKBOX_SELECTION_COL_DEF,
@@ -33,16 +30,15 @@ import { Tooltip } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { makeStyles } from "@material-ui/core";
-import PageTitle from '../PageTitle';
 import { useStateContext, useRouter } from '../useRouter/StateProvider';
 import LocalizedDatePicker from './LocalizedDatePicker';
 import actionsStateProvider from '../useRouter/actions';
-import GridPreferences from './GridPreference';
 import CustomDropdownmenu from './CustomDropdownmenu';
 import { useTranslation } from 'react-i18next';
 import { GridOn, Code, Language, TableChart, DataObject as DataObjectIcon } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import utils from '../utils';
+import CustomToolbar from './CustomToolbar';
 
 const defaultPageSize = 10;
 const t = utils.t;
@@ -145,6 +141,7 @@ const GridBase = memo(({
     parentFilters,
     parent,
     where,
+    customHeaderComponent,
     title,
     showModal,
     OrderModal,
@@ -168,6 +165,7 @@ const GridBase = memo(({
     reRenderKey,
     additionalFilters,
     selectedClients = null,
+    onExportMenuClick 
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -197,7 +195,7 @@ const GridBase = memo(({
     const { pathname, navigate } = useRouter()
     const apiRef = useGridApiRef();
     const initialGridRef = useRef(null);
-    const { idProperty = "id", showHeaderFilters = true, disableRowSelectionOnClick = true, createdOnKeepLocal = true, hideBackButton = false, hideTopFilters = true, updatePageTitle = true, isElasticScreen = false } = model;
+    const { idProperty = "id", showHeaderFilters = true, disableRowSelectionOnClick = true, createdOnKeepLocal = true, hideBackButton = false, hideTopFilters = true, updatePageTitle = true, isElasticScreen = false, enablePivoting = false, showCreateButton, hideExcelExport = false, hideXmlExport = false, hideHtmlExport = false, hideJsonExport = false } = model;
     const isReadOnly = model.readOnly === true;
     const isDoubleClicked = model.doubleClicked === false;
     const customExportRef = useRef();
@@ -211,6 +209,7 @@ const GridBase = memo(({
     const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
     const routesWithNoChildRoute = stateData.gridSettings.permissions?.routesWithNoChildRoute || [];
+    const disablePivoting = !enablePivoting;
     const url = stateData?.gridSettings?.permissions?.Url;
     const withControllersUrl = stateData?.gridSettings?.permissions?.withControllersUrl;
     const currentPreference = stateData?.currentPreference;
@@ -646,39 +645,6 @@ const GridBase = memo(({
         applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
     }, [])
 
-    const CustomToolbar = function (props) {
-
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between'
-                }}
-            >
-                {model.gridSubTitle && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }}> {tTranslate(model.gridSubTitle, tOpts)}</Typography>}
-                {currentPreference && <Typography className="preference-name-text" variant="h6" component="h6" textAlign="center" sx={{ ml: 1 }} >{tTranslate('Applied Preference', tOpts)} - {tTranslate(currentPreference, tOpts)}</Typography>}
-                {(isReadOnly || (!effectivePermissions.add && !forAssignment)) && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }} > {isReadOnly ? "" : model.title}</Typography>}
-                {!forAssignment && effectivePermissions.add && !isReadOnly && !showAddIcon && <Button startIcon={!showAddIcon ? null : <AddIcon />} onClick={onAdd} size="medium" variant="contained" className={classes.buttons} >{model?.customAddTextTitle ? model.customAddTextTitle : ` ${!showAddIcon ? "" : `${"Add"}`} ${model.title}`}</Button>}
-                {available && <Button startIcon={!showAddIcon ? null : <AddIcon />} onClick={onAssign} size="medium" variant="contained" className={classes.buttons}  >{"Assign"}</Button>}
-                {assigned && <Button startIcon={!showAddIcon ? null : <RemoveIcon />} onClick={onUnassign} size="medium" variant="contained" className={classes.buttons}  >{"Remove"}</Button>}
-
-                <GridToolbarContainer {...props}>
-                    <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, alignItems: 'center', width: '100%' }}>
-                    <GridToolbarColumnsButton />
-                    <GridToolbarFilterButton />
-                    <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{tTranslate("CLEAR FILTER", tOpts)}</Button>
-                    {effectivePermissions.export && (
-                        <CustomExportButton tTranslate={tTranslate} tOpts={tOpts} handleExport={handleExport} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} />
-                    )}
-                    {model.preferenceId &&
-                        <GridPreferences tTranslate={tTranslate} gridRef={apiRef} columns={gridColumns} setIsGridPreferenceFetched={setIsGridPreferenceFetched} model={model} initialGridRef={initialGridRef} setIsLoading={setIsLoading} />
-                    }
-                    </Box>
-                </GridToolbarContainer>
-            </div >
-        );
-    };
-
     const getGridRowId = (row) => {
         return row[idProperty];
     };
@@ -818,6 +784,7 @@ const GridBase = memo(({
                     paginationMode={isClient}
                     sortingMode={isClient}
                     filterMode={isClient}
+                    disablePivoting={disablePivoting}
                     keepNonExistentRowsSelected
                     onSortModelChange={updateSort}
                     onFilterModelChange={updateFilters}
@@ -832,6 +799,38 @@ const GridBase = memo(({
                         footer: Footer
                     }}
                     slotProps={{
+                        toolbar: {
+                            model,
+                            customHeaderComponent,
+                            currentPreference,
+                            isReadOnly,
+                            forAssignment,
+                            showAddIcon,
+                            showCreateButton,
+                            available,
+                            assigned,
+                            t,
+                            tOpts,
+                            classes,
+                            onAdd,
+                            onAssign,
+                            onUnassign,
+                            clearFilters,
+                            handleExport,
+                            onExportMenuClick,
+                            hideExcelExport,
+                            hideXmlExport,
+                            hideHtmlExport,
+                            hideJsonExport,
+                            apiRef,
+                            gridColumns,
+                            setIsGridPreferenceFetched,
+                            initialGridRef,
+                            setIsLoading,
+                            CustomExportButton,
+                            effectivePermissions,
+                            tTranslate
+                        },
                         footer: {
                             pagination: true,
                             apiRef,

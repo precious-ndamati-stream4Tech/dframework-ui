@@ -98,7 +98,7 @@ const getList = async _ref => {
   const where = [];
   if (filterModel !== null && filterModel !== void 0 && (_filterModel$items = filterModel.items) !== null && _filterModel$items !== void 0 && _filterModel$items.length) {
     filterModel.items.forEach(filter => {
-      if (["isEmpty", "isNotEmpty"].includes(filter.operator) || filter.value) {
+      if (["isEmpty", "isNotEmpty"].includes(filter.operator) || filter.value || filter.value === false) {
         var _column$;
         const {
           field,
@@ -111,7 +111,7 @@ const getList = async _ref => {
         const column = gridColumns.filter(item => item.field === filter.field);
         const type = (_column$ = column[0]) === null || _column$ === void 0 ? void 0 : _column$.type;
         if (type === 'boolean') {
-          value = value === 'true' ? 1 : 0;
+          value = Boolean(value) ? 1 : 0;
         } else if (type === 'number') {
           value = Array.isArray(value) ? value.filter(e => e) : value;
         }
