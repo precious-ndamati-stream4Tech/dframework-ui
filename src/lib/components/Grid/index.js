@@ -102,8 +102,8 @@ ExportMenuItem.propTypes = {
     hideMenu: PropTypes.func
 };
 
-const CustomExportButton = (props) => {
-    const { t, tOpts } = props;
+const CustomExportButton = (props, t) => {
+    const { tOpts } = props;
     return (
         <GridToolbarExportContainer {...props}>
             {props?.showOnlyExcelExport !== true && <ExportMenuItem {...props} icon={<GridOn fontSize="small" />} type="CSV" contentType={constants.exportTypes.CSV} />}

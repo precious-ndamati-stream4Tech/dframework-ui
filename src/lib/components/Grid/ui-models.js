@@ -4,6 +4,7 @@ import * as yup from 'yup';
 import Paper from '@mui/material/Paper';
 import { Divider } from '@mui/material';
 import Form from '../Form/Form';
+import utils from '../utils';
 
 
 const nonAlphaNumeric = /[^a-zA-Z0-9]/g;
@@ -103,7 +104,7 @@ class UiModel {
   }
 
   Grid = ({ match, ...props }) => {
-    return <Paper><GridBase model={this} showRowsSelected={showRowsSelected} {...props} /></Paper>
+    return <Paper><GridBase model={this} showRowsSelected={showRowsSelected} {...props} t={utils.t} /></Paper>
   }
   ChildGrid = (props) => {
     return <>

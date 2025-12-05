@@ -159,9 +159,8 @@ const ExportMenuItem = _ref => {
 ExportMenuItem.propTypes = {
   hideMenu: _propTypes.default.func
 };
-const CustomExportButton = props => {
+const CustomExportButton = (props, t) => {
   const {
-    t,
     tOpts
   } = props;
   return /*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridToolbarExportContainer, props, (props === null || props === void 0 ? void 0 : props.showOnlyExcelExport) !== true && /*#__PURE__*/_react.default.createElement(ExportMenuItem, _extends({}, props, {
