@@ -344,6 +344,14 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const snackbar = (0, _index.useSnackbar)();
   const isClient = model.isClient === true ? 'client' : 'server';
   const [errorMessage, setErrorMessage] = (0, _react.useState)('');
+  const {
+    stateData,
+    dispatchData,
+    formatDate,
+    removeCurrentPreferenceName,
+    getAllSavedPreferences,
+    applyDefaultPreferenceIfExists
+  } = (0, _StateProvider.useStateContext)();
   const userData = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
   const globalHeaderFilters = stateData !== null && stateData !== void 0 && stateData.gridExternalFilters ? stateData.gridExternalFilters : {};
   const {
@@ -405,14 +413,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const toLink = model.columns.map(item => item.link);
   const [isGridPreferenceFetched, setIsGridPreferenceFetched] = (0, _react.useState)(false);
   const classes = useStyles();
-  const {
-    stateData,
-    dispatchData,
-    formatDate,
-    removeCurrentPreferenceName,
-    getAllSavedPreferences,
-    applyDefaultPreferenceIfExists
-  } = (0, _StateProvider.useStateContext)();
   const effectivePermissions = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), model.permissions), permissions);
   const {
     ClientId

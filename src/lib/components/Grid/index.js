@@ -211,6 +211,7 @@ const GridBase = memo(({
     const snackbar = useSnackbar();
     const isClient = model.isClient === true ? 'client' : 'server';
     const [errorMessage, setErrorMessage] = useState('');
+    const { stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
     const userData = stateData?.getUserData ? stateData.getUserData : {};
     const globalHeaderFilters = stateData?.gridExternalFilters ? stateData.gridExternalFilters : {}; 
     const { IsSuperAdmin, ClientIds: tagsClientIds = '' } = stateData?.getUserData ? stateData.getUserData : {};
@@ -251,7 +252,6 @@ const GridBase = memo(({
     const toLink = model.columns.map(item => item.link);
     const [isGridPreferenceFetched, setIsGridPreferenceFetched] = useState(false);
     const classes = useStyles();
-    const { stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
     const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...model.permissions, ...permissions };
     const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
