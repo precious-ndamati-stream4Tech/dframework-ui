@@ -31,6 +31,7 @@ import LocalizedDatePicker from './LocalizedDatePicker';
 import actionsStateProvider from '../useRouter/actions';
 import CustomDropdownmenu from './CustomDropdownmenu';
 import { useTranslation } from 'react-i18next';
+import { v4 as uuidv4 } from 'uuid';
 import { GridOn, Code, Language, TableChart, DataObject as DataObjectIcon } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import utils from '../utils';
@@ -190,6 +191,9 @@ const GridBase = memo(({
     rowSelectionModel = undefined
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
+    const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
+    const [groupingModel, setGroupingModel] = useState([]);
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
     const [isLoading, setIsLoading] = useState(false);
     const forAssignment = !!onAssignChange;
@@ -267,6 +271,7 @@ const GridBase = memo(({
         OrderStatus: 'OrderStatusId'
     }
     const preferenceApi = stateData?.gridSettings?.permissions?.preferenceApi;
+    const groupingModelRef = React.useRef(null);
     const gridColumnTypes = {
         "radio": {
             "type": "singleSelect",

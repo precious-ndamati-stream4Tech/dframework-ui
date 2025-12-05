@@ -57,6 +57,7 @@ var _LocalizedDatePicker = _interopRequireDefault(require("./LocalizedDatePicker
 var _actions = _interopRequireDefault(require("../useRouter/actions"));
 var _CustomDropdownmenu = _interopRequireDefault(require("./CustomDropdownmenu"));
 var _reactI18next = require("react-i18next");
+var _uuid = require("uuid");
 var _iconsMaterial = require("@mui/icons-material");
 var _Box = _interopRequireDefault(require("@mui/material/Box"));
 var _utils = _interopRequireDefault(require("../utils"));
@@ -314,6 +315,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     pageSize: defaultPageSize,
     page: 0
   });
+  const [isOrderDetailModalOpen, setIsOrderDetailModalOpen] = (0, _react.useState)(false);
+  const [selectedOrder, setSelectedOrder] = (0, _react.useState)(null);
+  const [groupingModel, setGroupingModel] = (0, _react.useState)([]);
   const [data, setData] = (0, _react.useState)({
     recordCount: 0,
     records: [],
@@ -432,6 +436,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     OrderStatus: 'OrderStatusId'
   };
   const preferenceApi = stateData === null || stateData === void 0 || (_stateData$gridSettin4 = stateData.gridSettings) === null || _stateData$gridSettin4 === void 0 || (_stateData$gridSettin4 = _stateData$gridSettin4.permissions) === null || _stateData$gridSettin4 === void 0 ? void 0 : _stateData$gridSettin4.preferenceApi;
+  const groupingModelRef = _react.default.useRef(null);
   const gridColumnTypes = {
     "radio": {
       "type": "singleSelect",
@@ -1273,7 +1278,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   }, [isGridPreferenceFetched]);
   const getGridRowId = row => {
     const idValue = row[idProperty];
-    return idValue && idValue.toString().trim() !== "" ? idValue : uuidv4();
+    return idValue && idValue.toString().trim() !== "" ? idValue : (0, _uuid.v4)();
   };
   const handleExport = e => {
     if ((data === null || data === void 0 ? void 0 : data.recordCount) > recordCounts) {
