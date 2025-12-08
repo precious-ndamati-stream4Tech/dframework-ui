@@ -145,6 +145,12 @@ const GridPreferences = ({ t, model, gridRef, columns = [], setIsGridPreferenceF
         getAllSavedPreferences({ preferenceName, history: navigate, dispatchData, Username, preferenceApi });
     };
 
+    const gridColumns = [
+        { field: "prefName", type: 'string', width: 300, headerName: translate("Preference Name", tOpts), sortable: false, filterable: false },
+        { field: "prefDesc", type: 'string', width: 300, headerName: translate("Preference Description", tOpts), sortable: false, filterable: false },
+        { field: "isDefault", type: "boolean", width: 100, headerName: translate("Default", tOpts), sortable: false, filterable: false },
+    ];
+
     const deletePreference = async (id, prefName, isDefault) => {
         let params = {
             action: 'delete',
