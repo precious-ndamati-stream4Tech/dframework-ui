@@ -193,7 +193,10 @@ const GridBase = memo(({
     detailExportLabel = "Excel with Details",
     rowSelectionModel = undefined,
     GlobalFiltersComponent = null,
-    customApplyFunction = null
+    customApplyFunction = null,
+    globalHeaderFilters = [],
+    HeaderFiltersComponent = null,
+    updateParentFilters
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -256,6 +259,10 @@ const GridBase = memo(({
     const [parentGridFilter, setParentGridFilter] = useState({});
     const [childGridTitle, setChildGridTitle] = useState();
     const [showChildGrids, setShowChildGrids] = useState(false);
+    
+    // External header filters state
+    const [externalHeaderFilters, setExternalHeaderFilters] = useState(model?.initialHeaderFilters || {});
+    const [headerFilters, setHeaderFilters] = useState(model?.initialHeaderFilterValues || []);
 
     const OrderSuggestionHistoryFields = {
         OrderStatus: 'OrderStatusId'
@@ -623,9 +630,71 @@ const GridBase = memo(({
             finalFilters.items = [...finalFilters.items, ...additionalFilters];
         }
 
+        // Process external header filters
+        if (model?.initialHeaderFilterValues) {
+            const filtersWithIds = model.initialHeaderFilterValues.map((filter, index) => ({
+                ...filter,
+                id: filter.id || filter.field || `filter-${Date.now()}-${index}`
+            }));
+            finalFilters.items = [...finalFilters.items, ...filtersWithIds];
+        }
+
+        if (headerFilters?.length) {
+            const filtersWithIds = headerFilters.map((filter, index) => ({
+                ...filter,
+                id: filter.id || filter.field || `filter-${Date.now()}-${index}`
+            }));
+            finalFilters.items = [...finalFilters.items, ...filtersWithIds];
+        }
+
         // Handle client selection - if selectedClients is provided, use it; otherwise default to current ClientId
         const applyDefaultClientFilter = model.applyDefaultClientFilter !== false;
         let clientsSelected = (applyDefaultClientFilter && !selectedClients ? [Number(ClientId)] : selectedClients || []).filter(ele => ele !== 0);
+
+        const globalFilters = {};
+
+        // Process global filters if configuration exists
+        if ((model?.globalFilters?.filterConfig?.length || model?.addGlobalFilters) && globalHeaderFilters?.length) {
+            let updatedFilters = globalHeaderFilters;
+            if (model?.fieldsToRemoveFromGlobalFilter?.length) {
+                updatedFilters = globalHeaderFilters.filter(
+                    (ele) => !model.fieldsToRemoveFromGlobalFilter.includes(ele.field)
+                );
+            }
+            // Convert header filters array to object
+            Object.assign(globalFilters,
+                updatedFilters
+                    .filter(filter => !filter.isExternalFilter)
+                    .reduce((acc, { field, value }) => {
+                        acc[field] = value;
+                        return acc;
+                    }, {})
+            );
+
+            // Update client selection if ClientId exists in global filters
+            if ('ClientId' in globalFilters) {
+                clientsSelected = globalFilters.ClientId;
+            }
+        }
+
+        if (model?.globalFilters?.gridExternalFilters) {
+            const externalFilters = globalHeaderFilters.filter(filter => filter.isExternalFilter);
+            if (externalFilters?.length) {
+                finalFilters.items = [...finalFilters.items, ...externalFilters]
+            }
+        }
+        
+        // Process external header filters
+        if (model?.initialHeaderFilterValues) {
+            const headerFilterItems = headerFilters.map((filter, index) => ({
+                id: filter.id || filter.field || `filter-${Date.now()}-${index}`,
+                field: filter.field,
+                operator: filter.operator,
+                value: filter.value,
+                type: filter.type
+            }));
+            finalFilters.items = [...finalFilters.items, ...headerFilterItems];
+        }
 
         // Add client filter to extraParams if clients are selected
         if (clientsSelected && clientsSelected.length > 0 && model.isClient) {
@@ -658,6 +727,7 @@ const GridBase = memo(({
             history: navigate,
             baseFilters,
             isElasticExport,
+            globalFilters,
             tOpts,
             tTranslate
         });
@@ -681,6 +751,43 @@ const GridBase = memo(({
         }
         navigate(path);
     };
+    const externalFilterHandleChange = (event, operator, type) => {
+        const { name, value, label, isAutoComplete } = event.target;
+        const tempValue = isAutoComplete ? label : value;
+        const filters = { ...externalHeaderFilters, [name]: value };
+        const gridHeaderFilters = [...headerFilters];
+        const isFilterExistsIndex = gridHeaderFilters.findIndex(ele => ele.field === name);
+        if (isFilterExistsIndex > -1) {
+            gridHeaderFilters[isFilterExistsIndex] = { field: name, value: tempValue, operator, type };
+        } else {
+            gridHeaderFilters.push({ field: name, value: tempValue, operator, type });
+        }
+        setHeaderFilters(gridHeaderFilters);
+        setExternalHeaderFilters(filters);
+    }
+
+    const onExternalFiltersApplyClick = () => {
+        const initialValues = model?.initialHeaderFilters || {};
+        if (externalHeaderFilters !== initialValues) {
+            fetchData("list", {}, null, null, false, false);
+        }
+        if (updateParentFilters) {
+            updateParentFilters(externalHeaderFilters);
+        }
+    }
+
+    const onExternalFiltersResetClick = () => {
+        const initialValues = model?.initialHeaderFilters || {};
+        if (externalHeaderFilters !== initialValues) {
+            setExternalHeaderFilters(model?.initialHeaderFilters || {});
+            setHeaderFilters(model?.initialHeaderFilterValues || []);
+            fetchData("list", {}, null, null, false, false);
+            if (updateParentFilters) {
+                updateParentFilters(model?.initialHeaderFilters || {});
+            }
+        }
+    };
+    
     const onCellClickHandler = async (cellParams, event, details) => {
         // Call onCellClick and return early if result is not false
         if (onCellClick) {
@@ -1016,6 +1123,17 @@ const GridBase = memo(({
                     customApplyFunction={customApplyFunction}
                 />
             )}
+            {model?.externalHeaderFilters && HeaderFiltersComponent ? (
+                <div style={{ marginBottom: 10, display: 'flex', paddingTop: 10, paddingBottom: 10 }}>
+                    <HeaderFiltersComponent 
+                        model={model} 
+                        onHandleChange={externalFilterHandleChange} 
+                        values={externalHeaderFilters} 
+                        onApplyClick={onExternalFiltersApplyClick} 
+                        onResetClick={onExternalFiltersResetClick} 
+                    />
+                </div>
+            ) : null}
             <div style={gridStyle || customStyle}>
                 <Box className={`grid-parent-container`}>
                     <DataGridPremium

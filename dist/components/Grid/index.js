@@ -266,7 +266,7 @@ const convertDefaultSort = defaultSort => {
   return orderBy;
 };
 const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
-  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters;
+  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters3;
   let {
     useLinkColumn = true,
     model,
@@ -312,7 +312,10 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     detailExportLabel = "Excel with Details",
     rowSelectionModel = undefined,
     GlobalFiltersComponent = null,
-    customApplyFunction = null
+    customApplyFunction = null,
+    globalHeaderFilters = [],
+    HeaderFiltersComponent = null,
+    updateParentFilters
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,
@@ -429,6 +432,10 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const [parentGridFilter, setParentGridFilter] = (0, _react.useState)({});
   const [childGridTitle, setChildGridTitle] = (0, _react.useState)();
   const [showChildGrids, setShowChildGrids] = (0, _react.useState)(false);
+
+  // External header filters state
+  const [externalHeaderFilters, setExternalHeaderFilters] = (0, _react.useState)((model === null || model === void 0 ? void 0 : model.initialHeaderFilters) || {});
+  const [headerFilters, setHeaderFilters] = (0, _react.useState)((model === null || model === void 0 ? void 0 : model.initialHeaderFilterValues) || []);
   const OrderSuggestionHistoryFields = {
     OrderStatus: 'OrderStatusId'
   };
@@ -808,7 +815,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     };
   }, [columns, model, parent, permissions, forAssignment]);
   const fetchData = function fetchData() {
-    var _chartFilters$items;
+    var _chartFilters$items, _model$globalFilters, _model$globalFilters2;
     let action = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "list";
     let extraParams = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     let contentType = arguments.length > 2 ? arguments[2] : undefined;
@@ -852,9 +859,65 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       finalFilters.items = [...finalFilters.items, ...additionalFilters];
     }
 
+    // Process external header filters
+    if (model !== null && model !== void 0 && model.initialHeaderFilterValues) {
+      const filtersWithIds = model.initialHeaderFilterValues.map((filter, index) => _objectSpread(_objectSpread({}, filter), {}, {
+        id: filter.id || filter.field || "filter-".concat(Date.now(), "-").concat(index)
+      }));
+      finalFilters.items = [...finalFilters.items, ...filtersWithIds];
+    }
+    if (headerFilters !== null && headerFilters !== void 0 && headerFilters.length) {
+      const filtersWithIds = headerFilters.map((filter, index) => _objectSpread(_objectSpread({}, filter), {}, {
+        id: filter.id || filter.field || "filter-".concat(Date.now(), "-").concat(index)
+      }));
+      finalFilters.items = [...finalFilters.items, ...filtersWithIds];
+    }
+
     // Handle client selection - if selectedClients is provided, use it; otherwise default to current ClientId
     const applyDefaultClientFilter = model.applyDefaultClientFilter !== false;
     let clientsSelected = (applyDefaultClientFilter && !selectedClients ? [Number(ClientId)] : selectedClients || []).filter(ele => ele !== 0);
+    const globalFilters = {};
+
+    // Process global filters if configuration exists
+    if ((model !== null && model !== void 0 && (_model$globalFilters = model.globalFilters) !== null && _model$globalFilters !== void 0 && (_model$globalFilters = _model$globalFilters.filterConfig) !== null && _model$globalFilters !== void 0 && _model$globalFilters.length || model !== null && model !== void 0 && model.addGlobalFilters) && globalHeaderFilters !== null && globalHeaderFilters !== void 0 && globalHeaderFilters.length) {
+      var _model$fieldsToRemove;
+      let updatedFilters = globalHeaderFilters;
+      if (model !== null && model !== void 0 && (_model$fieldsToRemove = model.fieldsToRemoveFromGlobalFilter) !== null && _model$fieldsToRemove !== void 0 && _model$fieldsToRemove.length) {
+        updatedFilters = globalHeaderFilters.filter(ele => !model.fieldsToRemoveFromGlobalFilter.includes(ele.field));
+      }
+      // Convert header filters array to object
+      Object.assign(globalFilters, updatedFilters.filter(filter => !filter.isExternalFilter).reduce((acc, _ref4) => {
+        let {
+          field,
+          value
+        } = _ref4;
+        acc[field] = value;
+        return acc;
+      }, {}));
+
+      // Update client selection if ClientId exists in global filters
+      if ('ClientId' in globalFilters) {
+        clientsSelected = globalFilters.ClientId;
+      }
+    }
+    if (model !== null && model !== void 0 && (_model$globalFilters2 = model.globalFilters) !== null && _model$globalFilters2 !== void 0 && _model$globalFilters2.gridExternalFilters) {
+      const externalFilters = globalHeaderFilters.filter(filter => filter.isExternalFilter);
+      if (externalFilters !== null && externalFilters !== void 0 && externalFilters.length) {
+        finalFilters.items = [...finalFilters.items, ...externalFilters];
+      }
+    }
+
+    // Process external header filters
+    if (model !== null && model !== void 0 && model.initialHeaderFilterValues) {
+      const headerFilterItems = headerFilters.map((filter, index) => ({
+        id: filter.id || filter.field || "filter-".concat(Date.now(), "-").concat(index),
+        field: filter.field,
+        operator: filter.operator,
+        value: filter.value,
+        type: filter.type
+      }));
+      finalFilters.items = [...finalFilters.items, ...headerFilterItems];
+    }
 
     // Add client filter to extraParams if clients are selected
     if (clientsSelected && clientsSelected.length > 0 && model.isClient) {
@@ -886,6 +949,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       history: navigate,
       baseFilters,
       isElasticExport,
+      globalFilters,
       tOpts,
       tTranslate
     });
@@ -924,6 +988,57 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       });
     }
     navigate(path);
+  };
+  const externalFilterHandleChange = (event, operator, type) => {
+    const {
+      name,
+      value,
+      label,
+      isAutoComplete
+    } = event.target;
+    const tempValue = isAutoComplete ? label : value;
+    const filters = _objectSpread(_objectSpread({}, externalHeaderFilters), {}, {
+      [name]: value
+    });
+    const gridHeaderFilters = [...headerFilters];
+    const isFilterExistsIndex = gridHeaderFilters.findIndex(ele => ele.field === name);
+    if (isFilterExistsIndex > -1) {
+      gridHeaderFilters[isFilterExistsIndex] = {
+        field: name,
+        value: tempValue,
+        operator,
+        type
+      };
+    } else {
+      gridHeaderFilters.push({
+        field: name,
+        value: tempValue,
+        operator,
+        type
+      });
+    }
+    setHeaderFilters(gridHeaderFilters);
+    setExternalHeaderFilters(filters);
+  };
+  const onExternalFiltersApplyClick = () => {
+    const initialValues = (model === null || model === void 0 ? void 0 : model.initialHeaderFilters) || {};
+    if (externalHeaderFilters !== initialValues) {
+      fetchData("list", {}, null, null, false, false);
+    }
+    if (updateParentFilters) {
+      updateParentFilters(externalHeaderFilters);
+    }
+  };
+  const onExternalFiltersResetClick = () => {
+    const initialValues = (model === null || model === void 0 ? void 0 : model.initialHeaderFilters) || {};
+    if (externalHeaderFilters !== initialValues) {
+      setExternalHeaderFilters((model === null || model === void 0 ? void 0 : model.initialHeaderFilters) || {});
+      setHeaderFilters((model === null || model === void 0 ? void 0 : model.initialHeaderFilterValues) || []);
+      fetchData("list", {}, null, null, false, false);
+      if (updateParentFilters) {
+        updateParentFilters((model === null || model === void 0 ? void 0 : model.initialHeaderFilters) || {});
+      }
+    }
   };
   const onCellClickHandler = async (cellParams, event, details) => {
     var _model$childTabLinkin;
@@ -1050,11 +1165,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     }
   };
-  const updateAssignment = _ref4 => {
+  const updateAssignment = _ref5 => {
     let {
       unassign = new Set(),
       assign = new Set()
-    } = _ref4;
+    } = _ref5;
     const assignedValues = Array.isArray(selected) ? selected : selected.length ? selected.split(',') : [];
     const unassignSet = unassign instanceof Set ? unassign : (unassign === null || unassign === void 0 ? void 0 : unassign.ids) instanceof Set ? unassign.ids : new Set();
     const assignSet = assign instanceof Set ? assign : (assign === null || assign === void 0 ? void 0 : assign.ids) instanceof Set ? assign.ids : new Set();
@@ -1185,13 +1300,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     });
   }, [isLoading]);
-  const handleColumnOrder = _ref5 => {
+  const handleColumnOrder = _ref6 => {
     var _apiRef$current;
     let {
       column,
       oldIndex,
       targetIndex
-    } = _ref5;
+    } = _ref6;
     if (!column || oldIndex === undefined || targetIndex === undefined || !apiRef.current) return;
     const newOrder = apiRef.current.getAllColumns().map(col => col.field);
     setColumnOrderModel(newOrder);
@@ -1311,11 +1426,24 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     return [...orderedCols, ...missingCols];
   }, [gridColumns, columnOrderModel]);
   const hideFooter = model.showFooter === false;
-  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters3 = model.globalFilters) === null || _model$globalFilters3 === void 0 || (_model$globalFilters3 = _model$globalFilters3.filterConfig) === null || _model$globalFilters3 === void 0 ? void 0 : _model$globalFilters3.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
     filterGroupByConfig: model.globalFilters,
     addExternalClientDependency: model === null || model === void 0 ? void 0 : model.addExternalClientDependency,
     customApplyFunction: customApplyFunction
-  }), /*#__PURE__*/_react.default.createElement("div", {
+  }), model !== null && model !== void 0 && model.externalHeaderFilters && HeaderFiltersComponent ? /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      marginBottom: 10,
+      display: 'flex',
+      paddingTop: 10,
+      paddingBottom: 10
+    }
+  }, /*#__PURE__*/_react.default.createElement(HeaderFiltersComponent, {
+    model: model,
+    onHandleChange: externalFilterHandleChange,
+    values: externalHeaderFilters,
+    onApplyClick: onExternalFiltersApplyClick,
+    onResetClick: onExternalFiltersResetClick
+  })) : null, /*#__PURE__*/_react.default.createElement("div", {
     style: gridStyle || customStyle
   }, /*#__PURE__*/_react.default.createElement(_Box.default, {
     className: "grid-parent-container"
@@ -1434,12 +1562,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       footerTotalRows: "".concat(t('Total rows', tOpts), ":"),
       MuiTablePagination: {
         labelRowsPerPage: t('Rows per page', tOpts),
-        labelDisplayedRows: _ref6 => {
+        labelDisplayedRows: _ref7 => {
           let {
             from,
             to,
             count
-          } = _ref6;
+          } = _ref7;
           return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
         }
       },
@@ -1526,12 +1654,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       columnsManagementSearchTitle: t('Search', tOpts),
       columnsManagementNoColumns: t('No columns', tOpts),
       paginationRowsPerPage: t('Rows per page', tOpts),
-      paginationDisplayedRows: _ref7 => {
+      paginationDisplayedRows: _ref8 => {
         let {
           from,
           to,
           count
-        } = _ref7;
+        } = _ref8;
         return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
       },
       toolbarQuickFilterLabel: t('Search', tOpts),
