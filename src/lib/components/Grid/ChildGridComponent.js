@@ -56,17 +56,21 @@ export default function ChildGridComponent({ tabs, selected, childGridTitle, sho
         setGridFilters(e);
     }
 
+    if (!tabs || tabs.length === 0) {
+        return null;
+    }
+
     return (
         <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex' }}>
                 <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    {tabs?.map((tab, index) => {
+                    {tabs.map((tab, index) => {
                         const { label } = tab;
-                        return <Tab label={t(label, tOpts)} {...a11yProps(index)} />
+                        return <Tab key={index} label={t(label, tOpts)} {...a11yProps(index)} />
                     })}
                 </Tabs>
             </Box>
-            {tabs?.map((tab, index) => {
+            {tabs.map((tab, index) => {
                 const { config, label } = tab;
                 return <CustomTabPanel value={value} index={index} key={label}>
                     {showChildGrids ?

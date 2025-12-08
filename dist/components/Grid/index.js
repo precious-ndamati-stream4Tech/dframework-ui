@@ -405,7 +405,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     applyDefaultPreferenceIfExists
   } = (0, _StateProvider.useStateContext)();
   const modelPermissions = model.modelPermissions || permissions;
-  const effectivePermissions = _objectSpread(_objectSpread({}, _constants.default.permissions), modelPermissions);
+  const effectivePermissions = _objectSpread({}, _constants.default.permissions);
   const {
     ClientId
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};

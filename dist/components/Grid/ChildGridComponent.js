@@ -73,6 +73,9 @@ function ChildGridComponent(_ref) {
   const updateGridFilters = e => {
     setGridFilters(e);
   };
+  if (!tabs || tabs.length === 0) {
+    return null;
+  }
   return /*#__PURE__*/React.createElement(_Box.default, {
     sx: {
       width: '100%'
@@ -87,14 +90,15 @@ function ChildGridComponent(_ref) {
     value: value,
     onChange: handleChange,
     "aria-label": "basic tabs example"
-  }, tabs === null || tabs === void 0 ? void 0 : tabs.map((tab, index) => {
+  }, tabs.map((tab, index) => {
     const {
       label
     } = tab;
     return /*#__PURE__*/React.createElement(_Tab.default, _extends({
+      key: index,
       label: t(label, tOpts)
     }, a11yProps(index)));
-  }))), tabs === null || tabs === void 0 ? void 0 : tabs.map((tab, index) => {
+  }))), tabs.map((tab, index) => {
     const {
       config,
       label
