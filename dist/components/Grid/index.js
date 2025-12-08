@@ -422,7 +422,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const toLink = (model.columns || []).some(item => item.link === true);
   const [isGridPreferenceFetched, setIsGridPreferenceFetched] = (0, _react.useState)(false);
   const classes = useStyles();
-  const effectivePermissions = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), model.permissions), permissions);
+  const effectivePermissions = _objectSpread(_objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), permissions), model.modelPermissions);
   const {
     ClientId
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};

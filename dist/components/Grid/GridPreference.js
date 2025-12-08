@@ -64,12 +64,12 @@ const hasValidPreferenceName = pref => {
 };
 
 /**
- * Checks if a preference is valid for the management grid (excludes invalid names)
+ * Checks if a preference is valid for the management grid (excludes invalid names and Coolr Default)
  * @param {Object} pref - The preference object to validate
  * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
  */
 const isValidForManagement = pref => {
-  return hasValidPreferenceName(pref);
+  return hasValidPreferenceName(pref) && pref.prefName !== 'Coolr Default';
 };
 
 /**
@@ -111,7 +111,7 @@ const getGridColumnsFromRef = _ref => {
   };
 };
 const GridPreferences = _ref2 => {
-  var _stateData$gridSettin, _preferences$filter;
+  var _stateData$gridSettin;
   let {
     t,
     model,
@@ -255,6 +255,7 @@ const GridPreferences = _ref2 => {
     }
   };
   const applySelectedPreference = async prefId => {
+    handleClose(); // Close the menu first
     if (setIsGridPreferenceFetched) {
       setIsGridPreferenceFetched(false);
     }
@@ -574,22 +575,22 @@ const GridPreferences = _ref2 => {
     dense: true,
     divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
     onClick: handleResetPreferences
-  }, t('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && (preferences === null || preferences === void 0 || (_preferences$filter = preferences.filter(pref => pref.prefName !== 'CoolR Default')) === null || _preferences$filter === void 0 ? void 0 : _preferences$filter.map((ele, key) => {
+  }, t('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && preferences.filter(pref => pref.prefName !== 'Coolr Default').map((ele, key) => {
     const {
       prefName,
       prefDesc,
       prefId
     } = ele;
     return /*#__PURE__*/_react.default.createElement(_material.MenuItem, {
-      onClick: () => applySelectedPreference(prefId, key),
-      component: _material.ListItem,
+      onClick: () => applySelectedPreference(prefId),
+      component: _material.ListItemButton,
       key: "pref-item-".concat(key),
       title: t(prefDesc, tOpts),
       dense: true
     }, /*#__PURE__*/_react.default.createElement(_material.ListItemText, {
       primary: t(prefName, tOpts)
     }));
-  }))), /*#__PURE__*/_react.default.createElement(_material.Dialog, {
+  })), /*#__PURE__*/_react.default.createElement(_material.Dialog, {
     open: openDialog,
     maxWidth: formType === formTypes.Manage ? 'md' : 'sm',
     fullWidth: true

@@ -256,7 +256,7 @@ const GridBase = memo(({
     const toLink = (model.columns || []).some(item => item.link === true);
     const [isGridPreferenceFetched, setIsGridPreferenceFetched] = useState(false);
     const classes = useStyles();
-    const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...model.permissions, ...permissions };
+    const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...permissions, ...model.modelPermissions };
     const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
     const routesWithNoChildRoute = stateData.gridSettings.permissions?.routesWithNoChildRoute || [];

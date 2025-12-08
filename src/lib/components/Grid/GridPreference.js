@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, List, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Stack, TextField, Typography, Tooltip } from '@mui/material';
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, List, ListItemButton, ListItemText, Menu, MenuItem, Stack, TextField, Typography, Tooltip } from '@mui/material';
 import { DataGridPremium, GridActionsCellItem, gridFilterModelSelector, gridSortModelSelector, useGridSelector, useGridApiRef, } from '@mui/x-data-grid-premium';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -37,12 +37,12 @@ const hasValidPreferenceName = (pref) => {
 };
 
 /**
- * Checks if a preference is valid for the management grid (excludes invalid names)
+ * Checks if a preference is valid for the management grid (excludes invalid names and Coolr Default)
  * @param {Object} pref - The preference object to validate
  * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
  */
 const isValidForManagement = (pref) => {
-    return hasValidPreferenceName(pref);
+    return hasValidPreferenceName(pref) && pref.prefName !== 'Coolr Default';
 };
 
 /**
@@ -172,6 +172,7 @@ const GridPreferences = ({ t, model, gridRef, columns = [], setIsGridPreferenceF
     }
 
     const applySelectedPreference = async (prefId) => {
+        handleClose(); // Close the menu first
         if (setIsGridPreferenceFetched) {
             setIsGridPreferenceFetched(false);
         }
@@ -435,12 +436,12 @@ const GridPreferences = ({ t, model, gridRef, columns = [], setIsGridPreferenceF
                     {t('Reset Preferences', tOpts)}
                 </MenuItem>
 
-                {preferences?.length > 0 && preferences?.filter(pref => pref.prefName !== 'CoolR Default')?.map((ele, key) => {
+                {preferences?.length > 0 && preferences.filter(pref => pref.prefName !== 'Coolr Default').map((ele, key) => {
                     const { prefName, prefDesc, prefId } = ele;
                     return (
                         <MenuItem
-                            onClick={() => applySelectedPreference(prefId, key)}
-                            component={ListItem}
+                            onClick={() => applySelectedPreference(prefId)}
+                            component={ListItemButton}
                             key={`pref-item-${key}`}
                             title={t(prefDesc, tOpts)}
                             dense
