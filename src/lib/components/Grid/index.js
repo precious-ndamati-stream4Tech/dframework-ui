@@ -36,6 +36,7 @@ import Box from '@mui/material/Box';
 import utils from '../utils';
 import CustomToolbar from './CustomToolbar';
 import constants from '../constants';
+import ChildGridComponent from './ChildGridComponent';
 
 const defaultPageSize = 10;
 const t = utils.t;
@@ -234,7 +235,7 @@ const GridBase = memo(({
     const classes = useStyles();
     const { systemDateTimeFormat, stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
     const modelPermissions = model.modelPermissions || permissions;
-    const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...modelPermissions };
+    const effectivePermissions = { ...constants.permissions, ...modelPermissions };
     const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
     const routesWithNoChildRoute = stateData.gridSettings.permissions?.routesWithNoChildRoute || [];
@@ -249,6 +250,11 @@ const GridBase = memo(({
         Boolean: 'boolean'
     };
     const tTranslate = model.tTranslate ?? ((key) => key);
+
+    // Child tabs state
+    const [parentGridFilter, setParentGridFilter] = useState({});
+    const [childGridTitle, setChildGridTitle] = useState();
+    const [showChildGrids, setShowChildGrids] = useState(false);
 
     const OrderSuggestionHistoryFields = {
         OrderStatus: 'OrderStatusId'
@@ -339,7 +345,7 @@ const GridBase = memo(({
         if (apiRef.current && !initialGridRef.current) {
             const currentColumns = apiRef.current.getAllColumns();
             const columnState = apiRef.current.state.columns;
-            
+
             // Deep copy initial state with all relevant properties
             initialGridRef.current = {
                 columns: {
@@ -483,7 +489,7 @@ const GridBase = memo(({
                 modelPermissions.resolve,
                 modelPermissions.assign
             ].filter(Boolean).length;
-            
+
             if (actionsLength > 0) {
                 finalColumns.push({
                     headerName: tTranslate("Actions", tOpts),
@@ -494,14 +500,14 @@ const GridBase = memo(({
                     getActions: (params) => {
                         const useCustomActions = model.isCustomActionsGrid || false;
                         const actions = [];
-                        
+
                         // Resolve action (first - only for custom actions)
                         if (useCustomActions && modelPermissions.resolve && onResolveClick) {
                             actions.push(
-                                <GridActionsCellItem 
+                                <GridActionsCellItem
                                     key="resolve"
-                                    icon={<Tooltip title={tTranslate("Resolve", tOpts)}><HandymanIcon fontSize="medium" /></Tooltip>} 
-                                    label="Resolve" 
+                                    icon={<Tooltip title={tTranslate("Resolve", tOpts)}><HandymanIcon fontSize="medium" /></Tooltip>}
+                                    label="Resolve"
                                     color="primary"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -510,34 +516,34 @@ const GridBase = memo(({
                                 />
                             );
                         }
-                        
+
                         // Delete action (second)
                         if (modelPermissions.delete) {
                             actions.push(
-                                <GridActionsCellItem 
+                                <GridActionsCellItem
                                     key="delete"
-                                    icon={<Tooltip title={tTranslate("Delete", tOpts)}><DeleteIcon fontSize="medium" /></Tooltip>} 
-                                    label="Delete" 
+                                    icon={<Tooltip title={tTranslate("Delete", tOpts)}><DeleteIcon fontSize="medium" /></Tooltip>}
+                                    label="Delete"
                                     color="error"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setIsDeleting(true);
-                                        setRecord({ 
-                                            name: params.row[model?.linkColumn], 
-                                            id: params.row[idProperty] 
+                                        setRecord({
+                                            name: params.row[model?.linkColumn],
+                                            id: params.row[idProperty]
                                         });
                                     }}
                                 />
                             );
                         }
-                        
+
                         // Copy action (third)
                         if (modelPermissions.add) {
                             actions.push(
-                                <GridActionsCellItem 
+                                <GridActionsCellItem
                                     key="copy"
-                                    icon={<Tooltip title={tTranslate("Copy", tOpts)}><CopyIcon fontSize="medium" /></Tooltip>} 
-                                    label="Copy" 
+                                    icon={<Tooltip title={tTranslate("Copy", tOpts)}><CopyIcon fontSize="medium" /></Tooltip>}
+                                    label="Copy"
                                     color="primary"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -546,14 +552,14 @@ const GridBase = memo(({
                                 />
                             );
                         }
-                        
+
                         // Edit action (fourth)
                         if (modelPermissions.edit) {
                             actions.push(
-                                <GridActionsCellItem 
+                                <GridActionsCellItem
                                     key="edit"
-                                    icon={<Tooltip title={tTranslate("Edit", tOpts)}><EditIcon fontSize="medium" /></Tooltip>} 
-                                    label="Edit" 
+                                    icon={<Tooltip title={tTranslate("Edit", tOpts)}><EditIcon fontSize="medium" /></Tooltip>}
+                                    label="Edit"
                                     color="primary"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -562,14 +568,14 @@ const GridBase = memo(({
                                 />
                             );
                         }
-                        
+
                         // Assign action (last - only for custom actions)
                         if (useCustomActions && modelPermissions.assign && onAssignmentClick) {
                             actions.push(
-                                <GridActionsCellItem 
+                                <GridActionsCellItem
                                     key="assign"
-                                    icon={<Tooltip title={tTranslate("Assign", tOpts)}><span style={{ fontSize: "medium" }}>{tTranslate('Assign', tOpts)}</span></Tooltip>} 
-                                    label="Assign" 
+                                    icon={<Tooltip title={tTranslate("Assign", tOpts)}><span style={{ fontSize: "medium" }}>{tTranslate('Assign', tOpts)}</span></Tooltip>}
+                                    label="Assign"
                                     color="primary"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -578,7 +584,7 @@ const GridBase = memo(({
                                 />
                             );
                         }
-                        
+
                         return actions;
                     }
                 });
@@ -615,6 +621,16 @@ const GridBase = memo(({
         if (additionalFilters) {
             finalFilters.items = [...finalFilters.items, ...additionalFilters];
         }
+
+        // Handle client selection - if selectedClients is provided, use it; otherwise default to current ClientId
+        const applyDefaultClientFilter = model.applyDefaultClientFilter !== false;
+        let clientsSelected = (applyDefaultClientFilter && !selectedClients ? [Number(ClientId)] : selectedClients || []).filter(ele => ele !== 0);
+
+        // Add client filter to extraParams if clients are selected
+        if (clientsSelected && clientsSelected.length > 0 && model.isClient) {
+            extraParams.ClientId = clientsSelected.join(',');
+        }
+
         getList({
             action,
             page: !contentType ? page : 0,
@@ -631,6 +647,8 @@ const GridBase = memo(({
             extraParams,
             setError: snackbar.showError,
             contentType,
+            selectedClients: clientsSelected,
+            activeClients: selectedClients?.length ? selectedClients : [Number(ClientId)].filter(ele => ele !== 0),
             columns,
             template: isPivotExport ? model?.template : null,
             configFileName: isPivotExport ? model?.configFileName : null,
@@ -670,6 +688,31 @@ const GridBase = memo(({
                     return;
                 }
             }
+
+            // Handle child tabs linking
+            if (model?.childTabLinkingKey?.length) {
+                const { row: record } = cellParams;
+                const includeFilter = {};
+                let title = [];
+                for (const column of model?.columns) {
+                    const keyName = model?.childParentKeyMapping[column.field];
+                    if (model.childTabLinkingKey.includes(keyName)) {
+                        includeFilter[keyName] = record[keyName];
+                        title.push(record[column.field]);
+                        if (column.field === cellParams.field) {
+                            break;
+                        }
+                    }
+                }
+                title = title.join(' - ');
+                setParentGridFilter(includeFilter);
+                if (!showChildGrids) {
+                    setShowChildGrids(true);
+                }
+                setChildGridTitle(title);
+                return;
+            }
+
             const { row: record } = cellParams;
             const columnConfig = lookupMap[cellParams.field] || {};
             if (columnConfig.linkTo) {
@@ -983,273 +1026,274 @@ const GridBase = memo(({
         return [...orderedCols, ...missingCols];
     }, [gridColumns, columnOrderModel]);
 
-    const hideFooter = model.showFooter === false;
+    const isChildParentGrid = model?.childTabs?.length > 0;
+    let parentChildGridClassName = isChildParentGrid ? 'parent-grid' : '';
 
-    // Debug globalFilters
-    console.log('Grid GlobalFilters Debug:', {
-        'model.globalFilters': model?.globalFilters,
-        'filterConfig.length': model?.globalFilters?.filterConfig?.length,
-        'GlobalFiltersComponent': !!GlobalFiltersComponent,
-        'shouldRender': !!(model?.globalFilters?.filterConfig?.length && GlobalFiltersComponent)
-    });
+    const hideFooter = model.showFooter === false;
 
     return (
         <>
             {model?.globalFilters?.filterConfig?.length && GlobalFiltersComponent && (
-                <GlobalFiltersComponent 
-                    filterGroupByConfig={model.globalFilters} 
-                    addExternalClientDependency={model?.addExternalClientDependency} 
-                    customApplyFunction={customApplyFunction} 
+                <GlobalFiltersComponent
+                    filterGroupByConfig={model.globalFilters}
+                    addExternalClientDependency={model?.addExternalClientDependency}
+                    customApplyFunction={customApplyFunction}
                 />
             )}
             <div style={gridStyle || customStyle}>
-                <Box className="grid-parent-container">
+                <Box className={`grid-parent-container ${parentChildGridClassName}`}>
                     <DataGridPremium
-                    showToolbar
-                    headerFilters={showHeaderFilters}
-                    checkboxSelection={forAssignment}
-                    loading={isLoading}
-                    className="pagination-fix"
-                    onCellClick={onCellClickHandler}
-                    onCellDoubleClick={onCellDoubleClick}
-                    columns={orderedColumns}
-                    onColumnOrderChange={handleColumnOrder}
-                    onColumnWidthChange={handleColumnWidthChange}
-                    paginationModel={paginationModel}
-                    pageSizeOptions={[5, 10, 20, 50, 100]}
-                    onPaginationModelChange={setPaginationModel}
-                    pagination
-                    rowCount={data.recordCount}
-                    rows={data.records}
-                    sortModel={sortModel}
-                    paginationMode={isClient}
-                    sortingMode={isClient}
-                    filterMode={isClient}
-                    disablePivoting={disablePivoting}
-                    keepNonExistentRowsSelected
-                    onSortModelChange={updateSort}
-                    onFilterModelChange={updateFilters}
-                    onRowSelectionModelChange={(newRowSelectionModel) => {
-                        setSelection(newRowSelectionModel);
-                    }}
-                    rowSelectionModel={rowSelectionModel !== undefined ? rowSelectionModel : selection}
-                    filterModel={filterModel}
-                    getRowId={getGridRowId}
-                    onRowClick={onRowClick}
-                    slots={{
-                        toolbar: CustomToolbar,
-                        footer: Footer,
-                        headerFilterMenu: null
-                    }}
-                    slotProps={{
-                        headerFilterCell: { showClearIcon: true },
-                        toolbar: {
-                            model,
-                            customHeaderComponent,
-                            currentPreference,
-                            isReadOnly,
-                            modelPermissions,
-                            forAssignment,
-                            showAddIcon,
-                            showCreateButton,
-                            available,
-                            assigned,
-                            t,
-                            tOpts,
-                            classes,
-                            onAdd,
-                            onAssign,
-                            onUnassign,
-                            clearFilters,
-                            handleExport,
-                            onExportMenuClick,
-                            hideExcelExport,
-                            hideXmlExport,
-                            hideHtmlExport,
-                            hideJsonExport,
-                            apiRef,
-                            gridColumns,
-                            setIsGridPreferenceFetched,
-                            initialGridRef,
-                            setIsLoading,
-                            CustomExportButton,
-                            showExportWithDetails,
-                            showExportWithLatestData,
-                            showInFieldStatusPivotExportBtn,
-                            showInstallationPivotExportBtn,
-                            detailExportLabel,
-                            effectivePermissions,
-                            tTranslate
-                        },
-                        footer: {
-                            pagination: true,
-                            apiRef,
-                            tTranslate
-                        },
-                        pagination: {
-                            backIconButtonProps: {
-                                title: tTranslate('Go to previous page', tOpts),
-                                'aria-label': tTranslate('Go to previous page', tOpts),
+                        showToolbar
+                        headerFilters={showHeaderFilters}
+                        checkboxSelection={forAssignment}
+                        loading={isLoading}
+                        className="pagination-fix"
+                        onCellClick={onCellClickHandler}
+                        onCellDoubleClick={onCellDoubleClick}
+                        columns={orderedColumns}
+                        onColumnOrderChange={handleColumnOrder}
+                        onColumnWidthChange={handleColumnWidthChange}
+                        paginationModel={paginationModel}
+                        pageSizeOptions={[5, 10, 20, 50, 100]}
+                        onPaginationModelChange={setPaginationModel}
+                        pagination
+                        rowCount={data.recordCount}
+                        rows={data.records}
+                        sortModel={sortModel}
+                        paginationMode={isClient}
+                        sortingMode={isClient}
+                        filterMode={isClient}
+                        disablePivoting={disablePivoting}
+                        keepNonExistentRowsSelected
+                        onSortModelChange={updateSort}
+                        onFilterModelChange={updateFilters}
+                        onRowSelectionModelChange={(newRowSelectionModel) => {
+                            setSelection(newRowSelectionModel);
+                        }}
+                        rowSelectionModel={rowSelectionModel !== undefined ? rowSelectionModel : selection}
+                        filterModel={filterModel}
+                        getRowId={getGridRowId}
+                        onRowClick={onRowClick}
+                        slots={{
+                            toolbar: CustomToolbar,
+                            footer: Footer,
+                            headerFilterMenu: null
+                        }}
+                        slotProps={{
+                            headerFilterCell: { showClearIcon: true },
+                            toolbar: {
+                                model,
+                                customHeaderComponent,
+                                currentPreference,
+                                isReadOnly,
+                                modelPermissions,
+                                forAssignment,
+                                showAddIcon,
+                                showCreateButton,
+                                available,
+                                assigned,
+                                t,
+                                tOpts,
+                                classes,
+                                onAdd,
+                                onAssign,
+                                onUnassign,
+                                clearFilters,
+                                handleExport,
+                                onExportMenuClick,
+                                hideExcelExport,
+                                hideXmlExport,
+                                hideHtmlExport,
+                                hideJsonExport,
+                                apiRef,
+                                gridColumns,
+                                setIsGridPreferenceFetched,
+                                initialGridRef,
+                                setIsLoading,
+                                CustomExportButton,
+                                showExportWithDetails,
+                                showExportWithLatestData,
+                                showInFieldStatusPivotExportBtn,
+                                showInstallationPivotExportBtn,
+                                detailExportLabel,
+                                effectivePermissions,
+                                tTranslate
                             },
-                            nextIconButtonProps: {
-                                title: tTranslate('Go to next page', tOpts),
-                                'aria-label': tTranslate('Go to next page', tOpts),
+                            footer: {
+                                pagination: true,
+                                apiRef,
+                                tTranslate
                             },
-                        }
-                    }}
-                    hideFooterSelectedRowCount={rowsSelected}
-                    density="compact"
-                    hideFooter={hideFooter}
-                    disableDensitySelector={true}
-                    apiRef={apiRef}
-                    disableAggregation={true}
-                    disableRowGrouping={true}
-                    disableRowSelectionOnClick={disableRowSelectionOnClick}
-                    initialState={{
-                        columns: {
-                            columnVisibilityModel: visibilityModel
-                        },
-                        pinnedColumns: pinnedColumns
-                    }}
-                    localeText={{
-                        noRowsLabel: t('No data', tOpts),
-                        footerTotalRows: `${t('Total rows', tOpts)}:`,
-                        MuiTablePagination: {
-                            labelRowsPerPage: t('Rows per page', tOpts),
-                            labelDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
-                        },
-                        toolbarQuickFilterPlaceholder: t(model?.searchPlaceholder || 'Search...', tOpts),
-                        toolbarColumns: t('Columns', tOpts),
-                        toolbarFilters: t('Filters', tOpts),
-                        toolbarExport: t('Export', tOpts),
-                        filterPanelAddFilter: t('Add filter', tOpts),
-                        filterPanelRemoveAll: t('Remove all', tOpts),
-                        filterPanelDeleteIconLabel: t('Delete', tOpts),
-                        filterPanelColumns: t('Columns', tOpts),
-                        filterPanelOperator: t('Operator', tOpts),
-                        filterPanelValue: t('Value', tOpts),
-                        filterPanelInputLabel: t('Value', tOpts),
-                        filterPanelInputPlaceholder: t('Filter value', tOpts),
-                        columnMenuLabel: t('Menu', tOpts),
-                        columnMenuShowColumns: t('Show columns', tOpts),
-                        columnMenuManageColumns: t('Manage columns', tOpts),
-                        columnMenuFilter: t('Filter', tOpts),
-                        columnMenuHideColumn: t('Hide column', tOpts),
-                        columnMenuManagePivot: t('Manage pivot', tOpts),
-                        toolbarColumnsLabel: t('Select columns', tOpts),
-                        toolbarExportLabel: t('Export', tOpts),
-                        pivotDragToColumns: t('Drag here to pivot by', tOpts),
-                        pivotDragToRows: t('Drag here to group by', tOpts),
-                        pivotDragToValues: t('Drag here to create values', tOpts),
-                        pivotColumns: t('Pivot columns', tOpts),
-                        pivotRows: t('Row groups', tOpts),
-                        pivotValues: t('Values', tOpts),
-                        pivotMenuRows: t('Rows', tOpts),
-                        pivotMenuColumns: t('Columns', tOpts),
-                        pivotMenuValues: t('Values', tOpts),
-                        pivotToggleLabel: t('Pivot', tOpts),
-                        pivotSearchControlPlaceholder: t('Search pivot columns', tOpts),
-                        columnMenuUnsort: t('Unsort', tOpts),
-                        columnMenuSortAsc: t('Sort by ascending', tOpts),
-                        columnMenuSortDesc: t('Sort by descending', tOpts),
-                        columnMenuUnpin: t('Unpin', tOpts),
-                        columnsPanelTextFieldLabel: t('Find column', tOpts),
-                        columnsPanelTextFieldPlaceholder: t('Column title', tOpts),
-                        columnsPanelHideAllButton: t('Hide all', tOpts),
-                        columnsPanelShowAllButton: t('Show all', tOpts),
-                        pinToLeft: t('Pin to left', tOpts),
-                        pinToRight: t('Pin to right', tOpts),
-                        unpin: t('Unpin', tOpts),
-                        filterValueAny: t('any', tOpts),
-                        filterValueTrue: t('true', tOpts),
-                        filterValueFalse: t('false', tOpts),
-                        filterOperatorIs: t('is', tOpts),
-                        filterOperatorNot: t('is not', tOpts),
-                        filterOperatorIsAnyOf: t('is any of', tOpts),
-                        filterOperatorContains: t('contains', tOpts),
-                        filterOperatorDoesNotContain: t('does not contain', tOpts),
-                        filterOperatorEquals: t('equals', tOpts),
-                        filterOperatorDoesNotEqual: t('does not equal', tOpts),
-                        filterOperatorStartsWith: t('starts with', tOpts),
-                        filterOperatorEndsWith: t('ends with', tOpts),
-                        filterOperatorIsEmpty: t('is empty', tOpts),
-                        filterOperatorIsNotEmpty: t('is not empty', tOpts),
-                        filterOperatorAfter: t('is after', tOpts),
-                        filterOperatorOnOrAfter: t('is on or after', tOpts),
-                        filterOperatorBefore: t('is before', tOpts),
-                        filterOperatorOnOrBefore: t('is on or before', tOpts),
-                        toolbarFiltersTooltipHide: t('Hide filters', tOpts),
-                        toolbarFiltersTooltipShow: t('Show filters', tOpts),
+                            pagination: {
+                                backIconButtonProps: {
+                                    title: tTranslate('Go to previous page', tOpts),
+                                    'aria-label': tTranslate('Go to previous page', tOpts),
+                                },
+                                nextIconButtonProps: {
+                                    title: tTranslate('Go to next page', tOpts),
+                                    'aria-label': tTranslate('Go to next page', tOpts),
+                                },
+                            }
+                        }}
+                        hideFooterSelectedRowCount={rowsSelected}
+                        density="compact"
+                        hideFooter={hideFooter}
+                        disableDensitySelector={true}
+                        apiRef={apiRef}
+                        disableAggregation={true}
+                        disableRowGrouping={true}
+                        disableRowSelectionOnClick={disableRowSelectionOnClick}
+                        initialState={{
+                            columns: {
+                                columnVisibilityModel: visibilityModel
+                            },
+                            pinnedColumns: pinnedColumns
+                        }}
+                        localeText={{
+                            noRowsLabel: t('No data', tOpts),
+                            footerTotalRows: `${t('Total rows', tOpts)}:`,
+                            MuiTablePagination: {
+                                labelRowsPerPage: t('Rows per page', tOpts),
+                                labelDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
+                            },
+                            toolbarQuickFilterPlaceholder: t(model?.searchPlaceholder || 'Search...', tOpts),
+                            toolbarColumns: t('Columns', tOpts),
+                            toolbarFilters: t('Filters', tOpts),
+                            toolbarExport: t('Export', tOpts),
+                            filterPanelAddFilter: t('Add filter', tOpts),
+                            filterPanelRemoveAll: t('Remove all', tOpts),
+                            filterPanelDeleteIconLabel: t('Delete', tOpts),
+                            filterPanelColumns: t('Columns', tOpts),
+                            filterPanelOperator: t('Operator', tOpts),
+                            filterPanelValue: t('Value', tOpts),
+                            filterPanelInputLabel: t('Value', tOpts),
+                            filterPanelInputPlaceholder: t('Filter value', tOpts),
+                            columnMenuLabel: t('Menu', tOpts),
+                            columnMenuShowColumns: t('Show columns', tOpts),
+                            columnMenuManageColumns: t('Manage columns', tOpts),
+                            columnMenuFilter: t('Filter', tOpts),
+                            columnMenuHideColumn: t('Hide column', tOpts),
+                            columnMenuManagePivot: t('Manage pivot', tOpts),
+                            toolbarColumnsLabel: t('Select columns', tOpts),
+                            toolbarExportLabel: t('Export', tOpts),
+                            pivotDragToColumns: t('Drag here to pivot by', tOpts),
+                            pivotDragToRows: t('Drag here to group by', tOpts),
+                            pivotDragToValues: t('Drag here to create values', tOpts),
+                            pivotColumns: t('Pivot columns', tOpts),
+                            pivotRows: t('Row groups', tOpts),
+                            pivotValues: t('Values', tOpts),
+                            pivotMenuRows: t('Rows', tOpts),
+                            pivotMenuColumns: t('Columns', tOpts),
+                            pivotMenuValues: t('Values', tOpts),
+                            pivotToggleLabel: t('Pivot', tOpts),
+                            pivotSearchControlPlaceholder: t('Search pivot columns', tOpts),
+                            columnMenuUnsort: t('Unsort', tOpts),
+                            columnMenuSortAsc: t('Sort by ascending', tOpts),
+                            columnMenuSortDesc: t('Sort by descending', tOpts),
+                            columnMenuUnpin: t('Unpin', tOpts),
+                            columnsPanelTextFieldLabel: t('Find column', tOpts),
+                            columnsPanelTextFieldPlaceholder: t('Column title', tOpts),
+                            columnsPanelHideAllButton: t('Hide all', tOpts),
+                            columnsPanelShowAllButton: t('Show all', tOpts),
+                            pinToLeft: t('Pin to left', tOpts),
+                            pinToRight: t('Pin to right', tOpts),
+                            unpin: t('Unpin', tOpts),
+                            filterValueAny: t('any', tOpts),
+                            filterValueTrue: t('true', tOpts),
+                            filterValueFalse: t('false', tOpts),
+                            filterOperatorIs: t('is', tOpts),
+                            filterOperatorNot: t('is not', tOpts),
+                            filterOperatorIsAnyOf: t('is any of', tOpts),
+                            filterOperatorContains: t('contains', tOpts),
+                            filterOperatorDoesNotContain: t('does not contain', tOpts),
+                            filterOperatorEquals: t('equals', tOpts),
+                            filterOperatorDoesNotEqual: t('does not equal', tOpts),
+                            filterOperatorStartsWith: t('starts with', tOpts),
+                            filterOperatorEndsWith: t('ends with', tOpts),
+                            filterOperatorIsEmpty: t('is empty', tOpts),
+                            filterOperatorIsNotEmpty: t('is not empty', tOpts),
+                            filterOperatorAfter: t('is after', tOpts),
+                            filterOperatorOnOrAfter: t('is on or after', tOpts),
+                            filterOperatorBefore: t('is before', tOpts),
+                            filterOperatorOnOrBefore: t('is on or before', tOpts),
+                            toolbarFiltersTooltipHide: t('Hide filters', tOpts),
+                            toolbarFiltersTooltipShow: t('Show filters', tOpts),
 
-                        //filter textfield labels
-                        headerFilterOperatorContains: t('contains', tOpts),
-                        headerFilterOperatorEquals: t('equals', tOpts),
-                        headerFilterOperatorStartsWith: t('starts with', tOpts),
-                        headerFilterOperatorEndsWith: t('ends with', tOpts),
-                        headerFilterOperatorIsEmpty: t('is empty', tOpts),
-                        headerFilterOperatorIsNotEmpty: t('is not empty', tOpts),
-                        headerFilterOperatorAfter: t('is after', tOpts),
-                        headerFilterOperatorOnOrAfter: t('is on or after', tOpts),
-                        headerFilterOperatorBefore: t('is before', tOpts),
-                        headerFilterOperatorOnOrBefore: t('is on or before', tOpts),
-                        headerFilterOperatorIs: t('is', tOpts),
-                        'headerFilterOperator=': t('equals', tOpts),
-                        'headerFilterOperator!=': t('does not equal', tOpts),
-                        'headerFilterOperator>': t('greater than', tOpts),
-                        'headerFilterOperator>=': t('greater than or equal to', tOpts),
-                        'headerFilterOperator<': t('less than', tOpts),
-                        'headerFilterOperator<=': t('less than or equal to', tOpts),
-                        columnsManagementSearchTitle: t('Search', tOpts),
-                        columnsManagementNoColumns: t('No columns', tOpts),
-                        paginationRowsPerPage: t('Rows per page', tOpts),
-                        paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
-                        toolbarQuickFilterLabel: t('Search', tOpts),
-                        toolbarFiltersTooltipActive: (count) => `${count} ${t(`active filter${count > 1 ? 's' : ''}`, tOpts)}`,
-                        columnHeaderSortIconLabel: t('Sort', tOpts),
-                        filterPanelOperatorAnd: t('And', tOpts),
-                        filterPanelOperatorOr: t('Or', tOpts),
-                        noResultsOverlayLabel: t('No results found', tOpts),
-                        columnHeaderFiltersTooltipActive: (count) => `${count} ${t(count === 1 ? 'active filter' : 'active filters', tOpts)}`,
-                        detailPanelToggle: t("Detail panel toggle", tOpts),
-                        checkboxSelectionHeaderName: t('Checkbox selection', tOpts),
-                        columnsManagementShowHideAllText: t('Show/Hide all', tOpts),
-                        noColumnsOverlayLabel: t('No columns', tOpts),
-                        noColumnsOverlayManageColumns: t('Manage columns', tOpts),
-                        columnsManagementReset: t('Reset', tOpts),
-                        groupColumn: (name) => `${t('Group by', tOpts)} ${name}`,
-                        unGroupColumn: (name) => `${t('Ungroup', tOpts)} ${name}`,
-                        footerRowSelected: (count) =>
-                            count !== 1
-                                ? `${count.toLocaleString()} ${t('items selected', tOpts)}`
-                                : `1 ${t('item selected', tOpts)}`,
-                    }}
-                    columnHeaderHeight={70}
-                    sx={{
-                        "& .MuiDataGrid-toolbarContainer": {
-                            flexShrink: 0,
-                            marginTop: 1,
-                            borderBottom: 'none !important'
-                        }
-                    }}
-                />
-            </Box>
-            {isOrderDetailModalOpen && selectedOrder && model.OrderModal && (
-                <model.OrderModal
-                    orderId={selectedOrder.OrderId}
-                    isOpen={true}
-                    orderTotal={selectedOrder.OrderTotal}
-                    orderDate={selectedOrder.OrderDateTime}
-                    orderStatus={selectedOrder.OrderStatus}
-                    customerNumber={selectedOrder.CustomerPhoneNumber}
-                    customerName={selectedOrder.CustomerName}
-                    customerEmail={selectedOrder.CustomerEmailAddress}
-                    onClose={handleCloseOrderDetailModal}
-                />
-            )}
-            {errorMessage && (<DialogComponent open={!!errorMessage} onConfirm={clearError} onCancel={clearError} title="Info" hideCancelButton={true} > {errorMessage}</DialogComponent>)
-            }
-            {isDeleting && !errorMessage && (<DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => setIsDeleting(false)} title="Confirm Delete"> {`${'Are you sure you want to delete'} ${record?.name}?`}</DialogComponent>)}
+                            //filter textfield labels
+                            headerFilterOperatorContains: t('contains', tOpts),
+                            headerFilterOperatorEquals: t('equals', tOpts),
+                            headerFilterOperatorStartsWith: t('starts with', tOpts),
+                            headerFilterOperatorEndsWith: t('ends with', tOpts),
+                            headerFilterOperatorIsEmpty: t('is empty', tOpts),
+                            headerFilterOperatorIsNotEmpty: t('is not empty', tOpts),
+                            headerFilterOperatorAfter: t('is after', tOpts),
+                            headerFilterOperatorOnOrAfter: t('is on or after', tOpts),
+                            headerFilterOperatorBefore: t('is before', tOpts),
+                            headerFilterOperatorOnOrBefore: t('is on or before', tOpts),
+                            headerFilterOperatorIs: t('is', tOpts),
+                            'headerFilterOperator=': t('equals', tOpts),
+                            'headerFilterOperator!=': t('does not equal', tOpts),
+                            'headerFilterOperator>': t('greater than', tOpts),
+                            'headerFilterOperator>=': t('greater than or equal to', tOpts),
+                            'headerFilterOperator<': t('less than', tOpts),
+                            'headerFilterOperator<=': t('less than or equal to', tOpts),
+                            columnsManagementSearchTitle: t('Search', tOpts),
+                            columnsManagementNoColumns: t('No columns', tOpts),
+                            paginationRowsPerPage: t('Rows per page', tOpts),
+                            paginationDisplayedRows: ({ from, to, count }) => `${from}–${to} ${t('of', tOpts)} ${count}`,
+                            toolbarQuickFilterLabel: t('Search', tOpts),
+                            toolbarFiltersTooltipActive: (count) => `${count} ${t(`active filter${count > 1 ? 's' : ''}`, tOpts)}`,
+                            columnHeaderSortIconLabel: t('Sort', tOpts),
+                            filterPanelOperatorAnd: t('And', tOpts),
+                            filterPanelOperatorOr: t('Or', tOpts),
+                            noResultsOverlayLabel: t('No results found', tOpts),
+                            columnHeaderFiltersTooltipActive: (count) => `${count} ${t(count === 1 ? 'active filter' : 'active filters', tOpts)}`,
+                            detailPanelToggle: t("Detail panel toggle", tOpts),
+                            checkboxSelectionHeaderName: t('Checkbox selection', tOpts),
+                            columnsManagementShowHideAllText: t('Show/Hide all', tOpts),
+                            noColumnsOverlayLabel: t('No columns', tOpts),
+                            noColumnsOverlayManageColumns: t('Manage columns', tOpts),
+                            columnsManagementReset: t('Reset', tOpts),
+                            groupColumn: (name) => `${t('Group by', tOpts)} ${name}`,
+                            unGroupColumn: (name) => `${t('Ungroup', tOpts)} ${name}`,
+                            footerRowSelected: (count) =>
+                                count !== 1
+                                    ? `${count.toLocaleString()} ${t('items selected', tOpts)}`
+                                    : `1 ${t('item selected', tOpts)}`,
+                        }}
+                        columnHeaderHeight={70}
+                        sx={{
+                            "& .MuiDataGrid-toolbarContainer": {
+                                flexShrink: 0,
+                                marginTop: 1,
+                                borderBottom: 'none !important'
+                            }
+                        }}
+                    />
+                </Box>
+                {model?.childTabs ?
+                    <div>
+                        <ChildGridComponent tabs={model?.childTabs} selected={parentGridFilter} hideChildGrids={() => setShowChildGrids(false)} childGridTitle={childGridTitle} showChildGrids={showChildGrids} />
+                    </div>
+                    : null}
+                {isOrderDetailModalOpen && selectedOrder && model.OrderModal && (
+                    <model.OrderModal
+                        orderId={selectedOrder.OrderId}
+                        isOpen={true}
+                        orderTotal={selectedOrder.OrderTotal}
+                        orderDate={selectedOrder.OrderDateTime}
+                        orderStatus={selectedOrder.OrderStatus}
+                        customerNumber={selectedOrder.CustomerPhoneNumber}
+                        customerName={selectedOrder.CustomerName}
+                        customerEmail={selectedOrder.CustomerEmailAddress}
+                        onClose={handleCloseOrderDetailModal}
+                    />
+                )}
+                {errorMessage && (<DialogComponent open={!!errorMessage} onConfirm={clearError} onCancel={clearError} title="Info" hideCancelButton={true} > {errorMessage}</DialogComponent>)
+                }
+                {isDeleting && !errorMessage && (<DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => setIsDeleting(false)} title="Confirm Delete"> {`${'Are you sure you want to delete'} ${record?.name}?`}</DialogComponent>)}
             </div >
+
         </>
     );
 }, areEqual);

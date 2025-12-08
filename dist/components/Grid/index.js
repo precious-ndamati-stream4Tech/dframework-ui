@@ -60,6 +60,7 @@ var _Box = _interopRequireDefault(require("@mui/material/Box"));
 var _utils = _interopRequireDefault(require("../utils"));
 var _CustomToolbar = _interopRequireDefault(require("./CustomToolbar"));
 var _constants = _interopRequireDefault(require("../constants"));
+var _ChildGridComponent = _interopRequireDefault(require("./ChildGridComponent"));
 const _excluded = ["row", "field", "id"],
   _excluded2 = ["filterField"];
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
@@ -265,7 +266,7 @@ const convertDefaultSort = defaultSort => {
   return orderBy;
 };
 const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
-  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters, _model$globalFilters2, _model$globalFilters3;
+  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$childTabs, _model$globalFilters;
   let {
     useLinkColumn = true,
     model,
@@ -403,7 +404,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     applyDefaultPreferenceIfExists
   } = (0, _StateProvider.useStateContext)();
   const modelPermissions = model.modelPermissions || permissions;
-  const effectivePermissions = _objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), modelPermissions);
+  const effectivePermissions = _objectSpread(_objectSpread({}, _constants.default.permissions), modelPermissions);
   const {
     ClientId
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
@@ -422,6 +423,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     Boolean: 'boolean'
   };
   const tTranslate = (_model$tTranslate = model.tTranslate) !== null && _model$tTranslate !== void 0 ? _model$tTranslate : key => key;
+
+  // Child tabs state
+  const [parentGridFilter, setParentGridFilter] = (0, _react.useState)({});
+  const [childGridTitle, setChildGridTitle] = (0, _react.useState)();
+  const [showChildGrids, setShowChildGrids] = (0, _react.useState)(false);
   const OrderSuggestionHistoryFields = {
     OrderStatus: 'OrderStatusId'
   };
@@ -844,6 +850,15 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     if (additionalFilters) {
       finalFilters.items = [...finalFilters.items, ...additionalFilters];
     }
+
+    // Handle client selection - if selectedClients is provided, use it; otherwise default to current ClientId
+    const applyDefaultClientFilter = model.applyDefaultClientFilter !== false;
+    let clientsSelected = (applyDefaultClientFilter && !selectedClients ? [Number(ClientId)] : selectedClients || []).filter(ele => ele !== 0);
+
+    // Add client filter to extraParams if clients are selected
+    if (clientsSelected && clientsSelected.length > 0 && model.isClient) {
+      extraParams.ClientId = clientsSelected.join(',');
+    }
     (0, _crudHelper.getList)({
       action,
       page: !contentType ? page : 0,
@@ -860,6 +875,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       extraParams,
       setError: snackbar.showError,
       contentType,
+      selectedClients: clientsSelected,
+      activeClients: selectedClients !== null && selectedClients !== void 0 && selectedClients.length ? selectedClients : [Number(ClientId)].filter(ele => ele !== 0),
       columns,
       template: isPivotExport ? model === null || model === void 0 ? void 0 : model.template : null,
       configFileName: isPivotExport ? model === null || model === void 0 ? void 0 : model.configFileName : null,
@@ -909,6 +926,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   };
   const onCellClickHandler = async (cellParams, event, details) => {
     if (!isReadOnly) {
+      var _model$childTabLinkin;
       if (onCellClick) {
         const result = await onCellClick({
           cellParams,
@@ -918,6 +936,32 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         if (typeof result !== "boolean") {
           return;
         }
+      }
+
+      // Handle child tabs linking
+      if (model !== null && model !== void 0 && (_model$childTabLinkin = model.childTabLinkingKey) !== null && _model$childTabLinkin !== void 0 && _model$childTabLinkin.length) {
+        const {
+          row: record
+        } = cellParams;
+        const includeFilter = {};
+        let title = [];
+        for (const column of model === null || model === void 0 ? void 0 : model.columns) {
+          const keyName = model === null || model === void 0 ? void 0 : model.childParentKeyMapping[column.field];
+          if (model.childTabLinkingKey.includes(keyName)) {
+            includeFilter[keyName] = record[keyName];
+            title.push(record[column.field]);
+            if (column.field === cellParams.field) {
+              break;
+            }
+          }
+        }
+        title = title.join(' - ');
+        setParentGridFilter(includeFilter);
+        if (!showChildGrids) {
+          setShowChildGrids(true);
+        }
+        setChildGridTitle(title);
+        return;
       }
       const {
         row: record
@@ -1294,23 +1338,17 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     // Return ordered columns + any missing columns at the end
     return [...orderedCols, ...missingCols];
   }, [gridColumns, columnOrderModel]);
+  const isChildParentGrid = (model === null || model === void 0 || (_model$childTabs = model.childTabs) === null || _model$childTabs === void 0 ? void 0 : _model$childTabs.length) > 0;
+  let parentChildGridClassName = isChildParentGrid ? 'parent-grid' : '';
   const hideFooter = model.showFooter === false;
-
-  // Debug globalFilters
-  console.log('Grid GlobalFilters Debug:', {
-    'model.globalFilters': model === null || model === void 0 ? void 0 : model.globalFilters,
-    'filterConfig.length': model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length,
-    'GlobalFiltersComponent': !!GlobalFiltersComponent,
-    'shouldRender': !!(model !== null && model !== void 0 && (_model$globalFilters2 = model.globalFilters) !== null && _model$globalFilters2 !== void 0 && (_model$globalFilters2 = _model$globalFilters2.filterConfig) !== null && _model$globalFilters2 !== void 0 && _model$globalFilters2.length && GlobalFiltersComponent)
-  });
-  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters3 = model.globalFilters) === null || _model$globalFilters3 === void 0 || (_model$globalFilters3 = _model$globalFilters3.filterConfig) === null || _model$globalFilters3 === void 0 ? void 0 : _model$globalFilters3.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
     filterGroupByConfig: model.globalFilters,
     addExternalClientDependency: model === null || model === void 0 ? void 0 : model.addExternalClientDependency,
     customApplyFunction: customApplyFunction
   }), /*#__PURE__*/_react.default.createElement("div", {
     style: gridStyle || customStyle
   }, /*#__PURE__*/_react.default.createElement(_Box.default, {
-    className: "grid-parent-container"
+    className: "grid-parent-container ".concat(parentChildGridClassName)
   }, /*#__PURE__*/_react.default.createElement(_xDataGridPremium.DataGridPremium, {
     showToolbar: true,
     headerFilters: showHeaderFilters,
@@ -1550,7 +1588,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         borderBottom: 'none !important'
       }
     }
-  })), isOrderDetailModalOpen && selectedOrder && model.OrderModal && /*#__PURE__*/_react.default.createElement(model.OrderModal, {
+  })), model !== null && model !== void 0 && model.childTabs ? /*#__PURE__*/_react.default.createElement("div", null, /*#__PURE__*/_react.default.createElement(_ChildGridComponent.default, {
+    tabs: model === null || model === void 0 ? void 0 : model.childTabs,
+    selected: parentGridFilter,
+    hideChildGrids: () => setShowChildGrids(false),
+    childGridTitle: childGridTitle,
+    showChildGrids: showChildGrids
+  })) : null, isOrderDetailModalOpen && selectedOrder && model.OrderModal && /*#__PURE__*/_react.default.createElement(model.OrderModal, {
     orderId: selectedOrder.OrderId,
     isOpen: true,
     orderTotal: selectedOrder.OrderTotal,
