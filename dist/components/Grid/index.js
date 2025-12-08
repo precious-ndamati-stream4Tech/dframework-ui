@@ -1601,7 +1601,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   };
   const updateSort = e => {
     if (e[0]) {
-      if (_constants.default.gridGroupByColumnName.includes(e[0].field)) {
+      var _constants$gridGroupB;
+      if ((_constants$gridGroupB = _constants.default.gridGroupByColumnName) !== null && _constants$gridGroupB !== void 0 && _constants$gridGroupB.includes(e[0].field)) {
         snackbar.showMessage(t('Group By is applied on the same column, please remove it in order to apply sorting.', tOpts));
         return;
       }

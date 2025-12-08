@@ -1253,7 +1253,7 @@ const GridBase = memo(({
 
     const updateSort = (e) => {
         if (e[0]) {
-            if (constants.gridGroupByColumnName.includes(e[0].field)) {
+            if (constants.gridGroupByColumnName?.includes(e[0].field)) {
                 snackbar.showMessage(t('Group By is applied on the same column, please remove it in order to apply sorting.', tOpts));
                 return;
             }

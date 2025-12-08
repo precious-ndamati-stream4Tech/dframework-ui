@@ -1,6 +1,6 @@
 const constants = {
     gridFilterModel: { items: [], logicOperator: 'and', quickFilterValues: Array(0), quickFilterLogicOperator: 'and' },
-    permissions: { edit: true, add: true, export: true, delete: true, clearFilterText: "CLEAR THIS FILTER" },
+    permissions: { edit: true, add: true, export: true, delete: true, clearFilterText: "CLEAR THIS FILTER", filter: true, columns: true },
     exportTypes: {
         PDF: 'PDF',
         CSV: 'text/csv',
@@ -27,7 +27,31 @@ const constants = {
     pageSizeOptions: [5, 10, 20, 50, 100],
     OrderSuggestionHistoryFields: {
         OrderStatus: 'OrderStatusId'
-    }
+    },
+    gridGroupByColumnName: ['__row_group_by_columns_group__', '__detail_panel_toggle__'],
+    SQL_INT_MAX: 2147483647,
+    SQL_INT_MIN: -2147483648,
+    GridOperators: {
+        IsAnyOf: 'isAnyOf'
+    },
+    emptyIsAnyOfOperatorFilters: ["isEmpty", "isNotEmpty", "isAnyOf"],
+    filterFieldDataTypes: {
+        Number: 'number',
+        String: 'string',
+        Boolean: 'boolean',
+        Decimal: 'decimal',
+        Percentage: 'percentage'
+    },
+    chartFilterFields: {
+        SerialNumber: "SerialNumber",
+        AssetType: "AssetType",
+        Code: "LocationCode",
+        MDMSerialNumber: "MDMSerialNumber",
+        SmartDeviceSerialNumber: "SmartDeviceSerialNumber",
+        PlanogramName: "PlanogramName",
+        Status: "Status"
+    },
+    defaultLanguage: 'en',
 }
 
 export default constants;
