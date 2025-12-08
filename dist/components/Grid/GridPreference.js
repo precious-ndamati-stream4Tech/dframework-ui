@@ -370,6 +370,7 @@ const GridPreferences = _ref2 => {
         return;
       }
       const initialState = initialGridRef.current;
+      // Keep currentPreferenceName as empty string for default - no preference name should be displayed
 
       // Reconstruct gridColumn from initial state
       const gridColumn = initialState.columns.orderedFields.map(field => {
@@ -561,7 +562,7 @@ const GridPreferences = _ref2 => {
     dense: true,
     divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
     onClick: handleResetPreferences
-  }, tTranslate('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && (preferences === null || preferences === void 0 ? void 0 : preferences.map((ele, key) => {
+  }, tTranslate('Reset Preferences', tOpts)), preferences === null || preferences === void 0 ? void 0 : preferences.filter(hasValidPreferenceName).map((ele, key) => {
     const {
       prefName,
       prefDesc,
@@ -576,7 +577,7 @@ const GridPreferences = _ref2 => {
     }, /*#__PURE__*/_react.default.createElement(_material.ListItemText, {
       primary: tTranslate(prefName, tOpts)
     }));
-  }))), /*#__PURE__*/_react.default.createElement(_material.Dialog, {
+  })), /*#__PURE__*/_react.default.createElement(_material.Dialog, {
     open: openDialog,
     maxWidth: formType === formTypes.Manage ? 'md' : 'sm',
     fullWidth: true
@@ -688,7 +689,7 @@ const GridPreferences = _ref2 => {
     className: "pagination-fix",
     onCellClick: onCellClick,
     columns: gridColumns,
-    pageSizeOptions: [5, 10, 20, 50, 100],
+    pageSizeOptions: _constants.default.pageSizeOptions,
     pagination: true,
     rowCount: preferences.length,
     rows: preferences,
@@ -703,6 +704,13 @@ const GridPreferences = _ref2 => {
     disableRowGrouping: true,
     disableRowSelectionOnClick: true,
     autoHeight: true,
+    initialState: {
+      pagination: {
+        paginationModel: {
+          pageSize: 10
+        }
+      }
+    },
     localeText: {
       toolbarColumnsLabel: tTranslate('Select columns', tOpts),
       toolbarExportLabel: tTranslate('Export', tOpts),
