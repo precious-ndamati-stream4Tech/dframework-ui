@@ -431,8 +431,11 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                 <MenuItem component={ListItemButton} dense onClick={() => openModal(formTypes.Add)}>
                     {tTranslate('Add Preference', tOpts)}
                 </MenuItem>
-                <MenuItem component={ListItemButton} dense divider={preferences?.length > 0} onClick={() => openModal(formTypes.Manage, false)}>
+                <MenuItem component={ListItemButton} dense onClick={() => openModal(formTypes.Manage, false)}>
                     {tTranslate('Manage Preferences', tOpts)}
+                </MenuItem>
+                <MenuItem component={ListItemButton} dense divider={preferences?.length > 0} onClick={handleResetPreferences}>
+                    {tTranslate('Reset Preferences', tOpts)}
                 </MenuItem>
 
                 {preferences?.length > 0 && preferences?.map((ele, key) => {

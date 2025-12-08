@@ -555,9 +555,13 @@ const GridPreferences = _ref2 => {
   }, tTranslate('Add Preference', tOpts)), /*#__PURE__*/_react.default.createElement(_material.MenuItem, {
     component: _material.ListItemButton,
     dense: true,
-    divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
     onClick: () => openModal(formTypes.Manage, false)
-  }, tTranslate('Manage Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && (preferences === null || preferences === void 0 ? void 0 : preferences.map((ele, key) => {
+  }, tTranslate('Manage Preferences', tOpts)), /*#__PURE__*/_react.default.createElement(_material.MenuItem, {
+    component: _material.ListItemButton,
+    dense: true,
+    divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
+    onClick: handleResetPreferences
+  }, tTranslate('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && (preferences === null || preferences === void 0 ? void 0 : preferences.map((ele, key) => {
     const {
       prefName,
       prefDesc,
