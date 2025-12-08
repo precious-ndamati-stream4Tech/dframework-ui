@@ -54,6 +54,16 @@ const CustomToolbar = function CustomToolbar(props) {
     showInstallationPivotExportBtn,
     detailExportLabel
   } = props;
+
+  // Debug logging
+  console.log('CustomToolbar Debug:', {
+    effectivePermissions,
+    'effectivePermissions.filter': effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.filter,
+    'effectivePermissions.columns': effectivePermissions === null || effectivePermissions === void 0 ? void 0 : effectivePermissions.columns,
+    currentPreference,
+    'model.preferenceId': model.preferenceId,
+    'currentPreference[model.preferenceId]': currentPreference === null || currentPreference === void 0 ? void 0 : currentPreference[model.preferenceId]
+  });
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "grid-header-alignment"
   }, /*#__PURE__*/_react.default.createElement("div", {

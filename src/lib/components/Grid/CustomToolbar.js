@@ -47,6 +47,16 @@ const CustomToolbar = function (props) {
         detailExportLabel
     } = props;
 
+    // Debug logging
+    console.log('CustomToolbar Debug:', {
+        effectivePermissions,
+        'effectivePermissions.filter': effectivePermissions?.filter,
+        'effectivePermissions.columns': effectivePermissions?.columns,
+        currentPreference,
+        'model.preferenceId': model.preferenceId,
+        'currentPreference[model.preferenceId]': currentPreference?.[model.preferenceId]
+    });
+
     return (
         <div className="grid-header-alignment" >
             <div className='grid-toolbar-heading'>

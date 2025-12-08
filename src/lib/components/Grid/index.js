@@ -985,6 +985,14 @@ const GridBase = memo(({
 
     const hideFooter = model.showFooter === false;
 
+    // Debug globalFilters
+    console.log('Grid GlobalFilters Debug:', {
+        'model.globalFilters': model?.globalFilters,
+        'filterConfig.length': model?.globalFilters?.filterConfig?.length,
+        'GlobalFiltersComponent': !!GlobalFiltersComponent,
+        'shouldRender': !!(model?.globalFilters?.filterConfig?.length && GlobalFiltersComponent)
+    });
+
     return (
         <>
             {model?.globalFilters?.filterConfig?.length && GlobalFiltersComponent && (

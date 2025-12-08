@@ -265,7 +265,7 @@ const convertDefaultSort = defaultSort => {
   return orderBy;
 };
 const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
-  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters;
+  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters, _model$globalFilters2, _model$globalFilters3;
   let {
     useLinkColumn = true,
     model,
@@ -1295,7 +1295,15 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     return [...orderedCols, ...missingCols];
   }, [gridColumns, columnOrderModel]);
   const hideFooter = model.showFooter === false;
-  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
+
+  // Debug globalFilters
+  console.log('Grid GlobalFilters Debug:', {
+    'model.globalFilters': model === null || model === void 0 ? void 0 : model.globalFilters,
+    'filterConfig.length': model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length,
+    'GlobalFiltersComponent': !!GlobalFiltersComponent,
+    'shouldRender': !!(model !== null && model !== void 0 && (_model$globalFilters2 = model.globalFilters) !== null && _model$globalFilters2 !== void 0 && (_model$globalFilters2 = _model$globalFilters2.filterConfig) !== null && _model$globalFilters2 !== void 0 && _model$globalFilters2.length && GlobalFiltersComponent)
+  });
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters3 = model.globalFilters) === null || _model$globalFilters3 === void 0 || (_model$globalFilters3 = _model$globalFilters3.filterConfig) === null || _model$globalFilters3 === void 0 ? void 0 : _model$globalFilters3.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
     filterGroupByConfig: model.globalFilters,
     addExternalClientDependency: model === null || model === void 0 ? void 0 : model.addExternalClientDependency,
     customApplyFunction: customApplyFunction

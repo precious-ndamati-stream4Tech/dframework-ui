@@ -59,6 +59,14 @@ const stateReducer = (state, action) => {
         preferences: action.payload
       });
     case _actions.default.SET_CURRENT_PREFERENCE_NAME:
+      // Handle both object payload (with model key) and string payload (for backward compatibility)
+      if (typeof action.payload === 'object' && action.payload !== null && action.payload.model) {
+        return _objectSpread(_objectSpread({}, state), {}, {
+          currentPreference: _objectSpread(_objectSpread({}, state.currentPreference || {}), {}, {
+            [action.payload.model]: action.payload.currentPreference
+          })
+        });
+      }
       return _objectSpread(_objectSpread({}, state), {}, {
         currentPreference: action.payload
       });

@@ -22,6 +22,16 @@ const stateReducer = (state, action) => {
         case actionsStateProvider.UDPATE_PREFERENCES:
             return { ...state, preferences: action.payload }
         case actionsStateProvider.SET_CURRENT_PREFERENCE_NAME:
+            // Handle both object payload (with model key) and string payload (for backward compatibility)
+            if (typeof action.payload === 'object' && action.payload !== null && action.payload.model) {
+                return { 
+                    ...state, 
+                    currentPreference: { 
+                        ...(state.currentPreference || {}), 
+                        [action.payload.model]: action.payload.currentPreference 
+                    } 
+                };
+            }
             return { ...state, currentPreference: action.payload }
         case actionsStateProvider.TOTAL_PREFERENCES:
             return { ...state, totalPreferences: action.payload }
