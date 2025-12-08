@@ -189,7 +189,9 @@ const GridBase = memo(({
     showInFieldStatusPivotExportBtn = false,
     showInstallationPivotExportBtn = false,
     detailExportLabel = "Excel with Details",
-    rowSelectionModel = undefined
+    rowSelectionModel = undefined,
+    GlobalFiltersComponent = null,
+    customApplyFunction = null
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -231,7 +233,7 @@ const GridBase = memo(({
     const columnWidthsRef = useRef({});
     const classes = useStyles();
     const { systemDateTimeFormat, stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
-    const modelPermissions = model.permissions || permissions;
+    const modelPermissions = model.modelPermissions || permissions;
     const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...modelPermissions };
     const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
@@ -984,9 +986,17 @@ const GridBase = memo(({
     const hideFooter = model.showFooter === false;
 
     return (
-        <div style={gridStyle || customStyle}>
-            <Box className="grid-parent-container">
-                <DataGridPremium
+        <>
+            {model?.globalFilters?.filterConfig?.length && GlobalFiltersComponent && (
+                <GlobalFiltersComponent 
+                    filterGroupByConfig={model.globalFilters} 
+                    addExternalClientDependency={model?.addExternalClientDependency} 
+                    customApplyFunction={customApplyFunction} 
+                />
+            )}
+            <div style={gridStyle || customStyle}>
+                <Box className="grid-parent-container">
+                    <DataGridPremium
                     showToolbar
                     headerFilters={showHeaderFilters}
                     checkboxSelection={forAssignment}
@@ -1231,7 +1241,8 @@ const GridBase = memo(({
             {errorMessage && (<DialogComponent open={!!errorMessage} onConfirm={clearError} onCancel={clearError} title="Info" hideCancelButton={true} > {errorMessage}</DialogComponent>)
             }
             {isDeleting && !errorMessage && (<DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => setIsDeleting(false)} title="Confirm Delete"> {`${'Are you sure you want to delete'} ${record?.name}?`}</DialogComponent>)}
-        </div >
+            </div >
+        </>
     );
 }, areEqual);
 

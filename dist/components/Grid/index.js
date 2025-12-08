@@ -265,7 +265,7 @@ const convertDefaultSort = defaultSort => {
   return orderBy;
 };
 const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
-  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4;
+  var _stateData$gridSettin, _stateData$gridSettin2, _stateData$gridSettin3, _model$tTranslate, _stateData$gridSettin4, _model$globalFilters;
   let {
     useLinkColumn = true,
     model,
@@ -308,7 +308,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     showInFieldStatusPivotExportBtn = false,
     showInstallationPivotExportBtn = false,
     detailExportLabel = "Excel with Details",
-    rowSelectionModel = undefined
+    rowSelectionModel = undefined,
+    GlobalFiltersComponent = null,
+    customApplyFunction = null
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,
@@ -400,7 +402,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     getAllSavedPreferences,
     applyDefaultPreferenceIfExists
   } = (0, _StateProvider.useStateContext)();
-  const modelPermissions = model.permissions || permissions;
+  const modelPermissions = model.modelPermissions || permissions;
   const effectivePermissions = _objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), modelPermissions);
   const {
     ClientId
@@ -1293,7 +1295,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     return [...orderedCols, ...missingCols];
   }, [gridColumns, columnOrderModel]);
   const hideFooter = model.showFooter === false;
-  return /*#__PURE__*/_react.default.createElement("div", {
+  return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, (model === null || model === void 0 || (_model$globalFilters = model.globalFilters) === null || _model$globalFilters === void 0 || (_model$globalFilters = _model$globalFilters.filterConfig) === null || _model$globalFilters === void 0 ? void 0 : _model$globalFilters.length) && GlobalFiltersComponent && /*#__PURE__*/_react.default.createElement(GlobalFiltersComponent, {
+    filterGroupByConfig: model.globalFilters,
+    addExternalClientDependency: model === null || model === void 0 ? void 0 : model.addExternalClientDependency,
+    customApplyFunction: customApplyFunction
+  }), /*#__PURE__*/_react.default.createElement("div", {
     style: gridStyle || customStyle
   }, /*#__PURE__*/_react.default.createElement(_Box.default, {
     className: "grid-parent-container"
@@ -1557,6 +1563,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     onConfirm: handleDelete,
     onCancel: () => setIsDeleting(false),
     title: "Confirm Delete"
-  }, " ", 'Are you sure you want to delete'.concat(" ", record === null || record === void 0 ? void 0 : record.name, "?")));
+  }, " ", 'Are you sure you want to delete'.concat(" ", record === null || record === void 0 ? void 0 : record.name, "?"))));
 }, areEqual);
 var _default = exports.default = GridBase;
