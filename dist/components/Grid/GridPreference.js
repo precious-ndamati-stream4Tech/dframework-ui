@@ -64,12 +64,12 @@ const hasValidPreferenceName = pref => {
 };
 
 /**
- * Checks if a preference is valid for the management grid (excludes invalid names and Coolr Default)
+ * Checks if a preference is valid for the management grid (excludes invalid names)
  * @param {Object} pref - The preference object to validate
  * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
  */
 const isValidForManagement = pref => {
-  return hasValidPreferenceName(pref) && pref.prefName !== 'Coolr Default';
+  return hasValidPreferenceName(pref);
 };
 
 /**
@@ -111,7 +111,7 @@ const getGridColumnsFromRef = _ref => {
   };
 };
 const GridPreferences = _ref2 => {
-  var _stateData$gridSettin;
+  var _stateData$preference, _stateData$gridSettin;
   let {
     t,
     model,
@@ -152,7 +152,7 @@ const GridPreferences = _ref2 => {
   const {
     Username
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
-  const preferences = stateData === null || stateData === void 0 ? void 0 : stateData.preferences;
+  const preferences = stateData === null || stateData === void 0 || (_stateData$preference = stateData.preferences) === null || _stateData$preference === void 0 ? void 0 : _stateData$preference.filter(pref => pref.prefName !== 'Coolr Default');
   const currentPreference = stateData === null || stateData === void 0 ? void 0 : stateData.currentPreference;
   const preferenceApi = stateData === null || stateData === void 0 || (_stateData$gridSettin = stateData.gridSettings) === null || _stateData$gridSettin === void 0 || (_stateData$gridSettin = _stateData$gridSettin.permissions) === null || _stateData$gridSettin === void 0 ? void 0 : _stateData$gridSettin.preferenceApi;
   const filterModel = (0, _xDataGridPremium.useGridSelector)(gridRef, _xDataGridPremium.gridFilterModelSelector);
@@ -575,7 +575,7 @@ const GridPreferences = _ref2 => {
     dense: true,
     divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
     onClick: handleResetPreferences
-  }, t('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && preferences.filter(pref => pref.prefName !== 'Coolr Default').map((ele, key) => {
+  }, t('Reset Preferences', tOpts)), (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0 && preferences.map((ele, key) => {
     const {
       prefName,
       prefDesc,

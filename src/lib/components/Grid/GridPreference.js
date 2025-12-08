@@ -37,12 +37,12 @@ const hasValidPreferenceName = (pref) => {
 };
 
 /**
- * Checks if a preference is valid for the management grid (excludes invalid names and Coolr Default)
+ * Checks if a preference is valid for the management grid (excludes invalid names)
  * @param {Object} pref - The preference object to validate
  * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
  */
 const isValidForManagement = (pref) => {
-    return hasValidPreferenceName(pref) && pref.prefName !== 'Coolr Default';
+    return hasValidPreferenceName(pref);
 };
 
 /**
@@ -90,7 +90,7 @@ const GridPreferences = ({ t, model, gridRef, columns = [], setIsGridPreferenceF
     const [menuAnchorEl, setMenuAnchorEl] = useState();
     const [openPreferenceExistsModal, setOpenPreferenceExistsModal] = useState(false);
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
-    const preferences = stateData?.preferences;
+    const preferences = stateData?.preferences?.filter(pref => pref.prefName !== 'Coolr Default');
     const currentPreference = stateData?.currentPreference;
     const preferenceApi = stateData?.gridSettings?.permissions?.preferenceApi;
     const filterModel = useGridSelector(gridRef, gridFilterModelSelector);
@@ -436,7 +436,7 @@ const GridPreferences = ({ t, model, gridRef, columns = [], setIsGridPreferenceF
                     {t('Reset Preferences', tOpts)}
                 </MenuItem>
 
-                {preferences?.length > 0 && preferences.filter(pref => pref.prefName !== 'Coolr Default').map((ele, key) => {
+                {preferences?.length > 0 && preferences.map((ele, key) => {
                     const { prefName, prefDesc, prefId } = ele;
                     return (
                         <MenuItem
