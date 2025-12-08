@@ -39,7 +39,7 @@ const CustomToolbar = function (props) {
         initialGridRef,
         setIsLoading,
         CustomExportButton,
-        effectivePermissions,
+        effectivePermissions = { filter: true, columns: true, export: true },
         showExportWithDetails,
         showExportWithLatestData,
         showInFieldStatusPivotExportBtn,

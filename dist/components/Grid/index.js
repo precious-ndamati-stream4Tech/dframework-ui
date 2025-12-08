@@ -304,6 +304,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     onExportMenuClick,
     onResolveClick,
     onAssignmentClick,
+    getRowClassName,
     showExportWithDetails = false,
     showExportWithLatestData = false,
     showInFieldStatusPivotExportBtn = false,
@@ -925,78 +926,34 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     navigate(path);
   };
   const onCellClickHandler = async (cellParams, event, details) => {
-    if (!isReadOnly) {
-      var _model$childTabLinkin;
-      if (onCellClick) {
-        const result = await onCellClick({
-          cellParams,
-          event,
-          details
-        });
-        if (typeof result !== "boolean") {
-          return;
-        }
-      }
-
-      // Handle child tabs linking
-      if (model !== null && model !== void 0 && (_model$childTabLinkin = model.childTabLinkingKey) !== null && _model$childTabLinkin !== void 0 && _model$childTabLinkin.length) {
-        const {
-          row: record
-        } = cellParams;
-        const includeFilter = {};
-        let title = [];
-        for (const column of model === null || model === void 0 ? void 0 : model.columns) {
-          const keyName = model === null || model === void 0 ? void 0 : model.childParentKeyMapping[column.field];
-          if (model.childTabLinkingKey.includes(keyName)) {
-            includeFilter[keyName] = record[keyName];
-            title.push(record[column.field]);
-            if (column.field === cellParams.field) {
-              break;
-            }
-          }
-        }
-        title = title.join(' - ');
-        setParentGridFilter(includeFilter);
-        if (!showChildGrids) {
-          setShowChildGrids(true);
-        }
-        setChildGridTitle(title);
+    var _model$childTabLinkin;
+    // Call onCellClick and return early if result is not false
+    if (onCellClick) {
+      const result = await onCellClick({
+        cellParams,
+        event,
+        details,
+        row: cellParams === null || cellParams === void 0 ? void 0 : cellParams.row
+      });
+      if (result !== false) {
         return;
       }
-      const {
-        row: record
-      } = cellParams;
-      const columnConfig = lookupMap[cellParams.field] || {};
+    }
+    const {
+      row: record
+    } = cellParams;
+    const columnConfig = lookupMap[cellParams.field] || {};
+    if (!isReadOnly) {
       if (columnConfig.linkTo) {
         navigate({
           pathname: _template.default.replaceTags(columnConfig.linkTo, record)
         });
         return;
       }
-      let action = useLinkColumn && cellParams.field === model.linkColumn ? actionTypes.Edit : null;
-      if (!action && cellParams.field === 'actions') {
-        action = details === null || details === void 0 ? void 0 : details.action;
-        if (!action) {
-          const el = event.target.closest('button');
-          if (el) {
-            action = el.dataset.action;
-          }
-        }
-      }
-      if (action === actionTypes.Edit) {
+
+      // Handle link column click for edit
+      if (useLinkColumn && cellParams.field === model.linkColumn) {
         return openForm(record[idProperty]);
-      }
-      if (action === actionTypes.Copy) {
-        return openForm(record[idProperty], {
-          mode: 'copy'
-        });
-      }
-      if (action === actionTypes.Delete) {
-        setIsDeleting(true);
-        setRecord({
-          name: record[model === null || model === void 0 ? void 0 : model.linkColumn],
-          id: record[idProperty]
-        });
       }
     }
     if (isReadOnly && toLink) {
@@ -1004,17 +961,32 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         onCellClick(cellParams.row);
         return;
       }
-      const {
-        row: record
-      } = cellParams;
-      const columnConfig = lookupMap[cellParams.field] || {};
       let historyObject = {
         pathname: _template.default.replaceTags(columnConfig.linkTo, record)
       };
-      if (model.addRecordToState) {
-        historyObject.state = record;
-      }
       navigate(historyObject);
+    }
+
+    // Handle child tabs linking (outside isReadOnly check)
+    if (model !== null && model !== void 0 && (_model$childTabLinkin = model.childTabLinkingKey) !== null && _model$childTabLinkin !== void 0 && _model$childTabLinkin.length) {
+      const includeFilter = {};
+      let title = [];
+      for (const column of model === null || model === void 0 ? void 0 : model.columns) {
+        const keyName = model === null || model === void 0 ? void 0 : model.childParentKeyMapping[column.field];
+        if (model.childTabLinkingKey.includes(keyName)) {
+          includeFilter[keyName] = record[keyName];
+          title.push(record[column.field]);
+          if (column.field === cellParams.field) {
+            break;
+          }
+        }
+      }
+      title = title.join(' - ');
+      setParentGridFilter(includeFilter);
+      if (!showChildGrids) {
+        setShowChildGrids(true);
+      }
+      setChildGridTitle(title);
     }
   };
   const handleDelete = async function handleDelete() {
@@ -1380,6 +1352,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     rowSelectionModel: rowSelectionModel !== undefined ? rowSelectionModel : selection,
     filterModel: filterModel,
     getRowId: getGridRowId,
+    getRowClassName: getRowClassName,
     onRowClick: onRowClick,
     slots: {
       toolbar: _CustomToolbar.default,

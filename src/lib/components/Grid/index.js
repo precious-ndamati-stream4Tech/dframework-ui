@@ -185,6 +185,7 @@ const GridBase = memo(({
     onExportMenuClick,
     onResolveClick,
     onAssignmentClick,
+    getRowClassName,
     showExportWithDetails = false,
     showExportWithLatestData = false,
     showInFieldStatusPivotExportBtn = false,
@@ -681,82 +682,62 @@ const GridBase = memo(({
         navigate(path);
     };
     const onCellClickHandler = async (cellParams, event, details) => {
-        if (!isReadOnly) {
-            if (onCellClick) {
-                const result = await onCellClick({ cellParams, event, details });
-                if (typeof result !== "boolean") {
-                    return;
-                }
-            }
-
-            // Handle child tabs linking
-            if (model?.childTabLinkingKey?.length) {
-                const { row: record } = cellParams;
-                const includeFilter = {};
-                let title = [];
-                for (const column of model?.columns) {
-                    const keyName = model?.childParentKeyMapping[column.field];
-                    if (model.childTabLinkingKey.includes(keyName)) {
-                        includeFilter[keyName] = record[keyName];
-                        title.push(record[column.field]);
-                        if (column.field === cellParams.field) {
-                            break;
-                        }
-                    }
-                }
-                title = title.join(' - ');
-                setParentGridFilter(includeFilter);
-                if (!showChildGrids) {
-                    setShowChildGrids(true);
-                }
-                setChildGridTitle(title);
+        // Call onCellClick and return early if result is not false
+        if (onCellClick) {
+            const result = await onCellClick({ cellParams, event, details, row: cellParams?.row });
+            if (result !== false) {
                 return;
             }
+        }
 
-            const { row: record } = cellParams;
-            const columnConfig = lookupMap[cellParams.field] || {};
+        const { row: record } = cellParams;
+        const columnConfig = lookupMap[cellParams.field] || {};
+
+        if (!isReadOnly) {
             if (columnConfig.linkTo) {
                 navigate({
                     pathname: template.replaceTags(columnConfig.linkTo, record)
                 });
                 return;
             }
-            let action = useLinkColumn && cellParams.field === model.linkColumn ? actionTypes.Edit : null;
-            if (!action && cellParams.field === 'actions') {
-                action = details?.action;
-                if (!action) {
-                    const el = event.target.closest('button');
-                    if (el) {
-                        action = el.dataset.action;
-                    }
-                }
-            }
-            if (action === actionTypes.Edit) {
+            
+            // Handle link column click for edit
+            if (useLinkColumn && cellParams.field === model.linkColumn) {
                 return openForm(record[idProperty]);
             }
-            if (action === actionTypes.Copy) {
-                return openForm(record[idProperty], { mode: 'copy' });
-            }
-            if (action === actionTypes.Delete) {
-                setIsDeleting(true);
-                setRecord({ name: record[model?.linkColumn], id: record[idProperty] });
-            }
         }
+
         if (isReadOnly && toLink) {
             if (model?.isAcostaController && onCellClick && cellParams.colDef.customCellClick === true) {
                 onCellClick(cellParams.row);
                 return;
             }
-            const { row: record } = cellParams;
-            const columnConfig = lookupMap[cellParams.field] || {};
             let historyObject = {
                 pathname: template.replaceTags(columnConfig.linkTo, record),
-            }
-
-            if (model.addRecordToState) {
-                historyObject.state = record
-            }
+            };
             navigate(historyObject);
+        }
+
+        // Handle child tabs linking (outside isReadOnly check)
+        if (model?.childTabLinkingKey?.length) {
+            const includeFilter = {};
+            let title = [];
+            for (const column of model?.columns) {
+                const keyName = model?.childParentKeyMapping[column.field];
+                if (model.childTabLinkingKey.includes(keyName)) {
+                    includeFilter[keyName] = record[keyName];
+                    title.push(record[column.field]);
+                    if (column.field === cellParams.field) {
+                        break;
+                    }
+                }
+            }
+            title = title.join(' - ');
+            setParentGridFilter(includeFilter);
+            if (!showChildGrids) {
+                setShowChildGrids(true);
+            }
+            setChildGridTitle(title);
         }
     };
 
@@ -1073,6 +1054,7 @@ const GridBase = memo(({
                         rowSelectionModel={rowSelectionModel !== undefined ? rowSelectionModel : selection}
                         filterModel={filterModel}
                         getRowId={getGridRowId}
+                        getRowClassName={getRowClassName}
                         onRowClick={onRowClick}
                         slots={{
                             toolbar: CustomToolbar,
