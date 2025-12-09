@@ -14,6 +14,7 @@ require("core-js/modules/es.promise.js");
 require("core-js/modules/es.regexp.to-string.js");
 require("core-js/modules/es.string.includes.js");
 require("core-js/modules/esnext.iterator.constructor.js");
+require("core-js/modules/esnext.iterator.every.js");
 require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.find.js");
 require("core-js/modules/esnext.iterator.for-each.js");
@@ -35,6 +36,8 @@ var _utc = _interopRequireDefault(require("dayjs/plugin/utc"));
 var _actions = _interopRequireDefault(require("../useRouter/actions"));
 var _httpRequest = _interopRequireWildcard(require("./httpRequest"));
 var _constants = _interopRequireDefault(require("../constants"));
+var _IconButton = _interopRequireDefault(require("@mui/material/IconButton"));
+var _Add = _interopRequireDefault(require("@mui/icons-material/Add"));
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -93,7 +96,8 @@ const getList = async _ref => {
     exportFileName = null,
     tTranslate = null,
     tOpts = null,
-    languageSelected
+    languageSelected,
+    formatMerchandisingDateRange = null
   } = _ref;
   if (!contentType) {
     setIsLoading(true);
@@ -360,18 +364,43 @@ const getList = async _ref => {
           });
         }
         if (modelConfig !== null && modelConfig !== void 0 && modelConfig.dynamicColumns && setColumns) {
-          var _response$data, _newDynamicColumns;
+          var _response$data;
           const existingLabels = new Set(gridColumns === null || gridColumns === void 0 ? void 0 : gridColumns.map(col => col.label));
           const dynamicResponseColumns = ((_response$data = response.data) === null || _response$data === void 0 ? void 0 : _response$data.dynamicColumns) || [];
+          const isMerchandisingColumn = dynamicResponseColumns === null || dynamicResponseColumns === void 0 ? void 0 : dynamicResponseColumns.every(col => col.key);
           let newDynamicColumns;
-          if (modelConfig.updateDynamicColumns) {
-            newDynamicColumns = modelConfig.updateDynamicColumns({
-              dynamicResponseColumns,
-              t: tTranslate,
-              tOpts
+          if (isMerchandisingColumn) {
+            newDynamicColumns = dynamicResponseColumns === null || dynamicResponseColumns === void 0 ? void 0 : dynamicResponseColumns.filter(col => !existingLabels.has(col.key));
+            existingLabels.clear();
+            newDynamicColumns = newDynamicColumns.map(col => {
+              if (col.addDrillDownIcon) {
+                col.renderCell = params => {
+                  return /*#__PURE__*/React.createElement(_IconButton.default, {
+                    onClick: e => modelConfig.onDrillDown(params, col),
+                    size: "small",
+                    style: {
+                      padding: 1
+                    }
+                  }, /*#__PURE__*/React.createElement(_Add.default, null));
+                };
+              }
+              if (col.key && !col.addDrillDownIcon && formatMerchandisingDateRange) {
+                if (typeof formatMerchandisingDateRange === 'function') {
+                  col.label = formatMerchandisingDateRange(col.label);
+                }
+              }
+              return col;
             });
+          } else {
+            if (modelConfig.updateDynamicColumns) {
+              newDynamicColumns = modelConfig.updateDynamicColumns({
+                dynamicResponseColumns,
+                t,
+                tOpts
+              });
+            }
           }
-          if ((_newDynamicColumns = newDynamicColumns) !== null && _newDynamicColumns !== void 0 && _newDynamicColumns.length) {
+          if (newDynamicColumns.length) {
             setColumns([...modelConfig.columns, ...newDynamicColumns]);
           }
         }

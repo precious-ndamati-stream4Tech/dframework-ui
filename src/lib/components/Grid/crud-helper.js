@@ -4,12 +4,14 @@ import actionsStateProvider from "../useRouter/actions";
 import { transport, HTTP_STATUS_CODES } from "./httpRequest";
 import request from "./httpRequest";
 import constants from '../constants';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
 
 dayjs.extend(utc);
 
 const dateDataTypes = ['date', 'dateTime'];
 
-const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, fromSelfServe = false, isDetailsExport = false, setFetchData = () => { }, selectedClients = [], isChildGrid = false, groupBy, isPivotExport = false, gridPivotFilter = [], activeClients, isLatestExport = false, payloadFilter = [], isFieldStatusPivotExport = false, isInstallationPivotExport = false, uiClientIds = '', globalFilters = {}, additionalFiltersForExport, setColumns, afterDataSet, setIsDataFetchedInitially, isDataFetchedInitially, exportFileName = null, tTranslate = null, tOpts = null, languageSelected }) => {
+const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, fromSelfServe = false, isDetailsExport = false, setFetchData = () => { }, selectedClients = [], isChildGrid = false, groupBy, isPivotExport = false, gridPivotFilter = [], activeClients, isLatestExport = false, payloadFilter = [], isFieldStatusPivotExport = false, isInstallationPivotExport = false, uiClientIds = '', globalFilters = {}, additionalFiltersForExport, setColumns, afterDataSet, setIsDataFetchedInitially, isDataFetchedInitially, exportFileName = null, tTranslate = null, tOpts = null, languageSelected, formatMerchandisingDateRange = null }) => {
     if (!contentType) {
         setIsLoading(true);
         if (showFullScreenLoader) {
@@ -255,11 +257,38 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
                 if (modelConfig?.dynamicColumns && setColumns) {
                     const existingLabels = new Set(gridColumns?.map(col => col.label));
                     const dynamicResponseColumns = response.data?.dynamicColumns || [];
+                    const isMerchandisingColumn = dynamicResponseColumns?.every(col => col.key);
                     let newDynamicColumns;
-                    if (modelConfig.updateDynamicColumns) {
-                        newDynamicColumns = modelConfig.updateDynamicColumns({ dynamicResponseColumns, t: tTranslate, tOpts });
+                    if (isMerchandisingColumn) {
+                        newDynamicColumns = dynamicResponseColumns?.filter(col => !existingLabels.has(col.key));
+                        existingLabels.clear();
+                        newDynamicColumns = newDynamicColumns.map(col => {
+                            if (col.addDrillDownIcon) {
+                                col.renderCell = (params) => {
+                                    return (
+                                        <IconButton
+                                            onClick={(e) => modelConfig.onDrillDown(params, col)}
+                                            size="small"
+                                            style={{ padding: 1 }}
+                                        >
+                                            <AddIcon />
+                                        </IconButton>
+                                    );
+                                };
+                            }
+                            if (col.key && !col.addDrillDownIcon && formatMerchandisingDateRange) {
+                                if (typeof formatMerchandisingDateRange === 'function') {
+                                    col.label = formatMerchandisingDateRange(col.label);
+                                }
+                            }
+                            return col;
+                        });
+                    } else {
+                        if (modelConfig.updateDynamicColumns) {
+                            newDynamicColumns = modelConfig.updateDynamicColumns({ dynamicResponseColumns, t, tOpts });
+                        }
                     }
-                    if (newDynamicColumns?.length) {
+                    if (newDynamicColumns.length) {
                         setColumns([...modelConfig.columns, ...newDynamicColumns]);
                     }
                 }
