@@ -198,6 +198,7 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                 removeCurrentPreferenceName({ dispatchData });
             }
             snackbar.showMessage('Preference Deleted Successfully.');
+            handleDialogClose();
         }
     }
 
@@ -240,6 +241,7 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
         const response = await request({ url: preferenceApi, params, history: navigate, dispatchData });
         if (response === true) {
             snackbar.showMessage('Preference Saved Successfully.');
+            handleDialogClose();
         }
         getAllSavedPreferences({ preferenceName, Username, history: navigate, dispatchData, preferenceApi });
     }

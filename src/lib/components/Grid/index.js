@@ -1290,6 +1290,7 @@ const GridBase = memo(({
                         apiRef={apiRef}
                         disableAggregation={true}
                         disableRowGrouping={disableRowGrouping}
+                        columnOrderModel={columnOrderModel}
                         rowGroupingModel={groupingModel}
                         disableRowSelectionOnClick={disableRowSelectionOnClick}
                         initialState={{

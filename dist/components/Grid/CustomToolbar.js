@@ -54,6 +54,7 @@ const CustomToolbar = function CustomToolbar(props) {
     showInstallationPivotExportBtn,
     detailExportLabel
   } = props;
+  console.log("currentpreference in toolbar:", currentPreference);
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "grid-header-alignment"
   }, /*#__PURE__*/_react.default.createElement("div", {

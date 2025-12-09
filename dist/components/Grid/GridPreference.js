@@ -262,6 +262,7 @@ const GridPreferences = _ref2 => {
         });
       }
       snackbar.showMessage('Preference Deleted Successfully.');
+      handleDialogClose();
     }
   };
   const applySelectedPreference = async prefId => {
@@ -330,6 +331,7 @@ const GridPreferences = _ref2 => {
     });
     if (response === true) {
       snackbar.showMessage('Preference Saved Successfully.');
+      handleDialogClose();
     }
     getAllSavedPreferences({
       preferenceName,

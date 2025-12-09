@@ -47,6 +47,8 @@ const CustomToolbar = function (props) {
         detailExportLabel
     } = props;
 
+    console.log("currentpreference in toolbar:", currentPreference);
+
     return (
         <div className="grid-header-alignment" >
             <div className='grid-toolbar-heading'>

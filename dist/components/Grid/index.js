@@ -1608,6 +1608,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     apiRef: apiRef,
     disableAggregation: true,
     disableRowGrouping: disableRowGrouping,
+    columnOrderModel: columnOrderModel,
     rowGroupingModel: groupingModel,
     disableRowSelectionOnClick: disableRowSelectionOnClick,
     initialState: {
