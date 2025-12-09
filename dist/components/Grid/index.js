@@ -1251,44 +1251,32 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
   };
 
-  // Watch for changes in globalHeaderFilters and trigger data refresh
-  // We track both regular filters and groupBy separately to ensure both trigger refresh
-  const {
-    filteredGlobalFilters,
-    groupByField
-  } = (0, _react.useMemo)(() => {
-    if (!Array.isArray(globalHeaderFilters)) {
-      return {
-        filteredGlobalFilters: [],
-        groupByField: null
-      };
-    }
-
-    // Separate regular filters from groupBy (which has isGlobalSort flag)
-    const regularFilters = globalHeaderFilters.filter(f => !f.isGlobalSort);
-    const groupByFilter = globalHeaderFilters.find(f => f.isGlobalSort);
-    return {
-      filteredGlobalFilters: regularFilters,
-      groupByField: (groupByFilter === null || groupByFilter === void 0 ? void 0 : groupByFilter.field) || null
-    };
+  // Filter out globalHeaderFilters with isGlobalSort flag (used for groupBy sorting)
+  // This matches the frontend implementation
+  const filteredDependencies = (0, _react.useMemo)(() => {
+    const removeGlobalSort = Array.isArray(globalHeaderFilters) ? globalHeaderFilters.filter(f => !f.isGlobalSort) : [];
+    return removeGlobalSort;
   }, [globalHeaderFilters]);
 
-  // Use stringified version of dependencies for deep comparison to avoid infinite loops
-  const globalFiltersString = JSON.stringify(filteredGlobalFilters);
-  const previousGlobalFiltersRef = (0, _react.useRef)(globalFiltersString);
-  const previousGroupByRef = (0, _react.useRef)(groupByField);
+  // Build dependency array similar to frontend implementation
+  const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies];
+  const gridDependencyArray = (0, _react.useMemo)(() => {
+    return model !== null && model !== void 0 && model.isClient ? commonDependencies : [paginationModel, sortModel, filterModel, ...commonDependencies];
+  }, [model === null || model === void 0 ? void 0 : model.isClient, paginationModel, sortModel, filterModel, ...commonDependencies]);
+
+  // Use ref to track previous stringified dependencies for deep comparison
+  const previousGridDependencyRef = (0, _react.useRef)(JSON.stringify(gridDependencyArray));
   (0, _react.useEffect)(() => {
     if (isGridPreferenceFetched) {
-      // Only fetch if global filters or groupBy actually changed
-      const filtersChanged = previousGlobalFiltersRef.current !== globalFiltersString;
-      const groupByChanged = previousGroupByRef.current !== groupByField;
-      if (filtersChanged || groupByChanged) {
-        previousGlobalFiltersRef.current = globalFiltersString;
-        previousGroupByRef.current = groupByField;
+      const currentGridDependencyArray = JSON.stringify(gridDependencyArray);
+
+      // Only fetch if dependencies actually changed
+      if (previousGridDependencyRef.current !== currentGridDependencyArray) {
+        previousGridDependencyRef.current = currentGridDependencyArray;
+        fetchData();
       }
-      fetchData();
     }
-  }, [paginationModel, sortModel, filterModel, api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, globalFiltersString, groupByField]);
+  }, [gridDependencyArray, isGridPreferenceFetched]);
   (0, _react.useEffect)(() => {
     if (forAssignment || !updatePageTitle) {
       return;
