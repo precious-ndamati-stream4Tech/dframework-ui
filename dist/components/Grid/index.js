@@ -693,6 +693,15 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
       // Disable filtering for the currently grouped column
       overrides.filterable = column.filterable === false ? false : column.field !== groupingModelRef.current;
+
+      // Apply custom label processor if available
+      if (model.customLabelProcessor && typeof model.customLabelProcessor === 'function') {
+        column.label = model.customLabelProcessor({
+          column,
+          t: tTranslate,
+          tOpts
+        });
+      }
       finalColumns.push(_objectSpread(_objectSpread({
         headerName: tTranslate(column.headerName || column.label, tOpts)
       }, column), overrides));

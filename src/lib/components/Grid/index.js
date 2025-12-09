@@ -498,6 +498,12 @@ const GridBase = memo(({
             }
             // Disable filtering for the currently grouped column
             overrides.filterable = column.filterable === false ? false : (column.field !== groupingModelRef.current);
+            
+            // Apply custom label processor if available
+            if (model.customLabelProcessor && typeof model.customLabelProcessor === 'function') {
+                column.label = model.customLabelProcessor({ column, t: tTranslate, tOpts });
+            }
+            
             finalColumns.push({ headerName: tTranslate(column.headerName || column.label, tOpts), ...column, ...overrides });
             if (column.pinned) {
                 pinnedColumns[column.pinned === 'right' ? 'right' : 'left'].push(column.field);
