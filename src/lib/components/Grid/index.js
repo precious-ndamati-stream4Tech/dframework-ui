@@ -968,15 +968,19 @@ const GridBase = memo(({
     }, [gridColumns, columnOrderModel.length]);
 
     // Synchronize columnOrderModel with grid's orderedFields to maintain column order consistency
+    const prevOrderedFieldsRef = useRef([]);
     useEffect(() => {
-        const gridOrderedFields = apiRef.current?.state?.columns?.orderedFields;
-        if (gridOrderedFields && Array.isArray(gridOrderedFields) && gridOrderedFields.length > 0) {
-            // Only update if different from current state to avoid unnecessary re-renders
-            if (JSON.stringify(gridOrderedFields) !== JSON.stringify(columnOrderModel)) {
-                setColumnOrderModel(gridOrderedFields);
-            }
+        const currentOrderedFields = apiRef.current?.state?.columns?.orderedFields || [];
+        const prevOrderedFields = prevOrderedFieldsRef.current;
+
+        // Check if orderedFields actually changed
+        if (currentOrderedFields.length !== prevOrderedFields.length ||
+            !currentOrderedFields.every((field, index) => field === prevOrderedFields[index])) {
+
+            prevOrderedFieldsRef.current = [...currentOrderedFields];
+            setColumnOrderModel(currentOrderedFields);
         }
-    }, [apiRef.current?.state?.columns?.orderedFields, columnOrderModel]);
+    });
 
     useEffect(() => {
         removeCurrentPreferenceName({ dispatchData });

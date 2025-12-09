@@ -47,7 +47,11 @@ const CustomToolbar = function (props) {
         detailExportLabel
     } = props;
 
-    const appliedPreference = currentPreference && currentPreference[model.preferenceId] ? currentPreference[model.preferenceId] : currentPreference;
+    console.log('preferenceData', {
+        id: model.preferenceId,
+        currentPreference,
+    })
+    const appliedPreference = currentPreference && currentPreference[model.preferenceId] ? currentPreference[model.preferenceId] : typeof currentPreference === 'string' ? currentPreference : '';
 
     return (
         <div className="grid-header-alignment" >
