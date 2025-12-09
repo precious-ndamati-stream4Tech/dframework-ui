@@ -281,7 +281,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     parent,
     where,
     customHeaderComponent,
-    title,
+    makeExternalRequest,
     showModal,
     OrderModal,
     permissions,
@@ -318,7 +318,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     customApplyFunction = null,
     globalHeaderFilters = [],
     HeaderFiltersComponent = null,
-    updateParentFilters
+    updateParentFilters,
+    renderField,
+    onDataLoaded
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,
@@ -403,7 +405,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const rowGroupBy = globalSort !== null && globalSort !== void 0 && globalSort.length ? [globalSort[0].field] : [''];
   const groupingModelRef = (0, _react.useRef)(null);
   const [isGridPreferenceFetched, setIsGridPreferenceFetched] = (0, _react.useState)(false);
-  const [columnOrderModel, setColumnOrderModel] = (0, _react.useState)([]);
+  // Initialize columnOrderModel with the initial column order
+  const getInitialColumnOrder = () => {
+    const baseColumnList = columns || (model === null || model === void 0 ? void 0 : model.gridColumns) || (model === null || model === void 0 ? void 0 : model.columns);
+    return baseColumnList ? baseColumnList.map(col => col.field) : [];
+  };
+  const [columnOrderModel, setColumnOrderModel] = (0, _react.useState)(getInitialColumnOrder);
   const columnWidthsRef = (0, _react.useRef)({});
   const classes = useStyles();
   const {
@@ -435,6 +442,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     Boolean: 'boolean'
   };
   const tTranslate = (_model$tTranslate = model.tTranslate) !== null && _model$tTranslate !== void 0 ? _model$tTranslate : key => key;
+
+  // GroupBy logic
+  const groupBy = (stateData === null || stateData === void 0 ? void 0 : stateData.dataGroupBy) || '';
+  const {
+    groupBy: modelGroupBy = ''
+  } = model;
 
   // Child tabs state
   const [parentGridFilter, setParentGridFilter] = (0, _react.useState)({});
@@ -481,7 +494,10 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   };
   (0, _react.useEffect)(() => {
     dataRef.current = data;
-  }, [data]);
+    if (typeof onDataLoaded === 'function') {
+      onDataLoaded(data);
+    }
+  }, [data, onDataLoaded]);
 
   // Handle Group By changes from global filters
   (0, _react.useEffect)(() => {
@@ -893,7 +909,16 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     }
     if (additionalFilters) {
-      finalFilters.items = [...finalFilters.items, ...additionalFilters];
+      // Ensure each additional filter has an id field required by MUI X
+      const filtersWithIds = additionalFilters.map((filter, index) => {
+        if (!filter.id) {
+          return _objectSpread(_objectSpread({}, filter), {}, {
+            id: filter.field || "additional-filter-".concat(index)
+          });
+        }
+        return filter;
+      });
+      finalFilters.items = [...finalFilters.items, ...filtersWithIds];
     }
 
     // Process external header filters
@@ -960,6 +985,18 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     if (clientsSelected && clientsSelected.length > 0 && model.isClient) {
       extraParams.ClientId = clientsSelected.join(',');
     }
+    if (model.updateSortFields) {
+      sortModel = model.updateSortFields({
+        sort: sortModel,
+        groupBy
+      });
+    }
+    if (model.updateFilterFields) {
+      finalFilters = model.updateFilterFields({
+        filter: finalFilters,
+        groupBy
+      });
+    }
     (0, _crudHelper.getList)({
       action,
       page: !contentType ? page : 0,
@@ -988,7 +1025,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       isElasticExport,
       globalFilters,
       tOpts,
-      tTranslate
+      tTranslate,
+      groupBy: model !== null && model !== void 0 && model.isPivotGrid ? [groupBy] : modelGroupBy
     });
   };
   const openForm = function openForm(id) {
@@ -1288,15 +1326,18 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         return;
       }
       visibleColumns.forEach(ele => {
-        var _lookup$ele;
-        columns[ele] = {
-          field: ele,
-          width: lookup[ele].width,
-          headerName: lookup[ele].headerName,
-          type: lookup[ele].type,
-          keepLocal: lookup[ele].keepLocal === true,
-          isParsable: (_lookup$ele = lookup[ele]) === null || _lookup$ele === void 0 ? void 0 : _lookup$ele.isParsable
-        };
+        if (!_constants.default.gridGroupByColumnName.includes(ele)) {
+          var _lookup$ele;
+          // do not include group by column in export
+          columns[ele] = {
+            field: ele,
+            width: lookup[ele].width,
+            headerName: lookup[ele].headerName,
+            type: lookup[ele].type,
+            keepLocal: lookup[ele].keepLocal === true,
+            isParsable: (_lookup$ele = lookup[ele]) === null || _lookup$ele === void 0 ? void 0 : _lookup$ele.isParsable
+          };
+        }
       });
       fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen);
     }
@@ -1310,7 +1351,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   }, [globalHeaderFilters]);
 
   // Build dependency array similar to frontend implementation
-  const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies];
+  const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies, renderField];
   const gridDependencyArray = (0, _react.useMemo)(() => {
     return model !== null && model !== void 0 && model.isClient ? commonDependencies : [paginationModel, sortModel, filterModel, ...commonDependencies];
   }, [model === null || model === void 0 ? void 0 : model.isClient, paginationModel, sortModel, filterModel, ...commonDependencies]);
@@ -1347,6 +1388,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         payload: null
       });
     };
+  }, []);
+  (0, _react.useEffect)(() => {
+    if (makeExternalRequest && typeof makeExternalRequest === 'function') {
+      makeExternalRequest();
+    }
   }, []);
   (0, _react.useEffect)(() => {
     let backRoute = pathname;
@@ -1423,6 +1469,11 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         if (isKeywordField) {
           item.filterField = "".concat(item.field, ".keyword");
         }
+        if (column !== null && column !== void 0 && column.useCustomFilterField) {
+          item.filterField = renderField;
+        } else {
+          item.filterField = null;
+        }
         return item;
       }
       const updatedValue = isNumber ? null : value;
@@ -1456,6 +1507,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
   };
   const updateSort = e => {
+    if (e[0]) {
+      if (_constants.default.gridGroupByColumnName.includes(e[0].field)) {
+        snackbar.showMessage(tTranslate('Group By is applied on the same column, please remove it in order to apply sorting.'));
+        return;
+      }
+    }
     const sort = e.map(ele => {
       var _gridColumns$filter$2;
       const isKeywordField = isElasticScreen && ((_gridColumns$filter$2 = gridColumns.filter(element => element.field === ele.field)[0]) === null || _gridColumns$filter$2 === void 0 ? void 0 : _gridColumns$filter$2.isKeywordField);
