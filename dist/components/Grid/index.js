@@ -431,8 +431,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const modelPermissions = model.modelPermissions || permissions;
   const effectivePermissions = _objectSpread(_objectSpread(_objectSpread({}, _constants.default.permissions), stateData.gridSettings.permissions), modelPermissions);
   const {
-    ClientId
-  } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
+    ClientId = 0
+  } = (stateData === null || stateData === void 0 ? void 0 : stateData.getUserData) || {};
+  console.log("stateData", stateData);
   const {
     Username
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};

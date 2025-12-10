@@ -257,7 +257,8 @@ const GridBase = memo(({
     const { systemDateTimeFormat, stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
     const modelPermissions = model.modelPermissions || permissions;
     const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...modelPermissions };
-    const { ClientId } = stateData?.getUserData ? stateData.getUserData : {};
+    const { ClientId = 0 } = stateData?.getUserData || {};
+    console.log("stateData", stateData);
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
     const routesWithNoChildRoute = stateData.gridSettings.permissions?.routesWithNoChildRoute || [];
     const disablePivoting = !enablePivoting;
