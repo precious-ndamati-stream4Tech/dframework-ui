@@ -1060,30 +1060,48 @@ const GridBase = memo(({
 
     useEffect(() => {
         const loadPreferences = async () => {
-            removeCurrentPreferenceName({ dispatchData });
-            getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi });
-            const appliedPreference = await applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
-            
-            // Update React states to match the applied preference
-            if (appliedPreference && apiRef.current) {
-                if (appliedPreference.sortModel) {
-                    setSortModel(appliedPreference.sortModel);
+            if (model.preferenceId) {
+                removeCurrentPreferenceName({ dispatchData });
+                getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi });
+                const appliedPreference = await applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
+                
+                // Update React states to match the applied preference
+                if (appliedPreference && apiRef.current) {
+                    if (appliedPreference.sortModel) {
+                        setSortModel(appliedPreference.sortModel);
+                    }
+                    if (appliedPreference.filterModel) {
+                        setFilterModel(appliedPreference.filterModel);
+                    }
+                    if (appliedPreference.columnOrder) {
+                        setColumnOrderModel(appliedPreference.columnOrder);
+                    }
+                    if (appliedPreference.columnVisibilityModel) {
+                        // Use API to set column visibility instead of controlled state
+                        apiRef.current.setColumnVisibilityModel(appliedPreference.columnVisibilityModel);
+                    }
                 }
-                if (appliedPreference.filterModel) {
-                    setFilterModel(appliedPreference.filterModel);
-                }
-                if (appliedPreference.columnOrder) {
-                    setColumnOrderModel(appliedPreference.columnOrder);
-                }
-                if (appliedPreference.columnVisibilityModel) {
-                    // Use API to set column visibility instead of controlled state
-                    apiRef.current.setColumnVisibilityModel(appliedPreference.columnVisibilityModel);
-                }
+            } else {
+                setIsGridPreferenceFetched(true);
             }
         };
         
         loadPreferences();
     }, [])
+
+    // Load initial column widths from grid API after preferences are applied
+    useEffect(() => {
+        if (isClientSelected && isGridPreferenceFetched && apiRef.current) {
+            const currentColumns = apiRef.current.getAllColumns();
+            const initialWidths = {};
+            currentColumns.forEach(col => {
+                if (col.width) {
+                    initialWidths[col.field] = col.width;
+                }
+            });
+            columnWidthsRef.current = initialWidths;
+        }
+    }, [isGridPreferenceFetched]);
 
     const getGridRowId = (row) => {
         const idValue = row[idProperty];
