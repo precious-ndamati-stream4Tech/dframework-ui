@@ -260,20 +260,13 @@ const GridBase = memo(({
     const rowGroupBy = globalSort?.length ? [globalSort[0].field] : [''];
     const groupingModelRef = useRef(null);
     const [isGridPreferenceFetched, setIsGridPreferenceFetched] = useState(false);
-    // Initialize columnOrderModel with the initial column order
-    const getInitialColumnOrder = () => {
-        const baseColumnList = columns || model?.gridColumns || model?.columns;
-        return baseColumnList ? baseColumnList.map(col => col.field) : [];
-    };
-
-    const [columnOrderModel, setColumnOrderModel] = useState(getInitialColumnOrder);
+    const [columnOrderModel, setColumnOrderModel] = useState([]);
     const columnWidthsRef = useRef({});
     const classes = useStyles();
     const { systemDateTimeFormat, stateData, dispatchData, formatDate, removeCurrentPreferenceName, getAllSavedPreferences, applyDefaultPreferenceIfExists } = useStateContext();
     const modelPermissions = model.modelPermissions || permissions;
     const effectivePermissions = { ...constants.permissions, ...stateData.gridSettings.permissions, ...modelPermissions };
     const { ClientId = 0 } = stateData?.getUserData || {};
-    console.log("stateData", stateData);
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
     const routesWithNoChildRoute = stateData.gridSettings.permissions?.routesWithNoChildRoute || [];
     const disablePivoting = !enablePivoting;
@@ -1066,9 +1059,30 @@ const GridBase = memo(({
     });
 
     useEffect(() => {
-        removeCurrentPreferenceName({ dispatchData });
-        getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi });
-        applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
+        const loadPreferences = async () => {
+            removeCurrentPreferenceName({ dispatchData });
+            getAllSavedPreferences({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, preferenceApi });
+            const appliedPreference = await applyDefaultPreferenceIfExists({ preferenceName: model.preferenceId, history: navigate, dispatchData, Username, gridRef: apiRef, setIsGridPreferenceFetched, preferenceApi });
+            
+            // Update React states to match the applied preference
+            if (appliedPreference && apiRef.current) {
+                if (appliedPreference.sortModel) {
+                    setSortModel(appliedPreference.sortModel);
+                }
+                if (appliedPreference.filterModel) {
+                    setFilterModel(appliedPreference.filterModel);
+                }
+                if (appliedPreference.columnOrder) {
+                    setColumnOrderModel(appliedPreference.columnOrder);
+                }
+                if (appliedPreference.columnVisibilityModel) {
+                    // Use API to set column visibility instead of controlled state
+                    apiRef.current.setColumnVisibilityModel(appliedPreference.columnVisibilityModel);
+                }
+            }
+        };
+        
+        loadPreferences();
     }, [])
 
     const getGridRowId = (row) => {

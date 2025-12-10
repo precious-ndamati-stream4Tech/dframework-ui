@@ -426,12 +426,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const rowGroupBy = globalSort !== null && globalSort !== void 0 && globalSort.length ? [globalSort[0].field] : [''];
   const groupingModelRef = (0, _react.useRef)(null);
   const [isGridPreferenceFetched, setIsGridPreferenceFetched] = (0, _react.useState)(false);
-  // Initialize columnOrderModel with the initial column order
-  const getInitialColumnOrder = () => {
-    const baseColumnList = columns || (model === null || model === void 0 ? void 0 : model.gridColumns) || (model === null || model === void 0 ? void 0 : model.columns);
-    return baseColumnList ? baseColumnList.map(col => col.field) : [];
-  };
-  const [columnOrderModel, setColumnOrderModel] = (0, _react.useState)(getInitialColumnOrder);
+  const [columnOrderModel, setColumnOrderModel] = (0, _react.useState)([]);
   const columnWidthsRef = (0, _react.useRef)({});
   const classes = useStyles();
   const {
@@ -448,7 +443,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   const {
     ClientId = 0
   } = (stateData === null || stateData === void 0 ? void 0 : stateData.getUserData) || {};
-  console.log("stateData", stateData);
   const {
     Username
   } = stateData !== null && stateData !== void 0 && stateData.getUserData ? stateData.getUserData : {};
@@ -1344,25 +1338,45 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
   });
   (0, _react.useEffect)(() => {
-    removeCurrentPreferenceName({
-      dispatchData
-    });
-    getAllSavedPreferences({
-      preferenceName: model.preferenceId,
-      history: navigate,
-      dispatchData,
-      Username,
-      preferenceApi
-    });
-    applyDefaultPreferenceIfExists({
-      preferenceName: model.preferenceId,
-      history: navigate,
-      dispatchData,
-      Username,
-      gridRef: apiRef,
-      setIsGridPreferenceFetched,
-      preferenceApi
-    });
+    const loadPreferences = async () => {
+      removeCurrentPreferenceName({
+        dispatchData
+      });
+      getAllSavedPreferences({
+        preferenceName: model.preferenceId,
+        history: navigate,
+        dispatchData,
+        Username,
+        preferenceApi
+      });
+      const appliedPreference = await applyDefaultPreferenceIfExists({
+        preferenceName: model.preferenceId,
+        history: navigate,
+        dispatchData,
+        Username,
+        gridRef: apiRef,
+        setIsGridPreferenceFetched,
+        preferenceApi
+      });
+
+      // Update React states to match the applied preference
+      if (appliedPreference && apiRef.current) {
+        if (appliedPreference.sortModel) {
+          setSortModel(appliedPreference.sortModel);
+        }
+        if (appliedPreference.filterModel) {
+          setFilterModel(appliedPreference.filterModel);
+        }
+        if (appliedPreference.columnOrder) {
+          setColumnOrderModel(appliedPreference.columnOrder);
+        }
+        if (appliedPreference.columnVisibilityModel) {
+          // Use API to set column visibility instead of controlled state
+          apiRef.current.setColumnVisibilityModel(appliedPreference.columnVisibilityModel);
+        }
+      }
+    };
+    loadPreferences();
   }, []);
   const getGridRowId = row => {
     const idValue = row[idProperty];
