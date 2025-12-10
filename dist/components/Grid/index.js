@@ -325,7 +325,22 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     renderField,
     onDataLoaded,
     gridExtraParams,
-    afterDataSet
+    afterDataSet,
+    importUrl,
+    exportUrl,
+    exportNote,
+    disable,
+    openModal,
+    setOpenModal,
+    manageDataName,
+    showExportOption,
+    setFetchData,
+    childTabTitle,
+    gridPivotFilter,
+    onDoubleClick,
+    additionalFiltersForExport,
+    isClientSelected = true,
+    showPivotExportBtn = false
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,
@@ -891,12 +906,17 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     let columns = arguments.length > 3 ? arguments[3] : undefined;
     let isPivotExport = arguments.length > 4 ? arguments[4] : undefined;
     let isElasticExport = arguments.length > 5 ? arguments[5] : undefined;
+    let isDetailsExport = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+    let isLatestExport = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : false;
+    let isFieldStatusPivotExport = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : false;
+    let isInstallationPivotExport = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : false;
     const {
       pageSize,
       page
     } = paginationModel;
     let gridApi = "".concat(model.controllerType === 'cs' ? withControllersUrl : url).concat(model.api || api);
     let controllerType = model === null || model === void 0 ? void 0 : model.controllerType;
+    const isPivotGrid = (model === null || model === void 0 ? void 0 : model.isPivotGrid) || false;
     if (isPivotExport) {
       gridApi = "".concat(withControllersUrl).concat(model === null || model === void 0 ? void 0 : model.pivotAPI);
       controllerType = 'cs';
@@ -1020,8 +1040,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
     (0, _crudHelper.getList)({
       action,
-      page: !contentType ? page : 0,
-      pageSize: !contentType ? pageSize : 1000000,
+      page,
+      pageSize,
       sortModel,
       filterModel: finalFilters,
       controllerType: controllerType,
@@ -1047,11 +1067,26 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       globalFilters,
       tOpts,
       tTranslate,
-      groupBy: model !== null && model !== void 0 && model.isPivotGrid ? [groupBy] : modelGroupBy,
+      groupBy: isPivotGrid ? [groupBy] : modelGroupBy,
       afterDataSet,
       setColumns,
       setIsDataFetchedInitially,
-      isDataFetchedInitially
+      isDataFetchedInitially,
+      fromSelfServe: false,
+      isDetailsExport: isDetailsExport,
+      setFetchData,
+      isChildGrid: model === null || model === void 0 ? void 0 : model.isChildGrid,
+      isPivotGrid,
+      isPivotExport,
+      gridPivotFilter,
+      isLatestExport,
+      payloadFilter: null,
+      isFieldStatusPivotExport,
+      isInstallationPivotExport,
+      additionalFiltersForExport: additionalFiltersForExport,
+      uiClientIds: isPivotExport && Array.isArray(clientsSelected) && clientsSelected.join(','),
+      exportFileName: tTranslate((model === null || model === void 0 ? void 0 : model.exportFileName) || (model === null || model === void 0 ? void 0 : model.title), tOpts),
+      languageSelected: _constants.default.supportedLanguageCodes[i18n.language || _constants.default.defaultLanguage]
     });
   };
   const openForm = function openForm(id) {
@@ -1345,6 +1380,10 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       } = apiRef.current.state.columns;
       const columns = {};
       const isPivotExport = e.target.dataset.isPivotExport === 'true';
+      const isDetailsExport = e.target.dataset.isDetailsExport === 'true';
+      const isLatestExport = e.target.dataset.isLatestExport === 'true';
+      const isFieldStatusPivotExport = e.target.dataset.isInfieldExport === 'true';
+      const isInstallationPivotExport = e.target.dataset.isInstallationExport === 'true';
       const hiddenColumns = Object.keys(columnVisibilityModel).filter(key => columnVisibilityModel[key] === false);
       const visibleColumns = orderedFields.filter(ele => !(hiddenColumns !== null && hiddenColumns !== void 0 && hiddenColumns.includes(ele)) && ele !== '__check__' && ele !== 'actions');
       if ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) === 0) {
@@ -1365,7 +1404,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
           };
         }
       });
-      fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen);
+      fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, isLatestExport, isFieldStatusPivotExport, isInstallationPivotExport);
     }
   };
 
@@ -1377,7 +1416,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   }, [globalHeaderFilters]);
 
   // Build dependency array similar to frontend implementation
-  const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies, renderField];
+  const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies, renderField, selectedClients];
   const gridDependencyArray = (0, _react.useMemo)(() => {
     return model !== null && model !== void 0 && model.isClient ? commonDependencies : [paginationModel, sortModel, filterModel, ...commonDependencies];
   }, [model === null || model === void 0 ? void 0 : model.isClient, paginationModel, sortModel, filterModel, ...commonDependencies]);
@@ -1677,6 +1716,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         CustomExportButton,
         showExportWithDetails,
         showExportWithLatestData,
+        showPivotExportBtn,
         showInFieldStatusPivotExportBtn,
         showInstallationPivotExportBtn,
         detailExportLabel,

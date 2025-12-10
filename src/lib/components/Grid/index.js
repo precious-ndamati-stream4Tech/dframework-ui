@@ -202,7 +202,22 @@ const GridBase = memo(({
     renderField,
     onDataLoaded,
     gridExtraParams,
-    afterDataSet
+    afterDataSet,
+    importUrl,
+    exportUrl,
+    exportNote,
+    disable,
+    openModal,
+    setOpenModal,
+    manageDataName,
+    showExportOption,
+    setFetchData,
+    childTabTitle,
+    gridPivotFilter,
+    onDoubleClick,
+    additionalFiltersForExport,
+    isClientSelected = true,
+    showPivotExportBtn = false
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -656,11 +671,12 @@ const GridBase = memo(({
 
         return { gridColumns: finalColumns, pinnedColumns, lookupMap };
     }, [columns, model, parent, permissions, forAssignment, rowGroupBy]);
-    const fetchData = (action = "list", extraParams = {}, contentType, columns, isPivotExport, isElasticExport) => {
+    const fetchData = (action = "list", extraParams = {}, contentType, columns, isPivotExport, isElasticExport, isDetailsExport = false, isLatestExport = false, isFieldStatusPivotExport = false, isInstallationPivotExport = false) => {
         const { pageSize, page } = paginationModel;
         let gridApi = `${model.controllerType === 'cs' ? withControllersUrl : url}${model.api || api}`
 
         let controllerType = model?.controllerType;
+        const isPivotGrid = model?.isPivotGrid || false;
         if (isPivotExport) {
             gridApi = `${withControllersUrl}${model?.pivotAPI}`;
             controllerType = 'cs';
@@ -777,8 +793,8 @@ const GridBase = memo(({
 
         getList({
             action,
-            page: !contentType ? page : 0,
-            pageSize: !contentType ? pageSize : 1000000,
+            page,
+            pageSize,
             sortModel,
             filterModel: finalFilters,
             controllerType: controllerType,
@@ -804,11 +820,26 @@ const GridBase = memo(({
             globalFilters,
             tOpts,
             tTranslate,
-            groupBy: model?.isPivotGrid ? [groupBy] : modelGroupBy,
+            groupBy: isPivotGrid ? [groupBy] : modelGroupBy,
             afterDataSet,
             setColumns,
             setIsDataFetchedInitially,
-            isDataFetchedInitially
+            isDataFetchedInitially,
+            fromSelfServe: false,
+            isDetailsExport: isDetailsExport,
+            setFetchData,
+            isChildGrid: model?.isChildGrid,
+            isPivotGrid,
+            isPivotExport,
+            gridPivotFilter,
+            isLatestExport,
+            payloadFilter: null,
+            isFieldStatusPivotExport,
+            isInstallationPivotExport,
+            additionalFiltersForExport: additionalFiltersForExport,
+            uiClientIds: isPivotExport && Array.isArray(clientsSelected) && clientsSelected.join(','),
+            exportFileName: tTranslate(model?.exportFileName || model?.title, tOpts),
+            languageSelected: constants.supportedLanguageCodes[i18n.language || constants.defaultLanguage]
         });
     };
     const openForm = (id, { mode } = {}) => {
@@ -1054,6 +1085,10 @@ const GridBase = memo(({
             const { orderedFields, columnVisibilityModel, lookup } = apiRef.current.state.columns;
             const columns = {};
             const isPivotExport = e.target.dataset.isPivotExport === 'true';
+            const isDetailsExport = e.target.dataset.isDetailsExport === 'true';
+            const isLatestExport = e.target.dataset.isLatestExport === 'true';
+            const isFieldStatusPivotExport = e.target.dataset.isInfieldExport === 'true';
+            const isInstallationPivotExport = e.target.dataset.isInstallationExport === 'true';
             const hiddenColumns = Object.keys(columnVisibilityModel).filter(key => columnVisibilityModel[key] === false);
             const visibleColumns = orderedFields.filter(ele => !hiddenColumns?.includes(ele) && ele !== '__check__' && ele !== 'actions');
             if (visibleColumns?.length === 0) {
@@ -1066,7 +1101,7 @@ const GridBase = memo(({
                 }
             })
 
-            fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen);
+            fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, isLatestExport, isFieldStatusPivotExport, isInstallationPivotExport);
         }
     };
 
@@ -1078,7 +1113,7 @@ const GridBase = memo(({
     }, [globalHeaderFilters]);
 
     // Build dependency array similar to frontend implementation
-    const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies, renderField];
+    const commonDependencies = [api, gridColumns, model, parentFilters, assigned, selected, available, chartFilters, isGridPreferenceFetched, reRenderKey, filteredDependencies, renderField, selectedClients];
 
     const gridDependencyArray = useMemo(() => {
         return model?.isClient
@@ -1348,6 +1383,7 @@ const GridBase = memo(({
                                 CustomExportButton,
                                 showExportWithDetails,
                                 showExportWithLatestData,
+                                showPivotExportBtn,
                                 showInFieldStatusPivotExportBtn,
                                 showInstallationPivotExportBtn,
                                 detailExportLabel,
