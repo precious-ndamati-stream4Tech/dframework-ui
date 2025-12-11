@@ -483,7 +483,7 @@ const GridBase = memo(({
                 let lookupFilters = [...getGridDateOperators(), ...getGridStringOperators()].filter((operator) => ['is', 'not', 'isAnyOf'].includes(operator.value))
                 overrides.filterOperators = lookupFilters.map((operator) => ({
                     ...operator,
-                    InputComponent: (params) => (
+                    InputComponent: operator.InputComponent ? (params) => (
                         <CustomDropdownmenu
                             column={{
                                 ...column,
@@ -492,7 +492,7 @@ const GridBase = memo(({
                             {...params}
                             autoHighlight
                         />
-                    )
+                    ) : undefined
                 }));
             }
             if (column.linkTo) {
@@ -640,7 +640,7 @@ const GridBase = memo(({
                         }
 
                         // Assign action (last - only for custom actions)
-                        if (useCustomActions && effectivePermissions.assign && onAssignmentClick) {
+                        if (useCustomActions && modelPermissions.assign && onAssignmentClick) {
                             actions.push(
                                 <GridActionsCellItem
                                     key="assign"

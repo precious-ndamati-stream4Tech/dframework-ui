@@ -682,13 +682,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         overrides.valueOptions = lookupOptions;
         let lookupFilters = [...(0, _xDataGridPremium.getGridDateOperators)(), ...(0, _xDataGridPremium.getGridStringOperators)()].filter(operator => ['is', 'not', 'isAnyOf'].includes(operator.value));
         overrides.filterOperators = lookupFilters.map(operator => _objectSpread(_objectSpread({}, operator), {}, {
-          InputComponent: params => /*#__PURE__*/_react.default.createElement(_CustomDropdownmenu.default, _extends({
+          InputComponent: operator.InputComponent ? params => /*#__PURE__*/_react.default.createElement(_CustomDropdownmenu.default, _extends({
             column: _objectSpread(_objectSpread({}, column), {}, {
               dataRef: dataRef
             })
           }, params, {
             autoHighlight: true
-          }))
+          })) : undefined
         }));
       }
       if (column.linkTo) {
@@ -860,7 +860,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
             }
 
             // Assign action (last - only for custom actions)
-            if (useCustomActions && effectivePermissions.assign && onAssignmentClick) {
+            if (useCustomActions && modelPermissions.assign && onAssignmentClick) {
               actions.push(/*#__PURE__*/_react.default.createElement(_xDataGridPremium.GridActionsCellItem, {
                 key: "assign",
                 icon: /*#__PURE__*/_react.default.createElement(_material.Tooltip, {
