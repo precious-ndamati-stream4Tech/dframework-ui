@@ -767,7 +767,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       }
     }
     if (!forAssignment && !isReadOnly) {
-      const actionsLength = [modelPermissions.edit, modelPermissions.add, modelPermissions.delete, modelPermissions.resolve, modelPermissions.assign].filter(Boolean).length;
+      const actionsLength = [effectivePermissions.edit, effectivePermissions.add, effectivePermissions.delete, effectivePermissions.resolve, effectivePermissions.assign].filter(Boolean).length;
       if (actionsLength > 0) {
         finalColumns.push({
           headerName: tTranslate("Actions", tOpts),

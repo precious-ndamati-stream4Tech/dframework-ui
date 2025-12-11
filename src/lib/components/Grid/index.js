@@ -553,11 +553,11 @@ const GridBase = memo(({
 
         if (!forAssignment && !isReadOnly) {
             const actionsLength = [
-                modelPermissions.edit,
-                modelPermissions.add,
-                modelPermissions.delete,
-                modelPermissions.resolve,
-                modelPermissions.assign
+                effectivePermissions.edit,
+                effectivePermissions.add,
+                effectivePermissions.delete,
+                effectivePermissions.resolve,
+                effectivePermissions.assign
             ].filter(Boolean).length;
 
             if (actionsLength > 0) {
