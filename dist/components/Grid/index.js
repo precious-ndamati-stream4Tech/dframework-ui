@@ -66,7 +66,6 @@ var _utils = _interopRequireDefault(require("../utils"));
 var _CustomToolbar = _interopRequireDefault(require("./CustomToolbar"));
 var _constants = _interopRequireDefault(require("../constants"));
 var _ChildGridComponent = _interopRequireDefault(require("./ChildGridComponent"));
-var _array = require("core-js/core/array");
 const _excluded = ["row", "field", "id"],
   _excluded2 = ["filterField"];
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }

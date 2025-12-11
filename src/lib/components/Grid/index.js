@@ -39,7 +39,6 @@ import utils from '../utils';
 import CustomToolbar from './CustomToolbar';
 import constants from '../constants';
 import ChildGridComponent from './ChildGridComponent';
-import { filter } from 'core-js/core/array';
 
 const defaultPageSize = 10;
 const t = utils.t;
