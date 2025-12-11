@@ -658,8 +658,8 @@ const GridBase = memo(({
                         return actions;
                     }
                 });
+                pinnedColumns.right.push('actions');
             }
-            pinnedColumns.right.push('actions');
         }
 
         return { gridColumns: finalColumns, pinnedColumns, lookupMap };

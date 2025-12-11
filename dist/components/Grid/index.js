@@ -883,8 +883,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
             return actions;
           }
         });
+        pinnedColumns.right.push('actions');
       }
-      pinnedColumns.right.push('actions');
     }
     return {
       gridColumns: finalColumns,
