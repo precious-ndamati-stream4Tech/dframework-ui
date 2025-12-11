@@ -2,17 +2,23 @@
 
 require("core-js/modules/es.error.cause.js");
 require("core-js/modules/es.weak-map.js");
-require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.for-each.js");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = exports.ActiveStepContext = void 0;
+require("core-js/modules/es.array.includes.js");
 require("core-js/modules/es.array.push.js");
+require("core-js/modules/es.array.reduce.js");
+require("core-js/modules/es.object.from-entries.js");
 require("core-js/modules/es.promise.js");
 require("core-js/modules/es.promise.finally.js");
+require("core-js/modules/es.string.includes.js");
 require("core-js/modules/esnext.iterator.constructor.js");
+require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.find.js");
+require("core-js/modules/esnext.iterator.map.js");
+require("core-js/modules/esnext.iterator.reduce.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 var _react = _interopRequireWildcard(require("react"));
 var _formik = require("formik");
@@ -28,6 +34,7 @@ var _Dialog = require("../Dialog");
 var _PageTitle = _interopRequireDefault(require("../PageTitle"));
 var _StateProvider = require("../useRouter/StateProvider");
 var _actions = _interopRequireDefault(require("../useRouter/actions"));
+var _utils = _interopRequireDefault(require("../utils"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -37,12 +44,13 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 const ActiveStepContext = exports.ActiveStepContext = /*#__PURE__*/(0, _react.createContext)(1);
 const defaultFieldConfigs = {};
+const t = _utils.default.t;
 const Form = _ref => {
   var _stateData$gridSettin;
   let {
     model,
     api,
-    permissions = {
+    permissions = model.modelPermissions || {
       edit: true,
       export: true,
       delete: true
@@ -67,7 +75,6 @@ const Form = _ref => {
   const [lookups, setLookups] = (0, _react.useState)(null);
   const [isDeleting, setIsDeleting] = (0, _react.useState)(false);
   const snackbar = (0, _SnackBar.useSnackbar)();
-  const combos = {};
   const [validationSchema, setValidationSchema] = (0, _react.useState)(null);
   const [activeStep, setActiveStep] = (0, _react.useState)(0);
   const [isDiscardDialogOpen, setIsDiscardDialogOpen] = (0, _react.useState)(false);
@@ -82,26 +89,63 @@ const Form = _ref => {
   const {
     mode
   } = stateData.dataForm;
+  const urlId = mode === 'copy' ? idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-')[1] : id;
+  const isValidUrl = _utils.default.isValidIdUrl(urlId);
+  const userData = (stateData === null || stateData === void 0 ? void 0 : stateData.getUserData) || {};
+  const {
+    ClientId = 0
+  } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
+  const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
-    setValidationSchema(model.getValidationSchema({
-      id,
-      snackbar
-    }));
-    const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
-    try {
-      (0, _crudHelper.getRecord)({
-        id: options.length > 1 ? options[1] : options[0],
-        api: gridApi,
-        modelConfig: model,
-        setIsLoading,
-        setError: errorOnLoad,
-        setActiveRecord
-      });
-    } catch (error) {
-      snackbar.showError('An error occured, please try after some time.', error);
-      navigate('./');
+    if (isValidUrl) {
+      setValidationSchema(model.getValidationSchema({
+        id,
+        snackbar
+      }));
+      const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
+      try {
+        (0, _crudHelper.getRecord)({
+          id: options.length > 1 ? options[1] : options[0],
+          api: gridApi,
+          modelConfig: model,
+          setIsLoading,
+          setError: errorOnLoad,
+          setActiveRecord
+        });
+      } catch (error) {
+        snackbar.showError('An error occurred, please try again later.');
+        navigate(model.backURL || './');
+      }
+    } else {
+      setIsLoading(false);
     }
+    return () => {
+      _utils.default.removeBackButton(dispatchData);
+    };
   }, [id, idWithOptions, model]);
+  (0, _react.useEffect)(() => {
+    if (model.overrideBackRouteAndSearch) {
+      dispatchData({
+        type: _actions.default.SET_PAGE_BACK_BUTTON,
+        payload: {
+          status: true,
+          backRoute: model.backURL
+        }
+      });
+      dispatchData({
+        type: _actions.default.PASS_FILTERS_TOHEADER,
+        payload: {
+          hidden: {
+            search: true,
+            operation: false,
+            export: false,
+            print: false,
+            filter: true
+          }
+        }
+      });
+    }
+  }, []);
   const formik = (0, _formik.useFormik)({
     enableReinitialize: true,
     initialValues: _objectSpread(_objectSpread({}, model.initialValues), data),
@@ -112,6 +156,20 @@ const Form = _ref => {
         resetForm
       } = _ref2;
       setIsLoading(true);
+      if (model.saveOnlyModifiedValues) {
+        var _model$columns$filter;
+        const formColumns = (_model$columns$filter = model.columns.filter(ele => ele.showOnForm !== false)) === null || _model$columns$filter === void 0 ? void 0 : _model$columns$filter.map(item => item.field);
+        if (!formColumns.includes('ClientId')) {
+          formColumns.push("ClientId");
+        }
+        values = formColumns.reduce((acc, key) => {
+          if (key in values) acc[key] = values[key];
+          return acc;
+        }, {});
+      }
+      if (model.fieldValidation) {
+        values = model.fieldValidation(values); // Apply validation
+      }
       (0, _crudHelper.saveRecord)({
         id,
         api: gridApi,
@@ -121,10 +179,10 @@ const Form = _ref => {
       }).then(success => {
         if (success) {
           snackbar.showMessage('Record Updated Successfully.');
-          navigate('./');
+          navigate(model.backURL || './');
         }
       }).catch(err => {
-        snackbar.showError('An error occured, please try after some time.second', err);
+        snackbar.showError('An error occurred, please try again later.');
       }).finally(() => setIsLoading(false));
     }
   });
@@ -134,7 +192,7 @@ const Form = _ref => {
   const handleDiscardChanges = () => {
     formik.resetForm();
     setIsDiscardDialogOpen(false);
-    navigate('.');
+    navigate(model.backURL || '.');
   };
   const warnUnsavedChanges = () => {
     if (dirty) {
@@ -143,7 +201,7 @@ const Form = _ref => {
   };
   const errorOnLoad = function errorOnLoad(title, error) {
     snackbar.showError(title, error);
-    navigate('./');
+    navigate(model.backURL || './');
   };
   const setActiveRecord = function setActiveRecord(_ref3) {
     let {
@@ -155,21 +213,32 @@ const Form = _ref => {
     const isCopy = idWithOptions.indexOf("-") > -1;
     const isNew = !id || id === "0";
     const localTitle = isNew ? "Create" : isCopy ? "Copy" : "Edit";
-    const localValue = isNew ? "" : record[model.linkColumn];
+    const breadCrumbColumn = (model === null || model === void 0 ? void 0 : model.linkColumn) || (model === null || model === void 0 ? void 0 : model.breadCrumbColumn);
+    const localValue = isNew ? "" : record[breadCrumbColumn];
     const breadcrumbs = [{
       text: model === null || model === void 0 ? void 0 : model.breadCrumbs
     }, {
       text: localTitle
     }];
+    let tempRecord = _objectSpread({}, record);
     if (isCopy) {
-      record[model.linkColumn] += " (Copy)";
+      tempRecord[model.linkColumn] += " (Copy)";
     }
-    setData(record);
+    if (model.calculatedColumns) {
+      tempRecord = Object.fromEntries(Object.entries(tempRecord).filter(_ref4 => {
+        let [key] = _ref4;
+        return !model.calculatedColumns.includes(key);
+      }));
+    }
+    setData(tempRecord);
     setLookups(lookups);
     if (localValue !== "") {
       breadcrumbs.push({
         text: localValue
       });
+    }
+    if (!tempRecord.GroupName) {
+      tempRecord.GroupName = localValue;
     }
     dispatchData({
       type: _actions.default.PAGE_TITLE_DETAILS,
@@ -184,7 +253,7 @@ const Form = _ref => {
       warnUnsavedChanges();
       event.preventDefault();
     } else {
-      navigate('.');
+      navigate(model.backURL || '.');
     }
   };
   const handleDelete = async function handleDelete() {
@@ -199,10 +268,10 @@ const Form = _ref => {
       });
       if (response === true) {
         snackbar.showMessage('Record Deleted Successfully.');
-        navigate('./');
+        navigate(model.backURL || './');
       }
     } catch (error) {
-      snackbar === null || snackbar === void 0 || snackbar.showError('An error occured, please try after some time.');
+      setDeleteError('An error occurred, please try again later.');
     } finally {
       setIsDeleting(false);
     }
@@ -234,6 +303,16 @@ const Form = _ref => {
     const {
       errors
     } = formik;
+    if (model.calculatedColumns) {
+      formik.values = Object.fromEntries(Object.entries(formik.values).filter(_ref5 => {
+        let [key] = _ref5;
+        return !model.calculatedColumns.includes(key);
+      }));
+    }
+    if (!isClientSelected) {
+      snackbar.showError("Can't save without client. Please select client first", null, "error");
+      return;
+    }
     formik.handleSubmit();
     const fieldName = Object.keys(errors)[0];
     const errorMessage = errors[fieldName];
@@ -246,7 +325,7 @@ const Form = _ref => {
       setActiveStep(tabKeys.indexOf(fieldConfig.tab));
     }
   };
-  return /*#__PURE__*/_react.default.createElement(ActiveStepContext.Provider, {
+  return isValidUrl ? /*#__PURE__*/_react.default.createElement(ActiveStepContext.Provider, {
     value: {
       activeStep,
       setActiveStep
@@ -269,7 +348,7 @@ const Form = _ref => {
     variant: "contained",
     type: "cancel",
     color: "error",
-    onClick: e => handleFormCancel(e)
+    onClick: handleFormCancel
   }, "Cancel"), permissions.delete && /*#__PURE__*/_react.default.createElement(_Button.default, {
     variant: "contained",
     color: "error",
@@ -279,7 +358,6 @@ const Form = _ref => {
     formik: formik,
     data: data,
     fieldConfigs: fieldConfigs,
-    combos: combos,
     onChange: handleChange,
     lookups: lookups,
     id: id,
@@ -306,6 +384,6 @@ const Form = _ref => {
       setDeleteError(null);
     },
     title: deleteError ? "Error Deleting Record" : "Confirm Delete"
-  }, "Are you sure you want to delete ".concat((data === null || data === void 0 ? void 0 : data.GroupName) || (data === null || data === void 0 ? void 0 : data.SurveyName), "?"))));
+  }, "Are you sure you want to delete ".concat((data === null || data === void 0 ? void 0 : data.GroupName) || (data === null || data === void 0 ? void 0 : data.SurveyName), "?")))) : /*#__PURE__*/_react.default.createElement("div", null, "Wrong action");
 };
 var _default = exports.default = Form;

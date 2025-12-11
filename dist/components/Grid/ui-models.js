@@ -23,6 +23,7 @@ var yup = _interopRequireWildcard(require("yup"));
 var _Paper = _interopRequireDefault(require("@mui/material/Paper"));
 var _material = require("@mui/material");
 var _Form = _interopRequireDefault(require("../Form/Form"));
+var _utils = _interopRequireDefault(require("../utils"));
 const _excluded = ["match"],
   _excluded2 = ["match"];
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
@@ -109,6 +110,11 @@ class UiModel {
     }
     this.columnVisibilityModel = columnVisibilityModel;
     this.defaultValues = defaultValues;
+
+    // Store the updateColumnLabel function if provided
+    if (modelConfig.updateColumnLabelFunction) {
+      this.updateColumnLabelFunction = modelConfig.updateColumnLabelFunction;
+    }
   }
   getValidationSchema(_ref3) {
     let {
@@ -178,6 +184,12 @@ class UiModel {
     }
     let validationSchema = yup.object(_objectSpread(_objectSpread({}, validationConfig), this.validationSchema));
     return validationSchema;
+  }
+  updateColumnLabel(groupBy) {
+    // Default implementation - can be overridden by subclasses
+    if (this.columns && this.columns.length > 0 && this.updateColumnLabelFunction) {
+      this.columns[0].label = this.updateColumnLabelFunction(groupBy);
+    }
   }
 }
 exports.UiModel = UiModel;

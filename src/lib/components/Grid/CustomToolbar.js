@@ -40,15 +40,21 @@ const CustomToolbar = function (props) {
         setIsLoading,
         CustomExportButton,
         effectivePermissions,
-        tTranslate
+        showExportWithDetails,
+        showExportWithLatestData,
+        showInFieldStatusPivotExportBtn,
+        showInstallationPivotExportBtn,
+        detailExportLabel
     } = props;
+    
+    const appliedPreference = currentPreference && currentPreference[model.preferenceId] ? currentPreference[model.preferenceId] : typeof currentPreference === 'string' ? currentPreference : '';
 
     return (
         <div className="grid-header-alignment" >
             <div className='grid-toolbar-heading'>
                 {model.hasCustomHeaderComponent && customHeaderComponent}
                 {model.gridSubTitle && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }}> {t(model.gridSubTitle, tOpts)}</Typography>}
-                {(currentPreference?.[model.preferenceId] && model.preferenceId) && <Typography className="preference-name-text" variant="h6" component="h6" textAlign="center" sx={{ ml: 1 }} > {t(currentPreference?.[model.preferenceId], tOpts)}</Typography>}
+                {(appliedPreference && model.preferenceId) && <Typography className="preference-name-text" variant="h6" component="h6" textAlign="center" sx={{ ml: 1 }} > {t(appliedPreference, tOpts)}</Typography>}
                 {(isReadOnly || (!effectivePermissions?.add && !forAssignment) && !model.hideSubTitle) && <Typography variant="h6" component="h3" textAlign="center" sx={{ ml: 1 }} > {isReadOnly ? "" : t(model.title, tOpts)}</Typography>}
                 {!forAssignment && effectivePermissions?.add && !isReadOnly && !showCreateButton && (<Button startIcon={showAddIcon ? <AddIcon /> : null} onClick={onAdd} size="medium" variant="contained" className={classes.buttons} >{model?.customAddTextTitle ? t(model.customAddTextTitle, tOpts) : ` ${showAddIcon ? `${t("Add", tOpts)}` : ""} ${t(model.title, tOpts)}`}</Button>)}
                 {available && <Button startIcon={!showAddIcon ? null : <AddIcon />} onClick={onAssign} size="medium" variant="contained" className={classes.buttons}  >{t("Assign", tOpts)}</Button>}
@@ -60,10 +66,26 @@ const CustomToolbar = function (props) {
                     {effectivePermissions?.filter && <GridToolbarFilterButton />}
                     {effectivePermissions?.filter && <Button startIcon={<FilterListOffIcon />} onClick={clearFilters} size="small" sx={{ width: 'max-content' }}>{t("CLEAR FILTER", tOpts)}</Button>}
                     {effectivePermissions.export && (
-                        <CustomExportButton tTranslate={tTranslate} tOpts={tOpts} handleExport={handleExport} showPivotExportBtn={model?.showPivotExportBtn} showOnlyExcelExport={model.showOnlyExcelExport} />
+                        <CustomExportButton 
+                            t={t} 
+                            tOpts={tOpts} 
+                            handleExport={handleExport} 
+                            onExportMenuClick={onExportMenuClick}
+                            showPivotExportBtn={model?.showPivotExportBtn} 
+                            showOnlyExcelExport={model.showOnlyExcelExport} 
+                            hideExcelExport={hideExcelExport} 
+                            hideXmlExport={hideXmlExport} 
+                            hideHtmlExport={hideHtmlExport} 
+                            hideJsonExport={hideJsonExport}
+                            showExportWithDetails={showExportWithDetails}
+                            showExportWithLatestData={showExportWithLatestData}
+                            showInFieldStatusPivotExportBtn={showInFieldStatusPivotExportBtn}
+                            showInstallationPivotExportBtn={showInstallationPivotExportBtn}
+                            detailExportLabel={detailExportLabel}
+                        />
                     )}
                     {model.preferenceId &&
-                       <GridPreferences tTranslate={tTranslate} gridRef={apiRef} columns={gridColumns} setIsGridPreferenceFetched={setIsGridPreferenceFetched} model={model} initialGridRef={initialGridRef} setIsLoading={setIsLoading} />
+                       <GridPreferences t={t} gridRef={apiRef} columns={gridColumns} setIsGridPreferenceFetched={setIsGridPreferenceFetched} model={model} initialGridRef={initialGridRef} setIsLoading={setIsLoading} />
                     }
                 </Box>
             </GridToolbarContainer>

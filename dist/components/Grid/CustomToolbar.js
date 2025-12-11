@@ -48,8 +48,13 @@ const CustomToolbar = function CustomToolbar(props) {
     setIsLoading,
     CustomExportButton,
     effectivePermissions,
-    tTranslate
+    showExportWithDetails,
+    showExportWithLatestData,
+    showInFieldStatusPivotExportBtn,
+    showInstallationPivotExportBtn,
+    detailExportLabel
   } = props;
+  const appliedPreference = currentPreference && currentPreference[model.preferenceId] ? currentPreference[model.preferenceId] : typeof currentPreference === 'string' ? currentPreference : '';
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "grid-header-alignment"
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -61,7 +66,7 @@ const CustomToolbar = function CustomToolbar(props) {
     sx: {
       ml: 1
     }
-  }, " ", t(model.gridSubTitle, tOpts)), (currentPreference === null || currentPreference === void 0 ? void 0 : currentPreference[model.preferenceId]) && model.preferenceId && /*#__PURE__*/_react.default.createElement(_Typography.default, {
+  }, " ", t(model.gridSubTitle, tOpts)), appliedPreference && model.preferenceId && /*#__PURE__*/_react.default.createElement(_Typography.default, {
     className: "preference-name-text",
     variant: "h6",
     component: "h6",
@@ -69,7 +74,7 @@ const CustomToolbar = function CustomToolbar(props) {
     sx: {
       ml: 1
     }
-  }, " ", t(currentPreference === null || currentPreference === void 0 ? void 0 : currentPreference[model.preferenceId], tOpts)), (isReadOnly || !(effectivePermissions !== null && effectivePermissions !== void 0 && effectivePermissions.add) && !forAssignment && !model.hideSubTitle) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
+  }, " ", t(appliedPreference, tOpts)), (isReadOnly || !(effectivePermissions !== null && effectivePermissions !== void 0 && effectivePermissions.add) && !forAssignment && !model.hideSubTitle) && /*#__PURE__*/_react.default.createElement(_Typography.default, {
     variant: "h6",
     component: "h3",
     textAlign: "center",
@@ -110,13 +115,23 @@ const CustomToolbar = function CustomToolbar(props) {
       width: 'max-content'
     }
   }, t("CLEAR FILTER", tOpts)), effectivePermissions.export && /*#__PURE__*/_react.default.createElement(CustomExportButton, {
-    tTranslate: tTranslate,
+    t: t,
     tOpts: tOpts,
     handleExport: handleExport,
+    onExportMenuClick: onExportMenuClick,
     showPivotExportBtn: model === null || model === void 0 ? void 0 : model.showPivotExportBtn,
-    showOnlyExcelExport: model.showOnlyExcelExport
+    showOnlyExcelExport: model.showOnlyExcelExport,
+    hideExcelExport: hideExcelExport,
+    hideXmlExport: hideXmlExport,
+    hideHtmlExport: hideHtmlExport,
+    hideJsonExport: hideJsonExport,
+    showExportWithDetails: showExportWithDetails,
+    showExportWithLatestData: showExportWithLatestData,
+    showInFieldStatusPivotExportBtn: showInFieldStatusPivotExportBtn,
+    showInstallationPivotExportBtn: showInstallationPivotExportBtn,
+    detailExportLabel: detailExportLabel
   }), model.preferenceId && /*#__PURE__*/_react.default.createElement(_GridPreference.default, {
-    tTranslate: tTranslate,
+    t: t,
     gridRef: apiRef,
     columns: gridColumns,
     setIsGridPreferenceFetched: setIsGridPreferenceFetched,

@@ -1,12 +1,18 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import actionsStateProvider from "../useRouter/actions";
 import { transport, HTTP_STATUS_CODES } from "./httpRequest";
 import request from "./httpRequest";
+import constants from '../constants';
+import IconButton from '@mui/material/IconButton';
+import AddIcon from '@mui/icons-material/Add';
+import utils from '../utils';
+
+dayjs.extend(utc);
 
 const dateDataTypes = ['date', 'dateTime'];
 
-const exportRecordSize = 10000;
-
-const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, tTranslate = null, tOpts = null}) => {
+const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, fromSelfServe = false, isDetailsExport = false, setFetchData = () => { }, selectedClients = [], isChildGrid = false, groupBy, isPivotExport = false, gridPivotFilter = [], activeClients, isLatestExport = false, payloadFilter = [], isFieldStatusPivotExport = false, isInstallationPivotExport = false, uiClientIds = '', globalFilters = {}, additionalFiltersForExport, setColumns, afterDataSet, setIsDataFetchedInitially, isDataFetchedInitially, exportFileName = null, tTranslate = null, tOpts = null, languageSelected }) => {
     if (!contentType) {
         setIsLoading(true);
         if (showFullScreenLoader) {
@@ -14,11 +20,16 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
         }
     }
 
+    let isPortalController = controllerType === 'cs';
+    if (fromSelfServe) {
+        isPortalController = false;
+        api = modelConfig?.selfServerAPI || api;
+    }
     const lookups = [];
     const dateColumns = [];
-    gridColumns.forEach(({ lookup, type, field, keepLocal = false, keepLocalDate }) => {
+    gridColumns.forEach(({ lookup, type, field, keepUTC = false }) => {
         if (dateDataTypes.includes(type)) {
-            dateColumns.push({ field, keepLocal, keepLocalDate });
+            dateColumns.push({ field, keepUTC });
         }
         if (!lookup) {
             return;
@@ -31,13 +42,18 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     const where = [];
     if (filterModel?.items?.length) {
         filterModel.items.forEach(filter => {
-            if (["isEmpty", "isNotEmpty"].includes(filter.operator) || filter.value || filter.value === false) {
+            if (constants.emptyNotEmptyOperators?.includes(filter.operator) || filter.value || filter.value === false || filter.value === 0) {
                 const { field, operator, filterField } = filter;
                 let { value } = filter;
                 const column = gridColumns.filter((item) => item.field === filter.field);
-                const type = column[0]?.type;
+                let type = filter?.type || column[0]?.type;
+                const sqlType = column[0]?.sqlType;
                 if (type === 'boolean') {
-                    value = Boolean(value) ? 1 : 0;
+                    if (isPortalController) {
+                        value = typeof value === 'string' ? (value === 'true') : value;
+                    } else {
+                        value = Boolean(value) ? 1 : 0;
+                    }
                 } else if (type === 'number') {
                     value = Array.isArray(value) ? value.filter(e => e) : value;
                 }
@@ -46,7 +62,8 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
                     field: filterField || field,
                     operator: operator,
                     value: value,
-                    type: type
+                    type: type,
+                    sqlType: sqlType
                 });
             }
         });
@@ -60,14 +77,20 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     }
     const requestData = {
         start: page * pageSize,
-        limit: isElasticExport ? modelConfig.exportSize : pageSize,
+        limit: modelConfig?.isClient ? 0 : isElasticExport ? modelConfig?.exportSize : pageSize,
         ...extraParams,
         logicalOperator: filterModel.logicOperator,
         sort: sortModel.map(sort => (sort.filterField || sort.field) + ' ' + sort.sort).join(','),
         where,
+        selectedClients,
         oderStatusId: oderStatusId,
         isElasticExport,
-        fileName: tTranslate(modelConfig?.overrideFileName, tOpts)
+        fileName: tTranslate(exportFileName || modelConfig?.title || modelConfig?.overrideFileName, tOpts),
+        fromSelfServe,
+        isChildGrid,
+        groupBy,
+        isLatestExport,
+        globalFilters
     };
 
     if (lookups) {
@@ -77,9 +100,36 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     if (modelConfig?.limitToSurveyed) {
         requestData.limitToSurveyed = modelConfig?.limitToSurveyed
     }
+    if (modelConfig?.includeColumns) {
+        requestData.columns = gridColumns;
+    }
+    if (modelConfig?.gridType) {
+        requestData.gridType = modelConfig.gridType
+    }
+
+    // Transform filters for portal controller
+    if (isPortalController) {
+        utils.createFiltersForPortalController(where, requestData);
+
+        if (payloadFilter?.length) {
+            payloadFilter.map((ele) => {
+                requestData[ele.field] = ele.value;
+            });
+        }
+
+        if (sortModel?.length) {
+            requestData.sort = sortModel[0].field;
+            requestData.dir = sortModel[0].sort;
+        }
+    }
 
     const headers = {};
-    let url = controllerType === 'cs' ? `${api}?action=${action}&asArray=0` : `${api}/${action}`;
+    if (isPortalController && contentType) {
+        action = 'export';
+    }
+    let url = isPortalController ? isDetailsExport ? `${api}` : `${api}?action=${action}&asArray=0` : `${api}/${action}`;
+
+    const isPivot = isPivotExport || isFieldStatusPivotExport || isInstallationPivotExport;
 
     if (template !== null) {
         url += `&template=${template}`;
@@ -87,16 +137,87 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     if (configFileName !== null) {
         url += `&configFileName=${configFileName}`;
     }
+    if (isPivot) {
+        url += `&uiClientIds=${uiClientIds}`;
+        if (isPortalController && exportFileName) {
+            url += `&exportFileName=${exportFileName}`;
+        }
+    }
+
+    if (modelConfig?.customApi) {
+        url = modelConfig?.customApi
+    }
+    
+    let exportParams = {
+        exportFileName: tTranslate ? tTranslate(exportFileName || modelConfig?.title || modelConfig?.overrideFileName, tOpts) : (exportFileName || modelConfig?.title || modelConfig?.overrideFileName),
+        action,
+        exportFormat: 'XLSX',
+        title: modelConfig?.pageTitle,
+        sort: sortModel.map(sort => (sort.filterField || sort.field) + ' ' + sort.sort).join(','),
+        TimeOffSet: new Date().getTimezoneOffset()
+    }
+    if (isDetailsExport && additionalFiltersForExport) {
+        requestData['additionalFiltersForExport'] = additionalFiltersForExport;
+        exportParams['additionalFiltersForExport'] = additionalFiltersForExport;
+    }
+
     if (contentType) {
+        if (isDetailsExport) {
+            url = url + "?v=" + new Date() + '&' + 'forExport=true';
+        }
+        if (where?.length && modelConfig?.convertFiltersToPortalFormat) {
+            // Note: This requires utils.createFilter which may need to be imported or implemented
+            exportParams['filter'] = where[0] || '';
+        }
         const form = document.createElement("form");
         requestData.responseType = contentType;
         requestData.columns = columns;
+        if (isPortalController) {
+            requestData.exportFormat = constants.contentTypeToFileType?.[contentType] || 'XLSX';
+            requestData.selectedFields = Object.keys(columns).join();
+            if (requestData.sort && !Object.keys(columns).includes(requestData.sort)) {
+                requestData.selectedFields += `,${requestData.sort}`;
+            }
+            requestData.cols = Object.keys(columns).map(col => {
+                return { ColumnName: columns[col].field, Header: columns[col].headerName, Width: columns[col].width }
+            });
+            delete requestData.columns;
+            delete requestData.responseType;
+        }
+        requestData.userTimezoneOffset = new Date().getTimezoneOffset() * -1;
+        requestData.languageSelected = languageSelected;
         form.setAttribute("method", "POST");
         form.setAttribute("id", "exportForm");
-        form.setAttribute("target", "_blank")
+        form.setAttribute("target", "_blank");
+        let arr = isDetailsExport && action === 'export' ? exportParams : requestData;
+        arr['isDetailsExport'] = isDetailsExport;
+        if (isPivot && gridPivotFilter?.length) {
+            for (const item of gridPivotFilter) {
+                let v = item.value;
+                if (v === undefined || v === null) {
+                    continue;
+                } else if (typeof v !== 'string') {
+                    v = JSON.stringify(v);
+                }
+                let hiddenTag = document.createElement('input');
+                hiddenTag.type = "hidden";
+                hiddenTag.name = item.field;
+                hiddenTag.value = v;
+                form.append(hiddenTag);
+            }
+        }
+
+        if (modelConfig?.addSelectedClientsForExport) {
+            let hiddenTag = document.createElement('input');
+            hiddenTag.type = "hidden";
+            hiddenTag.name = "activeClients";
+            hiddenTag.value = activeClients.toString();
+            form.append(hiddenTag);
+        }
+
         if (template === null) {
-            for (const key in requestData) {
-                let v = requestData[key];
+            for (const key in arr) {
+                let v = arr[key];
                 if (v === undefined || v === null) {
                     continue;
                 } else if (typeof v !== 'string') {
@@ -109,6 +230,7 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
                 form.append(hiddenTag);
             }
         }
+
         form.setAttribute('action', url);
         document.body.appendChild(form);
         form.submit();
@@ -128,43 +250,87 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
             },
             credentials: 'include'
         };
-
-        const response = await transport(params);
-        function isLocalTime(dateValue) {
-            const date = new Date(dateValue);
-            const localOffset = new Date().getTimezoneOffset();
-            const dateOffset = date.getTimezoneOffset();
-            return localOffset === dateOffset;
-        }
-        if (response.status === HTTP_STATUS_CODES.OK) {
-            const { records, userCurrencySymbol } = response.data;
-            if (records) {
-                records.forEach(record => {
-                    if (record.hasOwnProperty("TotalOrder")) {
-                        record["TotalOrder"] = `${userCurrencySymbol}${record["TotalOrder"]}`;
-                    }
-                    dateColumns.forEach(column => {
-                        const { field, keepLocal, keepLocalDate } = column;
-                        if (record[field]) {
-                            record[field] = new Date(record[field]);
-                            if (keepLocalDate) {
-                                const userTimezoneOffset = record[field].getTimezoneOffset() * 60000;
-                                record[field] = new Date(record[field].getTime() + userTimezoneOffset);
-                            }
-                            if (keepLocal && !isLocalTime(record[field])) {
-                                const userTimezoneOffset = record[field].getTimezoneOffset() * 60000;
-                                record[field] = new Date(record[field].getTime() + userTimezoneOffset);
-                            }
-                        }
-                    });
-                });
-            }
-            setData(response.data);
+        let response;
+        if (isPortalController) {
+            response = await request({ url, params: requestData, history, dispatchData });
+            setData(response);
         } else {
-            setError(response.statusText);
+            response = await transport(params);
+            if (response.status === HTTP_STATUS_CODES.OK) {
+                const { records, userCurrencySymbol } = response.data;
+                if (records) {
+                    records.forEach(record => {
+                        if (record.hasOwnProperty("TotalOrder")) {
+                            record["TotalOrder"] = `${userCurrencySymbol}${record["TotalOrder"]}`;
+                        }
+                        dateColumns.forEach(column => {
+                            const { field, keepUTC } = column;
+                            if (record[field]) {
+                                record[field] = keepUTC ? dayjs.utc(record[field]) : new Date(record[field]);
+                            }
+                        });
+                    });
+                }
+                if (modelConfig?.dynamicColumns && setColumns) {
+                    const existingLabels = new Set(gridColumns?.map(col => col.label));
+                    const dynamicResponseColumns = response.data?.dynamicColumns || [];
+                    const isMerchandisingColumn = dynamicResponseColumns?.every(col => col.key);
+                    let newDynamicColumns;
+                    if (isMerchandisingColumn) {
+                        newDynamicColumns = dynamicResponseColumns?.filter(col => !existingLabels.has(col.key));
+                        existingLabels.clear();
+                        newDynamicColumns = newDynamicColumns.map(col => {
+                            if (col.addDrillDownIcon) {
+                                col.renderCell = (params) => {
+                                    return (
+                                        <IconButton
+                                            onClick={(e) => modelConfig.onDrillDown(params, col)}
+                                            size="small"
+                                            style={{ padding: 1 }}
+                                        >
+                                            <AddIcon />
+                                        </IconButton>
+                                    );
+                                };
+                            }
+                            if (col.key && !col.addDrillDownIcon && model?.formatMerchandisingDateRange) {
+                                if (typeof model.formatMerchandisingDateRange === 'function') {
+                                    col.label = model.formatMerchandisingDateRange(col.label);
+                                }
+                            }
+                            return col;
+                        });
+                    } else {
+                        if (modelConfig.updateDynamicColumns) {
+                            newDynamicColumns = modelConfig.updateDynamicColumns({ dynamicResponseColumns, t, tOpts });
+                        }
+                    }
+                    if (newDynamicColumns.length) {
+                        setColumns([...modelConfig.columns, ...newDynamicColumns]);
+                    }
+                }
+                // Ensure records and recordCount always have defaults
+                setData({
+                    ...response.data,
+                    records: response.data?.records || [],
+                    recordCount: response.data?.recordCount || 0
+                });
+                if (setFetchData)
+                    setFetchData(true);
+                if (afterDataSet && !isDataFetchedInitially) {
+                    afterDataSet();
+                    setIsDataFetchedInitially(true);
+                }
+            } else {
+                setError(response.statusText);
+            }
         }
     } catch (err) {
-        setError(err);
+        let errorMessage = err;
+        if (tTranslate && tOpts) {
+            errorMessage = tTranslate(err.message, tOpts);
+        }
+        setError(errorMessage);
     } finally {
         if (!contentType) {
             setIsLoading(false);
@@ -177,7 +343,7 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
 
 const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, parentFilters, where = {}, setError }) => {
     api = api || modelConfig?.api
-    setIsLoading(true);
+    setIsLoading(!modelConfig?.overrideLoaderOnInitialRender);
     const searchParams = new URLSearchParams();
     const url = `${api}/${id === undefined || id === null ? '-' : id}`;
     const lookupsToFetch = [];
@@ -228,10 +394,11 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
     }
 };
 
-const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage }) {
+const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage, tTranslate, tOpts }) {
     let result = { success: false, error: '' };
     if (!id) {
-        setError('Deleted failed. No active record.');
+        const errorMsg = tTranslate ? tTranslate('Deleted failed. No active record', tOpts) : 'Deleted failed. No active record';
+        setError(errorMsg);
         return;
     }
     setIsLoading(true);
@@ -246,27 +413,31 @@ const deleteRecord = async function ({ id, api, setIsLoading, setError, setError
             return true;
         }
         if (response.status === HTTP_STATUS_CODES.UNAUTHORIZED) {
-            setError('Session Expired!');
+            const errorMsg = tTranslate ? tTranslate('Session Expired!', tOpts) : 'Session Expired!';
+            setError(errorMsg);
             setTimeout(() => {
                 window.location.href = '/';
             }, 2000);
         } else {
-            setError('Delete failed', response.body);
+            const errorMsg = tTranslate ? tTranslate('Delete failed', tOpts) : 'Delete failed';
+            const bodyMsg = tTranslate ? tTranslate(response.body, tOpts) : response.body;
+            setError(errorMsg, bodyMsg);
         }
     } catch (error) {
         const errorMessage = error?.response?.data?.error;
         result.error = errorMessage;
-        setErrorMessage(errorMessage);
+        const errorMsg = tTranslate ? tTranslate(errorMessage, tOpts) : errorMessage;
+        setErrorMessage(errorMsg);
     } finally {
         setIsLoading(false);
     }
     return result;
 };
 
-const saveRecord = async function ({ id, api, values, setIsLoading, setError }) {
+const saveRecord = async function ({ id, api, values, setIsLoading, setError, tTranslate, tOpts }) {
     let url, method;
 
-    if (id !== 0) {
+    if (id) {
         url = `${api}/${id}`;
         method = 'PUT';
     } else {
@@ -291,19 +462,26 @@ const saveRecord = async function ({ id, api, values, setIsLoading, setError }) 
             if (data.success) {
                 return data;
             }
-            setError('Save failed', data.err || data.message);
+            const errorMsg = tTranslate ? tTranslate('Save failed', tOpts) : 'Save failed';
+            const dataMsg = tTranslate ? tTranslate(data.err || data.message, tOpts) : (data.err || data.message);
+            setError(errorMsg, dataMsg);
             return;
         }
         if (response.status === HTTP_STATUS_CODES.UNAUTHORIZED) {
-            setError('Session Expired!');
+            const errorMsg = tTranslate ? tTranslate('Session Expired!', tOpts) : 'Session Expired!';
+            setError(errorMsg);
             setTimeout(() => {
                 window.location.href = '/';
             }, 2000);
         } else {
-            setError('Save failed', response.body);
+            const errorMsg = tTranslate ? tTranslate('Save failed', tOpts) : 'Save failed';
+            const bodyMsg = tTranslate ? tTranslate(response.body, tOpts) : response.body;
+            setError(errorMsg, bodyMsg);
         }
     } catch (error) {
-        setError('Save failed', error);
+        const errorMsg = tTranslate ? tTranslate('Save failed', tOpts) : 'Save failed';
+        const errMsg = tTranslate ? tTranslate(error, tOpts) : error;
+        setError(errorMsg, errMsg);
     } finally {
         setIsLoading(false);
     }

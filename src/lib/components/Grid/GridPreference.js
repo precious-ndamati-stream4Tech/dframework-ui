@@ -4,7 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, List, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Stack, TextField, Typography, Tooltip } from '@mui/material';
+import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Grid, IconButton, List, ListItem, ListItemButton, ListItemText, Menu, MenuItem, Stack, TextField, Typography, Tooltip } from '@mui/material';
 import { DataGridPremium, GridActionsCellItem, gridFilterModelSelector, gridSortModelSelector, useGridSelector, useGridApiRef, } from '@mui/x-data-grid-premium';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -14,6 +14,7 @@ import request from './httpRequest';
 // import { useRouter } from '../useRouter/useRouter';
 import { useStateContext, useRouter } from '../useRouter/StateProvider';
 import actionsStateProvider from '../useRouter/actions';
+import constants from '../constants';
 
 const actionTypes = {
     Copy: "Copy",
@@ -27,13 +28,49 @@ const formTypes = {
     Manage: 'Manage'
 };
 
-const gridColumns = [
-    { field: "prefName", type: 'string', width: 300, headerName: "Preference Name", sortable: false, filterable: false },
-    { field: "prefDesc", type: 'string', width: 300, headerName: "Preference Description", sortable: false, filterable: false },
-    { field: "isDefault", type: "boolean", width: 100, headerName: "Default", sortable: false, filterable: false },
-    { field: 'editAction', type: 'actions', headerName: '', width: 20, getActions: () => [<GridActionsCellItem key={1} icon={<Tooltip title={actionTypes.Edit}>   <EditIcon /></Tooltip>} tabIndex={1} data-action={actionTypes.Edit} label="Edit" color="primary" />] },
-    { field: 'deleteAction', type: 'actions', headerName: '', width: 20, getActions: () => [<GridActionsCellItem key={2} icon={<Tooltip title={actionTypes.Delete}><DeleteIcon /> </Tooltip>} tabIndex={2} data-action={actionTypes.Delete} label="Delete" color="error" />] }
-];
+/**
+ * Checks if a preference has a valid name for display
+ * @param {Object} pref - The preference object to validate
+ * @returns {boolean} True if the preference has a valid name, false otherwise
+ */
+const hasValidPreferenceName = (pref) => {
+    return pref.prefName && pref.prefName.trim() !== '';
+};
+
+/**
+ * Checks if a preference is valid for the management grid (excludes invalid names and CoolR Default)
+ * @param {Object} pref - The preference object to validate
+ * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
+ */
+const isValidForManagement = (pref) => {
+    // Exclude default preference (prefId === 0) and "CoolR Default" preference
+    if (pref.prefId === 0 || pref.prefId === constants.defaultPreferenceId) {
+        return false;
+    }
+    const prefNameLower = pref.prefName?.toLowerCase().trim();
+    if (prefNameLower === 'coolr default') {
+        return false;
+    }
+    return hasValidPreferenceName(pref);
+};
+
+/**
+ * Creates validation schema for preference form
+ * @param {Function} t - Translation function
+ * @param {Object} tOpts - Translation options
+ * @returns {Object} Yup validation schema
+ */
+const createValidationSchema = (t, tOpts) => {
+    return yup.object({
+        prefName: yup
+            .string()
+            .required(t('Preference Name is Required', tOpts))
+            .test('not-only-whitespace', t('Preference Name cannot contain only whitespace', tOpts),
+                value => value && value.trim().length > 0)
+            .max(20, t('Maximum Length is 20', tOpts)),
+        prefDesc: yup.string().max(100, t('Description maximum length is 100', tOpts))
+    });
+};
 
 const initialValues = {
     prefName: '',
@@ -55,7 +92,7 @@ const getGridColumnsFromRef = ({ refColumns, columns }) => {
     return { gridColumn, columnVisibilityModel }
 };
 
-const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = [], setIsGridPreferenceFetched, initialGridRef }) => {
+const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = [], setIsGridPreferenceFetched, setIsLoading, initialGridRef }) => {
     const { preferenceId: preferenceName } = model;
     const { stateData, dispatchData, removeCurrentPreferenceName, getAllSavedPreferences } = useStateContext();
     const { navigate } = useRouter();
@@ -65,31 +102,66 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
     const tOpts = { t: translate, i18n };
     const [openDialog, setOpenDialog] = useState(false);
     const [openForm, setOpenForm] = useState(false);
-    const [filteredPrefs, setFilteredPrefs] = useState([]);
     const [formType, setFormType] = useState();
     const [menuAnchorEl, setMenuAnchorEl] = useState();
     const [openPreferenceExistsModal, setOpenPreferenceExistsModal] = useState(false);
     const { Username } = stateData?.getUserData ? stateData.getUserData : {};
-    const preferences = stateData?.preferences;
+    const preferences = stateData?.preferences?.filter(isValidForManagement) || [];
     const currentPreference = stateData?.currentPreference;
     const preferenceApi = stateData?.gridSettings?.permissions?.preferenceApi;
     const filterModel = useGridSelector(gridRef, gridFilterModelSelector);
     const sortModel = useGridSelector(gridRef, gridSortModelSelector);
     const validationSchema = useMemo(() => {
-        let schema = yup.object({
-            prefName: yup
-                .string()
-                .required('Preference Name is Required')
-                .max(20, 'Maximum Length is 20'),
-            prefDesc: yup.string().max(100, `Description maximum length is 100`)
-        });
-        return schema;
-    }, []);
+        return createValidationSchema(tTranslate, tOpts);
+    }, [tTranslate, tOpts]);
 
-    useEffect(()=>{
-        const filteredPrefs = Array.isArray(preferences) ? preferences.filter(pref => pref.prefId !== 0) : [];
-        setFilteredPrefs(filteredPrefs)
-    },[preferences])
+    // Dynamically generate columns for the preferences grid
+    const gridColumns = useMemo(() => {
+        const baseColumns = [
+            { field: 'prefName', headerName: tTranslate('Preference Name', tOpts), flex: 1 },
+            { field: 'prefDesc', headerName: tTranslate('Preference Description', tOpts), flex: 1 },
+            {
+                field: 'isDefault',
+                headerName: tTranslate('Default', tOpts),
+                width: 100,
+                type: 'boolean'
+            }
+        ];
+
+        // Only add action columns if there are valid preferences to manage
+        if (preferences && preferences.length > 0) {
+            baseColumns.push(
+                {
+                    field: 'editAction',
+                    headerName: '',
+                    width: 50,
+                    sortable: false,
+                    filterable: false,
+                    disableColumnMenu: true,
+                    renderCell: (params) => (
+                        <IconButton size="small" onClick={() => handleEditClick(params)}>
+                            <EditIcon fontSize="small" />
+                        </IconButton>
+                    )
+                },
+                {
+                    field: 'deleteAction',
+                    headerName: '',
+                    width: 50,
+                    sortable: false,
+                    filterable: false,
+                    disableColumnMenu: true,
+                    renderCell: (params) => (
+                        <IconButton size="small" onClick={() => handleDeleteClick(params)}>
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    )
+                }
+            );
+        }
+
+        return baseColumns;
+    }, [preferences, tTranslate, tOpts]);
 
     const formik = useFormik({
         initialValues,
@@ -126,6 +198,7 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                 removeCurrentPreferenceName({ dispatchData });
             }
             snackbar.showMessage('Preference Deleted Successfully.');
+            handleDialogClose();
         }
     }
 
@@ -136,14 +209,14 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
         await applyPreference(prefId);
     }
 
-    function isNotCoolRDefault(prefName = '') {
-        return coolrDefaultPreference.toLowerCase() === prefName.trim().toLowerCase();
-    }
     const savePreference = async (values) => {
         const presetName = values.prefName.trim();
-        const preferenceAlreadyExists = preferences.length > 0 && preferences?.findIndex(ele => ele.prefName === presetName);
-        const isNotCoolRDefaultName = isNotCoolRDefault(presetName)
-        if (preferenceAlreadyExists > -1 && formType === formTypes.Add || isNotCoolRDefaultName) {
+        const preferenceAlreadyExists = preferences.findIndex(ele => {
+            // When editing, exclude the current preference from duplicate check
+            const isDifferentPreference = formType === formTypes.Edit ? ele.prefId !== values.prefId : true;
+            return isDifferentPreference && ele.prefName.toLocaleLowerCase() === presetName.toLocaleLowerCase();
+        });
+        if (preferenceAlreadyExists > -1) {
             setOpenPreferenceExistsModal(true);
             return;
         }
@@ -168,44 +241,103 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
         const response = await request({ url: preferenceApi, params, history: navigate, dispatchData });
         if (response === true) {
             snackbar.showMessage('Preference Saved Successfully.');
+            handleDialogClose();
         }
         getAllSavedPreferences({ preferenceName, Username, history: navigate, dispatchData, preferenceApi });
     }
 
     const applyPreference = async (prefId) => {
+        if (setIsLoading) setIsLoading(true);
         let userPreferenceCharts;
-        if (prefId > 0) {
+        let currentPreferenceName = '';
+        if (prefId > 0) { // If valid preference is selected, then fetch it's details
             const params = {
                 action: 'load',
                 id: preferenceName,
                 prefId
             };
-            const response = await request({ url: preferenceApi, params, history: navigate, dispatchData });
+            const response = await request({ url: preferenceApi, params, history: navigate, dispatchData, disableLoader: true });
             userPreferenceCharts = response?.prefValue ? JSON.parse(response.prefValue) : null;
-            coolrDefaultPreference = response?.prefValue ? response.prefName : '';
+            if (response.prefValue) {
+                currentPreferenceName = response.prefName;
+            }
         }
         else {
-            const { sorting, filter, pinnedColumns } = initialGridRef.current.state;
-            const { gridColumn, columnVisibilityModel } = getGridColumnsFromRef({ refColumns: initialGridRef.current.state.columns, columns });
-            userPreferenceCharts = { gridColumn, columnVisibilityModel, pinnedColumns, sortModel: sorting.sortModel, filterModel: filter.filterModel };
-            coolrDefaultPreference = 'CoolR Default';
+            // If default preference is selected, then reset to the initial state
+            // Use the deep-copied initial state from initialGridRef
+            if (!initialGridRef.current) {
+                console.error('Initial grid state not captured. Cannot reset to default.');
+                if (setIsLoading) setIsLoading(false);
+                return;
+            }
+
+            const initialState = initialGridRef.current;
+            // Keep currentPreferenceName as empty string for default - no preference name should be displayed
+
+            // Reconstruct gridColumn from initial state
+            const gridColumn = initialState.columns.orderedFields.map(field => {
+                const colData = initialState.columns.lookup[field];
+                return {
+                    field: field,
+                    width: colData?.width,
+                    flex: colData?.flex
+                };
+            });
+
+            userPreferenceCharts = {
+                gridColumn: gridColumn,
+                columnVisibilityModel: { ...initialState.columns.columnVisibilityModel },
+                pinnedColumns: {
+                    left: [...initialState.pinnedColumns.left],
+                    right: [...initialState.pinnedColumns.right]
+                },
+                sortModel: [...initialState.sorting.sortModel],
+                filterModel: {
+                    items: [...initialState.filter.filterModel.items],
+                    linkOperator: initialState.filter.filterModel.linkOperator
+                }
+            };
         }
+
         if (userPreferenceCharts) {
             const { gridColumn, columnVisibilityModel, pinnedColumns, sortModel, filterModel } = userPreferenceCharts;
-            gridColumn.forEach(({ field, width }) => {
-                if (gridRef.current.getColumnIndex(field) !== -1) {
-                    gridRef.current.setColumnWidth(field, width);
-                }
-            });
-            gridRef.current.setColumnVisibilityModel(columnVisibilityModel);
-            gridRef.current.state.columns.orderedFields = gridColumn.map(({ field }) => field);
-            gridRef.current.setPinnedColumns(pinnedColumns);
-            gridRef.current.setSortModel(sortModel || []);
-            gridRef.current.setFilterModel(filterModel);
+            if (gridRef.current) {
+                const gridColumns = gridColumn || gridRef.current.getAllColumns();
+                const columnFields = gridColumns.map(column => column.field);
 
-            dispatchData({ type: actionsStateProvider.SET_CURRENT_PREFERENCE_NAME, payload: coolrDefaultPreference });
+                // Apply column widths
+                if (prefId === constants.defaultPreferenceId) {
+                    // Reset to initial widths from the captured initial state
+                    gridColumns.forEach(col => {
+                        const initialColData = initialGridRef.current?.columns?.lookup?.[col.field];
+                        if (initialColData && initialColData.width) {
+                            gridRef.current.setColumnWidth(col.field, initialColData.width);
+                        }
+                    });
+                } else {
+                    // Apply saved widths for custom preferences
+                    gridColumn.forEach(({ field, width }) => {
+                        if (columnFields.includes(field)) {
+                            const columnIndex = gridColumns.findIndex(column => column.field === field);
+                            if (columnIndex !== -1 && width) {
+                                gridRef.current.setColumnWidth(field, width);
+                            }
+                        }
+                    });
+                }
+
+                // Apply all preference settings to the grid
+                const orderedFields = gridColumn.map(({ field }) => field).filter(field => columnFields.includes(field));
+                gridRef.current.state.columns.orderedFields = orderedFields;
+                gridRef.current.setColumnVisibilityModel(columnVisibilityModel);
+                gridRef.current.setPinnedColumns(pinnedColumns);
+                gridRef.current.setSortModel(sortModel || []);
+                gridRef.current.setFilterModel(filterModel);
+            }
+            dispatchData({ type: actionsStateProvider.SET_CURRENT_PREFERENCE_NAME, payload: { model: preferenceName, currentPreference: currentPreferenceName } });
             setIsGridPreferenceFetched(true);
         }
+        if (setIsLoading) setIsLoading(false);
     }
 
     const getGridRowId = (row) => {
@@ -228,24 +360,40 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
         setOpenDialog(false);
     }
 
+    const handleResetPreferences = async () => {
+        // Clear current preference for this model from state
+        removeCurrentPreferenceName({ dispatchData, model: preferenceName });
+        // Apply default preference (this will reset all grid state)
+        await applyPreference(constants.defaultPreferenceId);
+    };
+
+    const handleEditClick = (params) => {
+        if (params.id === 0) {
+            snackbar.showMessage(tTranslate('Default Preference Can Not Be Edited', tOpts));
+            return;
+        }
+        setFormType(formTypes.Edit);
+        formik.setValues(params.row);
+        setOpenForm(true);
+    };
+
+    const handleDeleteClick = async (params) => {
+        if (params.id === 0) {
+            snackbar.showMessage(tTranslate('Default Preference Can Not Be Deleted', tOpts));
+            return;
+        }
+        await deletePreference(params.id, params.row?.prefName);
+        getAllSavedPreferences({ preferenceName, Username, history: navigate, dispatchData, preferenceApi });
+    };
+
     const onCellClick = async (cellParams, event, details) => {
-        let action = cellParams.field === 'editAction' ? actionTypes.Edit : cellParams.field === 'deleteAction' ? actionTypes.Delete : null;
-        if (cellParams.id === 0 && (action === actionTypes.Edit || action === actionTypes.Delete)) {
-            snackbar.showMessage('Default Preference Can Not Be' + ' ' + `${action === actionTypes.Edit ? 'Edited' : 'Deleted'}`);
-            return
-        }
-        if (action === actionTypes.Edit) {
-            setFormType('Modify');
-            formik.setValues(cellParams?.row);
-            setOpenForm(true);
-        }
-        if (action === actionTypes.Delete) {
-            await deletePreference(cellParams.id, cellParams?.row?.prefName);
-            getAllSavedPreferences({ preferenceName, history: navigate, dispatchData, Username, preferenceApi });
+        const action = cellParams.field;
+        if (action === 'editAction') {
+            handleEditClick(cellParams);
+        } else if (action === 'deleteAction') {
+            await handleDeleteClick(cellParams);
         }
     }
-
-    const prefName = formik.values.prefName.trim();
 
     return (
         <Box>
@@ -286,11 +434,14 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                 <MenuItem component={ListItemButton} dense onClick={() => openModal(formTypes.Add)}>
                     {tTranslate('Add Preference', tOpts)}
                 </MenuItem>
-                <MenuItem component={ListItemButton} dense divider={preferences?.length > 0} onClick={() => openModal(formTypes.Manage, false)}>
+                <MenuItem component={ListItemButton} dense onClick={() => openModal(formTypes.Manage, false)}>
                     {tTranslate('Manage Preferences', tOpts)}
                 </MenuItem>
+                <MenuItem component={ListItemButton} dense divider={preferences?.length > 0} onClick={handleResetPreferences}>
+                    {tTranslate('Reset Preferences', tOpts)}
+                </MenuItem>
 
-                {preferences?.length > 0 && preferences?.map((ele, key) => {
+                {preferences?.filter(hasValidPreferenceName).map((ele, key) => {
                     const { prefName, prefDesc, prefId } = ele;
                     return (
                         <MenuItem
@@ -418,10 +569,10 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                                     className="pagination-fix"
                                     onCellClick={onCellClick}
                                     columns={gridColumns}
-                                    pageSizeOptions={[5, 10, 20, 50, 100]}
+                                    pageSizeOptions={constants.pageSizeOptions}
                                     pagination
-                                    rowCount={filteredPrefs.length}
-                                    rows={filteredPrefs}
+                                    rowCount={preferences.length}
+                                    rows={preferences}
                                     getRowId={getGridRowId}
                                     slots={{
                                         headerFilterMenu: false
@@ -433,6 +584,13 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
                                     disableRowGrouping={true}
                                     disableRowSelectionOnClick={true}
                                     autoHeight
+                                    initialState={{
+                                        pagination: {
+                                            paginationModel: {
+                                                pageSize: 10
+                                            }
+                                        }
+                                    }}
                                     localeText={{
                                         toolbarColumnsLabel: tTranslate('Select columns', tOpts),
                                         toolbarExportLabel: tTranslate('Export', tOpts),
@@ -457,7 +615,7 @@ const GridPreferences = ({ tTranslate = (key) => key, model, gridRef, columns = 
             </Dialog>
             <Dialog open={openPreferenceExistsModal} maxWidth='xs' fullWidth>
                 <DialogContent sx={{ fontSize: '16px' }}>
-                    "{prefName}" {tTranslate('name already in use, please use another name.', tOpts)}
+                    "{formik.values.prefName?.trim()}" {tTranslate('name already in use, please use another name.', tOpts)}
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: 'center', marginTop: '4%' }}>
                     <Button color="success" variant="contained" size="small" onClick={() => setOpenPreferenceExistsModal(false)} disableElevation>

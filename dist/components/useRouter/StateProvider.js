@@ -9,6 +9,7 @@ require("core-js/modules/es.error.cause.js");
 require("core-js/modules/es.promise.js");
 require("core-js/modules/esnext.iterator.constructor.js");
 require("core-js/modules/esnext.iterator.for-each.js");
+require("core-js/modules/esnext.iterator.map.js");
 require("core-js/modules/esnext.json.parse.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 var _react = _interopRequireWildcard(require("react"));
@@ -87,6 +88,7 @@ const StateProvider = _ref => {
     });
   }
   async function applyDefaultPreferenceIfExists(_ref3) {
+    var _userPreferenceCharts2;
     let {
       gridRef,
       history,
@@ -109,6 +111,7 @@ const StateProvider = _ref => {
     });
     let userPreferenceCharts = response !== null && response !== void 0 && response.prefValue ? JSON.parse(response.prefValue) : null;
     if (userPreferenceCharts && gridRef !== null && gridRef !== void 0 && gridRef.current) {
+      var _userPreferenceCharts;
       userPreferenceCharts === null || userPreferenceCharts === void 0 || userPreferenceCharts.gridColumn.forEach(ele => {
         if (gridRef.current.getColumnIndex(ele.field) !== -1) {
           gridRef.current.setColumnWidth(ele.field, ele.width);
@@ -118,6 +121,15 @@ const StateProvider = _ref => {
       gridRef.current.setPinnedColumns(userPreferenceCharts.pinnedColumns);
       gridRef.current.setSortModel(userPreferenceCharts.sortModel || []);
       gridRef.current.setFilterModel(userPreferenceCharts === null || userPreferenceCharts === void 0 ? void 0 : userPreferenceCharts.filterModel);
+
+      // Extract column order from gridColumn array (this is where the order is actually stored)
+      const columnOrder = ((_userPreferenceCharts = userPreferenceCharts.gridColumn) === null || _userPreferenceCharts === void 0 ? void 0 : _userPreferenceCharts.map(col => col.field)) || [];
+      if (columnOrder.length > 0) {
+        const currentState = gridRef.current.state.columns;
+        if (currentState) {
+          currentState.orderedFields = columnOrder;
+        }
+      }
       dispatchData({
         type: _actions.default.SET_CURRENT_PREFERENCE_NAME,
         payload: response.prefName
@@ -131,6 +143,16 @@ const StateProvider = _ref => {
     if (setIsGridPreferenceFetched) {
       setIsGridPreferenceFetched(true);
     }
+
+    // Return the applied preference data for React state updates
+    // Extract column order from gridColumn array for React state
+    const columnOrder = (userPreferenceCharts === null || userPreferenceCharts === void 0 || (_userPreferenceCharts2 = userPreferenceCharts.gridColumn) === null || _userPreferenceCharts2 === void 0 ? void 0 : _userPreferenceCharts2.map(col => col.field)) || null;
+    return userPreferenceCharts ? {
+      sortModel: userPreferenceCharts.sortModel || [],
+      filterModel: userPreferenceCharts.filterModel,
+      columnOrder: columnOrder,
+      columnVisibilityModel: userPreferenceCharts.columnVisibilityModel
+    } : null;
   }
   function removeCurrentPreferenceName(_ref4) {
     let {
