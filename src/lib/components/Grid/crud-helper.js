@@ -164,10 +164,52 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
     if (contentType) {
         if (isDetailsExport) {
             url = url + "?v=" + new Date() + '&' + 'forExport=true';
+            let filtersForExport = utils.createFilter(filterModel, true);
+            if (Object.keys(filtersForExport)?.length > 0 && params.title !== constants.surveyInboxTitle) {
+                filtersForExport.map((item) => {
+                    if (item?.operatorValue) {
+                        if (item.isValueADate) {
+                            let operatorId = utils.dateOperator[item?.operatorValue];
+                            if (operatorId?.length > 0) {
+                                params.OperatorId = operatorId;
+                            }
+                        }
+                    }
+                    params = { ...params, ...item };
+                })
+            }
+
         }
         if (where?.length && modelConfig?.convertFiltersToPortalFormat) {
-            // Note: This requires utils.createFilter which may need to be imported or implemented
-            exportParams['filter'] = where[0] || '';
+            let exportFilters = {};
+            if (where?.length <= 1) {
+                for (const i in where) {
+                    where[i] = {
+                        "fieldName": where[i].field,
+                        "operatorId": utils.filterType[where[i].operator],
+                        "convert": false,
+                        "values": [where[i].value]
+                    }
+                }
+            } else {
+                const filterModelCopy = filterModel;
+                let firstFilter = where[0];
+                if (filterModelCopy?.items?.length > 1 && firstFilter) {
+                    filterModelCopy.items = where;
+                    if (firstFilter) {
+                        firstFilter = {
+                            "fieldName": firstFilter.field,
+                            "operatorId": utils.filterType[firstFilter.operator],
+                            "convert": false,
+                            "values": [firstFilter.value]
+                        }
+                    }
+                    exportFilters = utils.createFilter(filterModel);
+                    exportFilters = utils.addToFilter(firstFilter, exportFilters, filterModelCopy?.logicOperator.toUpperCase());
+                }
+
+            }
+            exportFilters['filter'] = Object.keys(exportFilters)?.length > 0 ? Object.assign({}, exportFilters) : where[0] || '';
         }
         const form = document.createElement("form");
         requestData.responseType = contentType;

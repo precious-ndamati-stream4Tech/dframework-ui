@@ -10,6 +10,7 @@ require("core-js/modules/es.array.includes.js");
 require("core-js/modules/es.array.push.js");
 require("core-js/modules/es.array.sort.js");
 require("core-js/modules/es.json.stringify.js");
+require("core-js/modules/es.object.assign.js");
 require("core-js/modules/es.promise.js");
 require("core-js/modules/es.regexp.to-string.js");
 require("core-js/modules/es.string.includes.js");
@@ -256,11 +257,54 @@ const getList = async _ref => {
   }
   if (contentType) {
     if (isDetailsExport) {
+      var _Object$keys;
       url = url + "?v=" + new Date() + '&' + 'forExport=true';
+      let filtersForExport = _utils.default.createFilter(filterModel, true);
+      if (((_Object$keys = Object.keys(filtersForExport)) === null || _Object$keys === void 0 ? void 0 : _Object$keys.length) > 0 && params.title !== _constants.default.surveyInboxTitle) {
+        filtersForExport.map(item => {
+          if (item !== null && item !== void 0 && item.operatorValue) {
+            if (item.isValueADate) {
+              let operatorId = _utils.default.dateOperator[item === null || item === void 0 ? void 0 : item.operatorValue];
+              if ((operatorId === null || operatorId === void 0 ? void 0 : operatorId.length) > 0) {
+                params.OperatorId = operatorId;
+              }
+            }
+          }
+          params = _objectSpread(_objectSpread({}, params), item);
+        });
+      }
     }
     if (where !== null && where !== void 0 && where.length && modelConfig !== null && modelConfig !== void 0 && modelConfig.convertFiltersToPortalFormat) {
-      // Note: This requires utils.createFilter which may need to be imported or implemented
-      exportParams['filter'] = where[0] || '';
+      var _Object$keys2;
+      let exportFilters = {};
+      if ((where === null || where === void 0 ? void 0 : where.length) <= 1) {
+        for (const i in where) {
+          where[i] = {
+            "fieldName": where[i].field,
+            "operatorId": _utils.default.filterType[where[i].operator],
+            "convert": false,
+            "values": [where[i].value]
+          };
+        }
+      } else {
+        var _filterModelCopy$item;
+        const filterModelCopy = filterModel;
+        let firstFilter = where[0];
+        if ((filterModelCopy === null || filterModelCopy === void 0 || (_filterModelCopy$item = filterModelCopy.items) === null || _filterModelCopy$item === void 0 ? void 0 : _filterModelCopy$item.length) > 1 && firstFilter) {
+          filterModelCopy.items = where;
+          if (firstFilter) {
+            firstFilter = {
+              "fieldName": firstFilter.field,
+              "operatorId": _utils.default.filterType[firstFilter.operator],
+              "convert": false,
+              "values": [firstFilter.value]
+            };
+          }
+          exportFilters = _utils.default.createFilter(filterModel);
+          exportFilters = _utils.default.addToFilter(firstFilter, exportFilters, filterModelCopy === null || filterModelCopy === void 0 ? void 0 : filterModelCopy.logicOperator.toUpperCase());
+        }
+      }
+      exportFilters['filter'] = ((_Object$keys2 = Object.keys(exportFilters)) === null || _Object$keys2 === void 0 ? void 0 : _Object$keys2.length) > 0 ? Object.assign({}, exportFilters) : where[0] || '';
     }
     const form = document.createElement("form");
     requestData.responseType = contentType;
@@ -453,7 +497,7 @@ const getList = async _ref => {
 };
 exports.getList = getList;
 const getRecord = async _ref3 => {
-  var _Object$keys;
+  var _Object$keys3;
   let {
     api,
     id,
@@ -476,7 +520,7 @@ const getRecord = async _ref3 => {
     }
   });
   searchParams.set("lookups", lookupsToFetch);
-  if (where && (_Object$keys = Object.keys(where)) !== null && _Object$keys !== void 0 && _Object$keys.length) {
+  if (where && (_Object$keys3 = Object.keys(where)) !== null && _Object$keys3 !== void 0 && _Object$keys3.length) {
     searchParams.set("where", JSON.stringify(where));
   }
   ;
