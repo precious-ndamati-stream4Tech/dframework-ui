@@ -218,7 +218,9 @@ const GridBase = memo(({
     onDoubleClick,
     additionalFiltersForExport,
     isClientSelected = true,
-    showPivotExportBtn = false
+    showPivotExportBtn = false,
+    CustomDialoModal,
+    ManageDataComponent
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
     const [data, setData] = useState({ recordCount: 0, records: [], lookups: {} });
@@ -1118,30 +1120,39 @@ const GridBase = memo(({
 
     const handleExport = (e) => {
         if (data?.recordCount > recordCounts) {
-            snackbar.showMessage('Cannot export more than 60k records, please apply filters or reduce your results using filters');
+            snackbar.showMessage(t('Cannot export more than 60k records, please apply filters or reduce your results using filters', tOpts));
             return;
         }
         else {
             const { orderedFields, columnVisibilityModel, lookup } = apiRef.current.state.columns;
-            const columns = {};
+            let columns = {};
             const isPivotExport = e.target.dataset.isPivotExport === 'true';
             const isDetailsExport = e.target.dataset.isDetailsExport === 'true';
             const isLatestExport = e.target.dataset.isLatestExport === 'true';
             const isFieldStatusPivotExport = e.target.dataset.isInfieldExport === 'true';
             const isInstallationPivotExport = e.target.dataset.isInstallationExport === 'true';
+            const additionalFiltersForExportNew = e.target.dataset.extraExportFilters ? JSON.parse(e.target.dataset.extraExportFilters) : {}
             const hiddenColumns = Object.keys(columnVisibilityModel).filter(key => columnVisibilityModel[key] === false);
-            const visibleColumns = orderedFields.filter(ele => !hiddenColumns?.includes(ele) && ele !== '__check__' && ele !== 'actions');
+            const visibleColumns = orderedFields.filter(ele => !hiddenColumns?.includes(ele) && ele !== '__check__' && ele !== t('actions', tOpts) && !ele.includes('_drilldown'));
             if (visibleColumns?.length === 0) {
-                snackbar.showMessage('You cannot export while all columns are hidden... please show at least 1 column before exporting');
+                snackbar.showMessage(t('You cannot export while all columns are hidden... please show at least 1 column before exporting', tOpts));
                 return;
             }
             visibleColumns.forEach(ele => {
                 if (!constants.gridGroupByColumnName.includes(ele)) { // do not include group by column in export
-                    columns[ele] = { field: ele, width: lookup[ele].width, headerName: lookup[ele].headerName, type: lookup[ele].type, keepLocal: lookup[ele].keepLocal === true, isParsable: lookup[ele]?.isParsable };
+                    // Check if column has disableExport property
+                    const gridColumn = gridColumns.find(col => col.field === ele);
+                    if (gridColumn && gridColumn.disableExport) {
+                        return; // Skip this column in export
+                    }
+                    columns[ele] = { field: ele, width: lookup[ele].width, headerName: t(lookup[ele].headerName, tOpts), type: lookup[ele].type, keepUTC: lookup[ele].keepUTC === true, isParsable: lookup[ele]?.isParsable };
                 }
             })
-
-            fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, isLatestExport, isFieldStatusPivotExport, isInstallationPivotExport);
+            if (model?.customExportColumns) {
+                columns = model?.customExportColumns({ t, tOpts });
+            }
+            const isPivot = isPivotExport || isFieldStatusPivotExport || isInstallationPivotExport;
+            fetchData(isPivot ? 'export' : undefined, {}, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, false, isLatestExport, false, isFieldStatusPivotExport, isInstallationPivotExport, additionalFiltersForExportNew);
         }
     };
 
@@ -1610,6 +1621,10 @@ const GridBase = memo(({
                 {errorMessage && (<DialogComponent open={!!errorMessage} onConfirm={clearError} onCancel={clearError} title="Info" hideCancelButton={true} > {errorMessage}</DialogComponent>)
                 }
                 {isDeleting && !errorMessage && (<DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => setIsDeleting(false)} title="Confirm Delete"> {`${'Are you sure you want to delete'} ${record?.name}?`}</DialogComponent>)}
+                {openModal &&
+                    <CustomDialoModal open={openModal} onClose={() => { setOpenModal(false) }} dialogTitle={t(`Manage Data - ${manageDataName}`, tOpts)} footerTitle={t(`You can edit, add data to the file and import it back to see the updates`, tOpts)} maxWidth="md" dividers={true} hideFooter={true} >
+                        <ManageDataComponent importUrl={importUrl} exportUrl={exportUrl} action={manageDataName} exportNote={exportNote} disable={disable} fetchData={fetchData} apiRef={apiRef} data={data} showExportOption={showExportOption} />
+                    </CustomDialoModal>}
             </div >
 
         </>

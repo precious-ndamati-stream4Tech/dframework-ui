@@ -340,7 +340,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     onDoubleClick,
     additionalFiltersForExport,
     isClientSelected = true,
-    showPivotExportBtn = false
+    showPivotExportBtn = false,
+    CustomDialoModal,
+    ManageDataComponent
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
     pageSize: defaultPageSize,
@@ -1409,7 +1411,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
   };
   const handleExport = e => {
     if ((data === null || data === void 0 ? void 0 : data.recordCount) > recordCounts) {
-      snackbar.showMessage('Cannot export more than 60k records, please apply filters or reduce your results using filters');
+      snackbar.showMessage(t('Cannot export more than 60k records, please apply filters or reduce your results using filters', tOpts));
       return;
     } else {
       const {
@@ -1417,33 +1419,46 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         columnVisibilityModel,
         lookup
       } = apiRef.current.state.columns;
-      const columns = {};
+      let columns = {};
       const isPivotExport = e.target.dataset.isPivotExport === 'true';
       const isDetailsExport = e.target.dataset.isDetailsExport === 'true';
       const isLatestExport = e.target.dataset.isLatestExport === 'true';
       const isFieldStatusPivotExport = e.target.dataset.isInfieldExport === 'true';
       const isInstallationPivotExport = e.target.dataset.isInstallationExport === 'true';
+      const additionalFiltersForExportNew = e.target.dataset.extraExportFilters ? JSON.parse(e.target.dataset.extraExportFilters) : {};
       const hiddenColumns = Object.keys(columnVisibilityModel).filter(key => columnVisibilityModel[key] === false);
-      const visibleColumns = orderedFields.filter(ele => !(hiddenColumns !== null && hiddenColumns !== void 0 && hiddenColumns.includes(ele)) && ele !== '__check__' && ele !== 'actions');
+      const visibleColumns = orderedFields.filter(ele => !(hiddenColumns !== null && hiddenColumns !== void 0 && hiddenColumns.includes(ele)) && ele !== '__check__' && ele !== t('actions', tOpts) && !ele.includes('_drilldown'));
       if ((visibleColumns === null || visibleColumns === void 0 ? void 0 : visibleColumns.length) === 0) {
-        snackbar.showMessage('You cannot export while all columns are hidden... please show at least 1 column before exporting');
+        snackbar.showMessage(t('You cannot export while all columns are hidden... please show at least 1 column before exporting', tOpts));
         return;
       }
       visibleColumns.forEach(ele => {
         if (!_constants.default.gridGroupByColumnName.includes(ele)) {
           var _lookup$ele;
           // do not include group by column in export
+          // Check if column has disableExport property
+          const gridColumn = gridColumns.find(col => col.field === ele);
+          if (gridColumn && gridColumn.disableExport) {
+            return; // Skip this column in export
+          }
           columns[ele] = {
             field: ele,
             width: lookup[ele].width,
-            headerName: lookup[ele].headerName,
+            headerName: t(lookup[ele].headerName, tOpts),
             type: lookup[ele].type,
-            keepLocal: lookup[ele].keepLocal === true,
+            keepUTC: lookup[ele].keepUTC === true,
             isParsable: (_lookup$ele = lookup[ele]) === null || _lookup$ele === void 0 ? void 0 : _lookup$ele.isParsable
           };
         }
       });
-      fetchData(isPivotExport ? 'export' : undefined, undefined, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, isLatestExport, isFieldStatusPivotExport, isInstallationPivotExport);
+      if (model !== null && model !== void 0 && model.customExportColumns) {
+        columns = model === null || model === void 0 ? void 0 : model.customExportColumns({
+          t,
+          tOpts
+        });
+      }
+      const isPivot = isPivotExport || isFieldStatusPivotExport || isInstallationPivotExport;
+      fetchData(isPivot ? 'export' : undefined, {}, e.target.dataset.contentType, columns, isPivotExport, isElasticScreen, isDetailsExport, false, isLatestExport, false, isFieldStatusPivotExport, isInstallationPivotExport, additionalFiltersForExportNew);
     }
   };
 
@@ -1954,6 +1969,26 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     onConfirm: handleDelete,
     onCancel: () => setIsDeleting(false),
     title: "Confirm Delete"
-  }, " ", 'Are you sure you want to delete'.concat(" ", record === null || record === void 0 ? void 0 : record.name, "?"))));
+  }, " ", 'Are you sure you want to delete'.concat(" ", record === null || record === void 0 ? void 0 : record.name, "?")), openModal && /*#__PURE__*/_react.default.createElement(CustomDialoModal, {
+    open: openModal,
+    onClose: () => {
+      setOpenModal(false);
+    },
+    dialogTitle: t("Manage Data - ".concat(manageDataName), tOpts),
+    footerTitle: t("You can edit, add data to the file and import it back to see the updates", tOpts),
+    maxWidth: "md",
+    dividers: true,
+    hideFooter: true
+  }, /*#__PURE__*/_react.default.createElement(ManageDataComponent, {
+    importUrl: importUrl,
+    exportUrl: exportUrl,
+    action: manageDataName,
+    exportNote: exportNote,
+    disable: disable,
+    fetchData: fetchData,
+    apiRef: apiRef,
+    data: data,
+    showExportOption: showExportOption
+  }))));
 }, areEqual);
 var _default = exports.default = GridBase;
