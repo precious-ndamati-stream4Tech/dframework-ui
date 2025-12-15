@@ -107,8 +107,7 @@ const Form = _ref => {
   const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
     debugger;
-    if (!isValidUrl) return;
-    setValidationSchema(model.getValidationSchema({
+    setValidationSchema(model === null || model === void 0 ? void 0 : model.getValidationSchema({
       id,
       snackbar,
       t,

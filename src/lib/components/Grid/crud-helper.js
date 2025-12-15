@@ -388,6 +388,7 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
     api = api || modelConfig?.api
     setIsLoading(!modelConfig?.overrideLoaderOnInitialRender);
     const searchParams = new URLSearchParams();
+    debugger
     const url = `${api}/${id === undefined || id === null ? '-' : id}`;
     const lookupsToFetch = [];
     const fields = modelConfig.formDef || modelConfig.columns;
@@ -471,6 +472,7 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
 };
 
 const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage, tTranslate, tOpts, modelConfig }) {
+    debugger
     let result = { success: false, error: '' };
     if (!id) {
         const errorMsg = tTranslate ? tTranslate('Deleted failed. No active record', tOpts) : 'Deleted failed. No active record';

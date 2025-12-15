@@ -52,8 +52,7 @@ const Form = ({
     const isClientSelected = (ClientId && ClientId != 0);
     useEffect(() => {
         debugger
-        if (!isValidUrl) return;
-        setValidationSchema(model.getValidationSchema({ id, snackbar, t, tOpts }));
+        setValidationSchema(model?.getValidationSchema({ id, snackbar, t, tOpts }));
         const options = idWithOptions?.split('-');
         try {
             getRecord({

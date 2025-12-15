@@ -1096,8 +1096,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     let {
       mode
     } = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    debugger;
     if (setActiveRecord) {
-      debugger;
       (0, _crudHelper.getRecord)({
         id,
         api: api || (model === null || model === void 0 ? void 0 : model.api),
@@ -1296,6 +1296,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     fetchData();
   };
   const onAdd = () => {
+    debugger;
     openForm(0);
   };
   const clearFilters = () => {

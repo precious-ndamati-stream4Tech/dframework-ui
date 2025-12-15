@@ -846,8 +846,8 @@ const GridBase = memo(({
         });
     };
     const openForm = (id, { mode } = {}) => {
+        debugger
         if (setActiveRecord) {
-            debugger
             getRecord({ id, api: api || model?.api, setIsLoading, setActiveRecord, modelConfig: model, parentFilters, where });
             return;
         }
@@ -1010,6 +1010,7 @@ const GridBase = memo(({
 
 
     const onAdd = () => {
+        debugger
         openForm(0);
     };
 

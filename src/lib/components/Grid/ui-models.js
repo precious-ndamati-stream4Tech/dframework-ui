@@ -48,6 +48,7 @@ class UiModel {
   }
 
   getValidationSchema({ id }) {
+    debugger
     const { columns } = this;
     let validationConfig = {};
     for (const column of columns) {

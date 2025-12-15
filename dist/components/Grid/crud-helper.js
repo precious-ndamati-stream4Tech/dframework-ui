@@ -512,6 +512,7 @@ const getRecord = async _ref3 => {
   api = api || (modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.api);
   setIsLoading(!(modelConfig !== null && modelConfig !== void 0 && modelConfig.overrideLoaderOnInitialRender));
   const searchParams = new URLSearchParams();
+  debugger;
   const url = "".concat(api, "/").concat(id === undefined || id === null ? '-' : id);
   const lookupsToFetch = [];
   const fields = modelConfig.formDef || modelConfig.columns;
@@ -612,6 +613,7 @@ const deleteRecord = exports.deleteRecord = async function deleteRecord(_ref4) {
     tOpts,
     modelConfig
   } = _ref4;
+  debugger;
   let result = {
     success: false,
     error: ''

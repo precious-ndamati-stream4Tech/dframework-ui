@@ -120,6 +120,7 @@ class UiModel {
     let {
       id
     } = _ref3;
+    debugger;
     const {
       columns
     } = this;
