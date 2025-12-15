@@ -124,25 +124,18 @@ const Form = _ref => {
       tOpts
     }));
     const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
-    try {
-      (0, _crudHelper.getRecord)({
-        id: options.length > 1 ? options[1] : options[0],
-        api: gridApi,
-        modelConfig: model,
-        setIsLoading,
-        setError: errorOnLoad,
-        setActiveRecord
-      });
-    } catch (error) {
-      snackbar.showError(t('An error occurred, please try again later', tOpts));
-      navigate(model.backURL || './');
-    } finally {
-      setIsLoading(false);
-    }
+    (0, _crudHelper.getRecord)({
+      id: options.length > 1 ? options[1] : options[0],
+      api: gridApi,
+      modelConfig: model,
+      setIsLoading,
+      setError: errorOnLoad,
+      setActiveRecord
+    });
     return () => {
       _utils.default.removeBackButton(dispatchData);
     };
-  }, [id, idWithOptions]);
+  }, [id, idWithOptions, model]);
   (0, _react.useEffect)(() => {
     if (model.overrideBackRouteAndSearch) {
       dispatchData({
