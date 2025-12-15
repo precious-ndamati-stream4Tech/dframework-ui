@@ -97,26 +97,25 @@ const Form = _ref => {
   } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
   const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
-    if (isValidUrl) {
-      setValidationSchema(model.getValidationSchema({
-        id,
-        snackbar
-      }));
-      const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
-      try {
-        (0, _crudHelper.getRecord)({
-          id: options.length > 1 ? options[1] : options[0],
-          api: gridApi,
-          modelConfig: model,
-          setIsLoading,
-          setError: errorOnLoad,
-          setActiveRecord
-        });
-      } catch (error) {
-        snackbar.showError('An error occurred, please try again later.');
-        navigate(model.backURL || './');
-      }
-    } else {
+    if (!isValidUrl) return;
+    setValidationSchema(model.getValidationSchema({
+      id,
+      snackbar
+    }));
+    const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
+    try {
+      (0, _crudHelper.getRecord)({
+        id: options.length > 1 ? options[1] : options[0],
+        api: gridApi,
+        modelConfig: model,
+        setIsLoading,
+        setError: errorOnLoad,
+        setActiveRecord
+      });
+    } catch (error) {
+      snackbar.showError('An error occurred, please try again later.');
+      navigate(model.backURL || './');
+    } finally {
       setIsLoading(false);
     }
     return () => {
