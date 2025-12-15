@@ -64,12 +64,12 @@ const Form = _ref => {
   } = (0, _StateProvider.useStateContext)();
   const {
     navigate,
-    getParams,
     useParams
   } = (0, _StateProvider.useRouter)();
+  const params = useParams ? useParams() : {};
   const {
     id: idWithOptions
-  } = useParams() || getParams;
+  } = params;
   const id = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-')[0];
   const [isLoading, setIsLoading] = (0, _react.useState)(true);
   const [data, setData] = (0, _react.useState)(null);
