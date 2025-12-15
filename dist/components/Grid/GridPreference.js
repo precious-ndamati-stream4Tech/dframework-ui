@@ -66,7 +66,7 @@ const isValidForManagement = pref => {
     return false;
   }
   const prefNameLower = (_pref$prefName = pref.prefName) === null || _pref$prefName === void 0 ? void 0 : _pref$prefName.toLowerCase().trim();
-  if (prefNameLower === 'coolr default' || '') {
+  if (prefNameLower === 'coolr default' || prefNameLower === '') {
     return false;
   }
   return true;
