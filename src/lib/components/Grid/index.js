@@ -846,7 +846,7 @@ const GridBase = memo(({
         });
     };
     const openForm = (id, { mode } = {}) => {
-        debugger
+        console.log('openForm called', { id, mode, pathname, setActiveRecord });
         if (setActiveRecord) {
             getRecord({ id, api: api || model?.api, setIsLoading, setActiveRecord, modelConfig: model, parentFilters, where });
             return;
@@ -863,6 +863,7 @@ const GridBase = memo(({
             path += id;
             dispatchData({ type: 'UPDATE_FORM_MODE', payload: '' })
         }
+        console.log('Navigating to path:', path);
         navigate(path);
     };
     const externalFilterHandleChange = (event, operator, type) => {
@@ -963,7 +964,6 @@ const GridBase = memo(({
     };
 
     const handleDelete = async function () {
-        debugger;
         let gridApi = `${model.controllerType === 'cs' ? withControllersUrl : url}${model.api || api}`
         const result = await deleteRecord({ id: record?.id, api: gridApi, setIsLoading, setError: snackbar.showError, setErrorMessage, tTranslate, tOpts, modelConfig: model });
         if (result === true) {
@@ -1010,7 +1010,6 @@ const GridBase = memo(({
 
 
     const onAdd = () => {
-        debugger
         openForm(0);
     };
 

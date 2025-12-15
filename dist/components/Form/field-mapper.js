@@ -243,7 +243,6 @@ const RenderColumns = _ref3 => {
     fieldConfigs,
     mode
   } = _ref3;
-  debugger;
   const classes = useStyles();
   if (!(formElements !== null && formElements !== void 0 && formElements.length)) {
     return null;

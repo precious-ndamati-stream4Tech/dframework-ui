@@ -58,6 +58,10 @@ const Form = _ref => {
     },
     Layout = _fieldMapper.default
   } = _ref;
+  console.log('Form component mounted', {
+    model,
+    api
+  });
   const {
     dispatchData,
     stateData
@@ -66,11 +70,20 @@ const Form = _ref => {
     navigate,
     useParams
   } = (0, _StateProvider.useRouter)();
+  console.log('useRouter result:', {
+    navigate,
+    useParams
+  });
   const params = useParams ? useParams() : {};
+  console.log('params from useParams:', params);
   const {
     id: idWithOptions
   } = params;
   const id = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-')[0];
+  console.log('Extracted ID:', {
+    idWithOptions,
+    id
+  });
   const [isLoading, setIsLoading] = (0, _react.useState)(true);
   const [data, setData] = (0, _react.useState)(null);
   const [lookups, setLookups] = (0, _react.useState)(null);
@@ -106,7 +119,6 @@ const Form = _ref => {
   } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
   const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
-    debugger;
     setValidationSchema(model === null || model === void 0 ? void 0 : model.getValidationSchema({
       id,
       snackbar,
@@ -132,7 +144,7 @@ const Form = _ref => {
     return () => {
       _utils.default.removeBackButton(dispatchData);
     };
-  }, [id, idWithOptions, model]);
+  }, [id, idWithOptions]);
   (0, _react.useEffect)(() => {
     if (model.overrideBackRouteAndSearch) {
       dispatchData({
@@ -306,7 +318,6 @@ const Form = _ref => {
   };
   const handleDelete = async function handleDelete() {
     setIsDeleting(true);
-    debugger;
     try {
       const response = await (0, _crudHelper.deleteRecord)({
         id,

@@ -1096,7 +1096,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     let {
       mode
     } = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    debugger;
+    console.log('openForm called', {
+      id,
+      mode,
+      pathname,
+      setActiveRecord
+    });
     if (setActiveRecord) {
       (0, _crudHelper.getRecord)({
         id,
@@ -1126,6 +1131,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         payload: ''
       });
     }
+    console.log('Navigating to path:', path);
     navigate(path);
   };
   const externalFilterHandleChange = (event, operator, type) => {
@@ -1244,7 +1250,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
   };
   const handleDelete = async function handleDelete() {
-    debugger;
     let gridApi = "".concat(model.controllerType === 'cs' ? withControllersUrl : url).concat(model.api || api);
     const result = await (0, _crudHelper.deleteRecord)({
       id: record === null || record === void 0 ? void 0 : record.id,
@@ -1296,7 +1301,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     fetchData();
   };
   const onAdd = () => {
-    debugger;
     openForm(0);
   };
   const clearFilters = () => {

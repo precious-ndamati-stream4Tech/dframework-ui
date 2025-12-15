@@ -25,11 +25,15 @@ const Form = ({
     permissions = model.modelPermissions || { edit: true, export: true, delete: true },
     Layout = FormLayout,
 }) => {
+    console.log('Form component mounted', { model, api });
     const { dispatchData, stateData } = useStateContext();
     const { navigate, useParams } = useRouter()
+    console.log('useRouter result:', { navigate, useParams });
     const params = useParams ? useParams() : {};
+    console.log('params from useParams:', params);
     const { id: idWithOptions } = params;
     const id = idWithOptions?.split('-')[0];
+    console.log('Extracted ID:', { idWithOptions, id });
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState(null);
     const [lookups, setLookups] = useState(null);
@@ -52,7 +56,6 @@ const Form = ({
     const { ClientId = 0 } = userData?.tags || {};
     const isClientSelected = (ClientId && ClientId != 0);
     useEffect(() => {
-        debugger
         setValidationSchema(model?.getValidationSchema({ id, snackbar, t, tOpts }));
         const options = idWithOptions?.split('-');
         try {
@@ -73,7 +76,7 @@ const Form = ({
         return () => {
             utils.removeBackButton(dispatchData);
         }
-    }, [id, idWithOptions, model]);
+    }, [id, idWithOptions]);
 
     useEffect(() => {
         if (model.overrideBackRouteAndSearch) {
@@ -228,7 +231,6 @@ const Form = ({
     }
     const handleDelete = async function () {
         setIsDeleting(true);
-        debugger
         try {
             const response = await deleteRecord({
                 id,
