@@ -7,6 +7,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 require("core-js/modules/es.array.includes.js");
+require("core-js/modules/es.regexp.exec.js");
+require("core-js/modules/es.regexp.test.js");
 require("core-js/modules/es.regexp.to-string.js");
 require("core-js/modules/es.string.includes.js");
 require("core-js/modules/esnext.iterator.constructor.js");
@@ -283,6 +285,10 @@ const utils = {
       newFilter["right"] = item;
     }
     return newFilter;
+  },
+  isValidIdUrl(id) {
+    const isValidUrl = /^\d+$/.test(id);
+    return isValidUrl;
   }
 };
 var _default = exports.default = utils;

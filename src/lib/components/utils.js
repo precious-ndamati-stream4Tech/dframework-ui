@@ -252,7 +252,11 @@ const utils = {
 			newFilter["right"] = item;
 		}
 		return newFilter;
-	}
+	},
+	isValidIdUrl(id) {
+		const isValidUrl = /^\d+$/.test(id);
+		return isValidUrl;
+	},
 }
 
 export default utils;
