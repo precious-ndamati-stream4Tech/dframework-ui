@@ -38,7 +38,6 @@ import { v4 as uuidv4 } from 'uuid';
 import utils from '../utils';
 import CustomToolbar from './CustomToolbar';
 import constants from '../constants';
-import ChildGridComponent from './ChildGridComponent';
 
 const defaultPageSize = 10;
 const t = utils.t;
