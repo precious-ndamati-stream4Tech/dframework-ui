@@ -136,6 +136,7 @@ const RenderSteps = ({ tabColumns, model, formik, data, onChange, combos, lookup
 }
 
 const RenderColumns = ({ formElements, model, formik, data, onChange, combos, lookups, fieldConfigs, mode }) => {
+    debugger
     const classes = useStyles();
     if (!formElements?.length) {
         return null;

@@ -51,6 +51,7 @@ const Form = ({
     const { ClientId = 0 } = userData?.tags || {};
     const isClientSelected = (ClientId && ClientId != 0);
     useEffect(() => {
+        debugger
         if (!isValidUrl) return;
         setValidationSchema(model.getValidationSchema({ id, snackbar, t, tOpts }));
         const options = idWithOptions?.split('-');

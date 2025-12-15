@@ -1097,6 +1097,7 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       mode
     } = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     if (setActiveRecord) {
+      debugger;
       (0, _crudHelper.getRecord)({
         id,
         api: api || (model === null || model === void 0 ? void 0 : model.api),
@@ -1124,9 +1125,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         type: 'UPDATE_FORM_MODE',
         payload: ''
       });
-    }
-    if (model !== null && model !== void 0 && model.formURL) {
-      path = model.formURL + id;
     }
     navigate(path);
   };

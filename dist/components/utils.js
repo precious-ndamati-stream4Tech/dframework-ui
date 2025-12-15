@@ -287,6 +287,7 @@ const utils = {
     return newFilter;
   },
   isValidIdUrl(id) {
+    debugger;
     const isValidUrl = /^\d+$/.test(id);
     return isValidUrl;
   }

@@ -106,6 +106,7 @@ const Form = _ref => {
   } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
   const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
+    debugger;
     if (!isValidUrl) return;
     setValidationSchema(model.getValidationSchema({
       id,

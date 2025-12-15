@@ -847,6 +847,7 @@ const GridBase = memo(({
     };
     const openForm = (id, { mode } = {}) => {
         if (setActiveRecord) {
+            debugger
             getRecord({ id, api: api || model?.api, setIsLoading, setActiveRecord, modelConfig: model, parentFilters, where });
             return;
         }
@@ -861,9 +862,6 @@ const GridBase = memo(({
         } else {
             path += id;
             dispatchData({ type: 'UPDATE_FORM_MODE', payload: '' })
-        }
-        if (model?.formURL) {
-            path = model.formURL + id;
         }
         navigate(path);
     };
