@@ -14,6 +14,7 @@ import PageTitle from '../PageTitle';
 import { useStateContext, useRouter } from '../useRouter/StateProvider';
 import actionsStateProvider from '../useRouter/actions';
 import utils from '../utils';
+import { useTranslation } from 'react-i18next';
 export const ActiveStepContext = createContext(1);
 const defaultFieldConfigs = {};
 const t = utils.t;
@@ -38,6 +39,8 @@ const Form = ({
     const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
     const [deleteError, setDeleteError] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const { t: translate, i18n } = useTranslation();
+    const tOpts = { t: translate, i18n };
     const url = stateData?.gridSettings?.permissions?.Url;
     const fieldConfigs = model?.applyFieldConfig ? model?.applyFieldConfig({ data, lookups }) : defaultFieldConfigs;
     let gridApi = `${url}${model.api || api}`
@@ -49,7 +52,7 @@ const Form = ({
     const isClientSelected = (ClientId && ClientId != 0);
     useEffect(() => {
         if (!isValidUrl) return;
-        setValidationSchema(model.getValidationSchema({ id, snackbar }));
+        setValidationSchema(model.getValidationSchema({ id, snackbar, t, tOpts }));
         const options = idWithOptions?.split('-');
         try {
             getRecord({
@@ -61,7 +64,7 @@ const Form = ({
                 setActiveRecord
             })
         } catch (error) {
-            snackbar.showError('An error occurred, please try again later.');
+            snackbar.showError(t('An error occurred, please try again later', tOpts));
             navigate(model.backURL || './');
         } finally {
             setIsLoading(false);
@@ -127,16 +130,18 @@ const Form = ({
                 values,
                 setIsLoading,
                 setError: snackbar.showError,
+                tTranslate: translate,
+                tOpts,
                 modelConfig: model
             })
                 .then(success => {
                     if (success) {
-                        snackbar.showMessage('Record Updated Successfully.');
+                        snackbar.showMessage(t('Record Updated Successfully', tOpts));
                         navigate(model.backURL || './');
                     }
                 })
                 .catch((err) => {
-                    snackbar.showError('An error occurred, please try again later.');
+                    snackbar.showError(t('An error occurred, please try again later', tOpts));
                 })
                 .finally(() => setIsLoading(false));
         }
@@ -229,14 +234,16 @@ const Form = ({
                 setIsLoading,
                 setError: snackbar.showError,
                 setErrorMessage,
+                tTranslate: translate,
+                tOpts,
                 modelConfig: model
             })
             if (response === true) {
-                snackbar.showMessage('Record Deleted Successfully.');
+                snackbar.showMessage(t('Record Deleted Successfully', tOpts));
                 navigate(model.backURL || './');
             }
         } catch (error) {
-            setDeleteError('An error occurred, please try again later.');
+            setDeleteError(t('An error occurred, please try again later', tOpts));
         } finally {
             setIsDeleting(false);
         }

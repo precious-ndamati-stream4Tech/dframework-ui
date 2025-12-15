@@ -35,6 +35,7 @@ var _PageTitle = _interopRequireDefault(require("../PageTitle"));
 var _StateProvider = require("../useRouter/StateProvider");
 var _actions = _interopRequireDefault(require("../useRouter/actions"));
 var _utils = _interopRequireDefault(require("../utils"));
+var _reactI18next = require("react-i18next");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -80,6 +81,14 @@ const Form = _ref => {
   const [isDiscardDialogOpen, setIsDiscardDialogOpen] = (0, _react.useState)(false);
   const [deleteError, setDeleteError] = (0, _react.useState)(null);
   const [errorMessage, setErrorMessage] = (0, _react.useState)('');
+  const {
+    t: translate,
+    i18n
+  } = (0, _reactI18next.useTranslation)();
+  const tOpts = {
+    t: translate,
+    i18n
+  };
   const url = stateData === null || stateData === void 0 || (_stateData$gridSettin = stateData.gridSettings) === null || _stateData$gridSettin === void 0 || (_stateData$gridSettin = _stateData$gridSettin.permissions) === null || _stateData$gridSettin === void 0 ? void 0 : _stateData$gridSettin.Url;
   const fieldConfigs = model !== null && model !== void 0 && model.applyFieldConfig ? model === null || model === void 0 ? void 0 : model.applyFieldConfig({
     data,
@@ -100,7 +109,9 @@ const Form = _ref => {
     if (!isValidUrl) return;
     setValidationSchema(model.getValidationSchema({
       id,
-      snackbar
+      snackbar,
+      t,
+      tOpts
     }));
     const options = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-');
     try {
@@ -113,7 +124,7 @@ const Form = _ref => {
         setActiveRecord
       });
     } catch (error) {
-      snackbar.showError('An error occurred, please try again later.');
+      snackbar.showError(t('An error occurred, please try again later', tOpts));
       navigate(model.backURL || './');
     } finally {
       setIsLoading(false);
@@ -192,14 +203,16 @@ const Form = _ref => {
         values,
         setIsLoading,
         setError: snackbar.showError,
+        tTranslate: translate,
+        tOpts,
         modelConfig: model
       }).then(success => {
         if (success) {
-          snackbar.showMessage('Record Updated Successfully.');
+          snackbar.showMessage(t('Record Updated Successfully', tOpts));
           navigate(model.backURL || './');
         }
       }).catch(err => {
-        snackbar.showError('An error occurred, please try again later.');
+        snackbar.showError(t('An error occurred, please try again later', tOpts));
       }).finally(() => setIsLoading(false));
     }
   });
@@ -300,14 +313,16 @@ const Form = _ref => {
         setIsLoading,
         setError: snackbar.showError,
         setErrorMessage,
+        tTranslate: translate,
+        tOpts,
         modelConfig: model
       });
       if (response === true) {
-        snackbar.showMessage('Record Deleted Successfully.');
+        snackbar.showMessage(t('Record Deleted Successfully', tOpts));
         navigate(model.backURL || './');
       }
     } catch (error) {
-      setDeleteError('An error occurred, please try again later.');
+      setDeleteError(t('An error occurred, please try again later', tOpts));
     } finally {
       setIsDeleting(false);
     }

@@ -1125,6 +1125,9 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         payload: ''
       });
     }
+    if (model !== null && model !== void 0 && model.formURL) {
+      path = model.formURL + id;
+    }
     navigate(path);
   };
   const externalFilterHandleChange = (event, operator, type) => {
@@ -1250,11 +1253,13 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       setIsLoading,
       setError: snackbar.showError,
       setErrorMessage,
+      tTranslate,
+      tOpts,
       modelConfig: model
     });
     if (result === true) {
       setIsDeleting(false);
-      snackbar.showMessage('Record Deleted Successfully.');
+      snackbar.showMessage(tTranslate('Record Deleted Successfully.', tOpts));
       fetchData();
     } else {
       setTimeout(() => {

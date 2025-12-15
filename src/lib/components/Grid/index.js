@@ -862,6 +862,9 @@ const GridBase = memo(({
             path += id;
             dispatchData({ type: 'UPDATE_FORM_MODE', payload: '' })
         }
+        if (model?.formURL) {
+            path = model.formURL + id;
+        }
         navigate(path);
     };
     const externalFilterHandleChange = (event, operator, type) => {
@@ -964,10 +967,10 @@ const GridBase = memo(({
     const handleDelete = async function () {
 
         let gridApi = `${model.controllerType === 'cs' ? withControllersUrl : url}${model.api || api}`
-        const result = await deleteRecord({ id: record?.id, api: gridApi, setIsLoading, setError: snackbar.showError, setErrorMessage, modelConfig: model });
+        const result = await deleteRecord({ id: record?.id, api: gridApi, setIsLoading, setError: snackbar.showError, setErrorMessage, tTranslate, tOpts, modelConfig: model });
         if (result === true) {
             setIsDeleting(false);
-            snackbar.showMessage('Record Deleted Successfully.');
+            snackbar.showMessage(tTranslate('Record Deleted Successfully.', tOpts));
             fetchData();
         } else {
             setTimeout(() => {

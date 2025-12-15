@@ -509,6 +509,7 @@ const getRecord = async _ref3 => {
     where = {},
     setError
   } = _ref3;
+  debugger;
   api = api || (modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.api);
   setIsLoading(!(modelConfig !== null && modelConfig !== void 0 && modelConfig.overrideLoaderOnInitialRender));
   const searchParams = new URLSearchParams();
@@ -616,6 +617,7 @@ const deleteRecord = exports.deleteRecord = async function deleteRecord(_ref4) {
     success: false,
     error: ''
   };
+  debugger;
   if (!id) {
     const errorMsg = tTranslate ? tTranslate('Deleted failed. No active record', tOpts) : 'Deleted failed. No active record';
     setError(errorMsg);
