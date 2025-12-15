@@ -306,6 +306,7 @@ const Form = _ref => {
   };
   const handleDelete = async function handleDelete() {
     setIsDeleting(true);
+    debugger;
     try {
       const response = await (0, _crudHelper.deleteRecord)({
         id,

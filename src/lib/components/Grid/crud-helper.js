@@ -385,7 +385,6 @@ const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sor
 };
 
 const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, parentFilters, where = {}, setError }) => {
-    debugger
     api = api || modelConfig?.api
     setIsLoading(!modelConfig?.overrideLoaderOnInitialRender);
     const searchParams = new URLSearchParams();
@@ -473,7 +472,6 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
 
 const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage, tTranslate, tOpts, modelConfig }) {
     let result = { success: false, error: '' };
-    debugger
     if (!id) {
         const errorMsg = tTranslate ? tTranslate('Deleted failed. No active record', tOpts) : 'Deleted failed. No active record';
         setError(errorMsg);

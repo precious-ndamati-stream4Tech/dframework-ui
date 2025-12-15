@@ -227,6 +227,7 @@ const Form = ({
     }
     const handleDelete = async function () {
         setIsDeleting(true);
+        debugger
         try {
             const response = await deleteRecord({
                 id,
