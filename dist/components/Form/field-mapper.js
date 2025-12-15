@@ -301,14 +301,14 @@ const getFormConfig = function getFormConfig(_ref5) {
     tabColumns[tab] = [];
   }
   for (const column of columns) {
-    let fieldType = column.type;
+    let fieldType = column.type || 'string'; // Default to string if no type specified
     if (column.fieldLabel === null) {
       /* If the field should not be shown in form mode, specify fieldLabel as null */
       continue;
     }
     const {
       field,
-      fieldLabel = column.header,
+      fieldLabel = column.label || column.header,
       tab
     } = column;
     const otherProps = {};

@@ -11,6 +11,7 @@ import utils from '../utils';
 dayjs.extend(utc);
 
 const dateDataTypes = ['date', 'dateTime'];
+const urlWithControllers = `/Controllers`;
 
 const getList = async ({ gridColumns, setIsLoading, setData, page, pageSize, sortModel, filterModel, api, parentFilters, action = 'list', setError, extraParams, contentType, columns, controllerType = 'node', template = null, configFileName = null, dispatchData, showFullScreenLoader = false, oderStatusId = 0, modelConfig = null, baseFilters = null, isElasticExport, fromSelfServe = false, isDetailsExport = false, setFetchData = () => { }, selectedClients = [], isChildGrid = false, groupBy, isPivotExport = false, gridPivotFilter = [], activeClients, isLatestExport = false, payloadFilter = [], isFieldStatusPivotExport = false, isInstallationPivotExport = false, uiClientIds = '', globalFilters = {}, additionalFiltersForExport, setColumns, afterDataSet, setIsDataFetchedInitially, isDataFetchedInitially, exportFileName = null, tTranslate = null, tOpts = null, languageSelected }) => {
     if (!contentType) {
@@ -399,15 +400,49 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
     if (where && Object.keys(where)?.length) {
         searchParams.set("where", JSON.stringify(where));
     };
+     // Handle controllerType 'cs' for loading form data
+    let requestUrl = `${url}?${searchParams.toString()}`;
+    let requestMethod = 'GET';
+
     try {
-        const response = await transport({
-            url: `${url}?${searchParams.toString()}`,
-            method: 'GET',
-            credentials: 'include'
-        });
+        let requestConfig;
+
+        if (modelConfig?.controllerType === 'cs') {
+            // For 'cs' controllerType, use POST method with FormData containing action 'load' and id
+            requestConfig = {
+                url: `${urlWithControllers}${api}`,
+                method: 'POST',
+                data: utils.createCsControllerPayload('load', { id, comboTypes: modelConfig.apiComboTypes || [] }),
+            };
+        } else {
+            // Default behavior for other controller types
+            requestConfig = {
+                url: requestUrl,
+                method: requestMethod,
+                credentials: 'include'
+            };
+        }
+
+        const response = await transport(requestConfig);
         if (response.status === HTTP_STATUS_CODES.OK) {
-            const { data: record, lookups } = response.data;
+            const { data: record } = response.data;
             let title = record[modelConfig.linkColumn];
+            let lookups = response.data.lookups || response.data.combos;
+
+            // Transform combos from CS API format {LookupId, DisplayValue} to {value, label}
+            if (lookups && typeof lookups === 'object' && !Array.isArray(lookups)) {
+                const transformedLookups = {};
+                for (const [comboType, comboArray] of Object.entries(lookups)) {
+                    if (Array.isArray(comboArray)) {
+                        transformedLookups[comboType] = comboArray.map(item => ({
+                            value: item.LookupId !== undefined ? item.LookupId : item.value,
+                            label: item.DisplayValue !== undefined ? item.DisplayValue : item.label
+                        }));
+                    }
+                }
+                lookups = transformedLookups;
+            }
+
             const columnConfig = modelConfig.columns.find(a => a.field === modelConfig.linkColumn);
             if (columnConfig && columnConfig.lookup) {
                 if (lookups && lookups[columnConfig.lookup] && lookups[columnConfig.lookup]?.length) {
@@ -419,7 +454,6 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
             }
 
             const defaultValues = { ...modelConfig.defaultValues };
-
             setActiveRecord({ id, title: title, record: { ...defaultValues, ...record, ...parentFilters }, lookups });
         } else if (response.status === HTTP_STATUS_CODES.UNAUTHORIZED) {
             setError('Session Expired!');
@@ -436,7 +470,7 @@ const getRecord = async ({ api, id, setIsLoading, setActiveRecord, modelConfig, 
     }
 };
 
-const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage, tTranslate, tOpts }) {
+const deleteRecord = async function ({ id, api, setIsLoading, setError, setErrorMessage, tTranslate, tOpts, modelConfig }) {
     let result = { success: false, error: '' };
     if (!id) {
         const errorMsg = tTranslate ? tTranslate('Deleted failed. No active record', tOpts) : 'Deleted failed. No active record';
@@ -445,12 +479,31 @@ const deleteRecord = async function ({ id, api, setIsLoading, setError, setError
     }
     setIsLoading(true);
     try {
-        const response = await transport({
-            url: `${api}/${id}`,
-            method: 'DELETE',
-            credentials: 'include'
-        });
+         let requestConfig;
+        if (modelConfig?.controllerType === 'cs') {
+            // For 'cs' controllerType, use POST method with FormData containing action 'delete' and ids
+            requestConfig = {
+                url: `${urlWithControllers}${api}`,
+                method: 'POST',
+                data: utils.createCsControllerPayload('delete', { ids: id }),
+            };
+        } else {
+            // Default behavior for other controller types
+            requestConfig = {
+                url: `${api}/${id}`,
+                method: 'DELETE',
+                credentials: 'include'
+            };
+        }
+
+        const response = await transport(requestConfig);
         if (response.status === HTTP_STATUS_CODES.OK) {
+            const { data } = response;
+            if (data && !data.success) {
+                result.error = data.info || data.errors || tTranslate('Delete failed', tOpts);
+                setError(tTranslate(result.error, tOpts));
+                return result;
+            }
             result.success = true;
             return true;
         }
@@ -476,21 +529,28 @@ const deleteRecord = async function ({ id, api, setIsLoading, setError, setError
     return result;
 };
 
-const saveRecord = async function ({ id, api, values, setIsLoading, setError, tTranslate, tOpts }) {
-    let url, method;
+const saveRecord = async function ({ id, api, values, setIsLoading, setError, tTranslate, tOpts, modelConfig }) {
+    let requestConfig;
 
-    if (id) {
-        url = `${api}/${id}`;
-        method = 'PUT';
+    if (modelConfig?.controllerType === 'cs') {
+        // For 'cs' controllerType, use POST method with FormData containing action 'save' and data
+        requestConfig = {
+            url: `${urlWithControllers}${api}`,
+            method: 'POST',
+            data: utils.createCsControllerPayload('save', { ...values }),
+        };
     } else {
-        url = api;
-        method = 'POST';
-    }
+        // Default behavior for other controller types
+        let url, method;
 
-
-    try {
-        setIsLoading(true);
-        const response = await transport({
+        if (id) {
+            url = `${api}/${id}`;
+            method = 'PUT';
+        } else {
+            url = api;
+            method = 'POST';
+        }
+        requestConfig = {
             url,
             method,
             data: values,
@@ -498,14 +558,20 @@ const saveRecord = async function ({ id, api, values, setIsLoading, setError, tT
                 'Content-Type': 'application/json'
             },
             credentials: 'include'
-        });
+        };
+    
+    }
+
+    try {
+        setIsLoading(true);
+        const response = await transport(requestConfig);
         if (response.status === HTTP_STATUS_CODES.OK) {
             const { data = {} } = response.data;
-            if (data.success) {
+            if (data.success || response.data.success) {
                 return data;
             }
             const errorMsg = tTranslate ? tTranslate('Save failed', tOpts) : 'Save failed';
-            const dataMsg = tTranslate ? tTranslate(data.err || data.message, tOpts) : (data.err || data.message);
+            const dataMsg = tTranslate ? tTranslate(data.err || data.message || data.info, tOpts) : (data.err || data.message);
             setError(errorMsg, dataMsg);
             return;
         }

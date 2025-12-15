@@ -1249,7 +1249,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       api: gridApi,
       setIsLoading,
       setError: snackbar.showError,
-      setErrorMessage
+      setErrorMessage,
+      modelConfig: model
     });
     if (result === true) {
       setIsDeleting(false);

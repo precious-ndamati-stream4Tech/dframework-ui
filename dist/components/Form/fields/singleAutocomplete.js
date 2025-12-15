@@ -9,6 +9,7 @@ exports.default = void 0;
 require("core-js/modules/es.array.includes.js");
 require("core-js/modules/es.json.stringify.js");
 require("core-js/modules/es.promise.js");
+require("core-js/modules/es.string.ends-with.js");
 require("core-js/modules/es.string.includes.js");
 require("core-js/modules/es.string.starts-with.js");
 require("core-js/modules/esnext.iterator.constructor.js");
@@ -16,17 +17,14 @@ require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.find.js");
 require("core-js/modules/esnext.iterator.map.js");
 require("core-js/modules/web.dom-collections.iterator.js");
-require("core-js/modules/web.url-search-params.js");
-require("core-js/modules/web.url-search-params.delete.js");
-require("core-js/modules/web.url-search-params.has.js");
-require("core-js/modules/web.url-search-params.size.js");
 var _react = _interopRequireWildcard(require("react"));
 var _material = require("@mui/material");
 var _StateProvider = require("../../useRouter/StateProvider");
+var _httpRequest = require("../../Grid/httpRequest");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const Field = _ref => {
-  var _formik$values$field, _formik$values$field2, _stateData$gridSettin, _stateData$gridSettin2;
+  var _formik$values$field, _formik$values$field2, _stateData$gridSettin, _stateData$gridSettin2, _formik$values3;
   let {
     column,
     field,
@@ -71,15 +69,30 @@ const Field = _ref => {
   const fetchOptions = async () => {
     try {
       const start = optionParams.start;
-      const params = new URLSearchParams({
+      const params = {
         start,
         limit: 50,
-        comboType: (column === null || column === void 0 ? void 0 : column.comboType) || 'ClientUserType',
+        comboType: lookupKey || 'ClientUserType',
         asArray: 0,
         query: inputValue,
         ClientId: ClientId
+      };
+      if (column !== null && column !== void 0 && column.ParentRecordType && constants.combosLookupIds[column.comboType]) {
+        if (parentRecordId === null || parentRecordId === undefined) {
+          var _formik$values2;
+          const parentFieldName = column.ParentRecordType.endsWith('Id') ? "".concat(column.ParentRecordType, "Id") : column.ParentRecordType;
+          parentRecordId = formik === null || formik === void 0 || (_formik$values2 = formik.values) === null || _formik$values2 === void 0 ? void 0 : _formik$values2[parentFieldName];
+        }
+        params['ScopeId'] = parentRecordId;
+        params['ParentRecordType'] = column.ParentRecordType;
+        if (column.comboType === 'State') {
+          delete params['ClientId'];
+        }
+      }
+      const response = await (0, _httpRequest.transport)({
+        params,
+        api: comboApi
       });
-      const response = await fetch("".concat(comboApi, "?").concat(params));
       const result = await response.json();
       if (result !== null && result !== void 0 && result.records && result.records.length > 0) {
         setOptionParams({
@@ -114,6 +127,28 @@ const Field = _ref => {
       fetchOptions().then(result => setOptions(result));
     }
   }, [inputValue]);
+
+  // Watch parent field changes (for ParentRecordType)
+  (0, _react.useEffect)(() => {
+    if (column !== null && column !== void 0 && column.ParentRecordType && formik !== null && formik !== void 0 && formik.values) {
+      const parentFieldName = column.ParentRecordType.endsWith('Id') ? column.ParentRecordType : "".concat(column.ParentRecordType, "Id");
+      const parentValue = formik.values[parentFieldName];
+
+      // If parent value changes, re-fetch options and clear current selection
+      if (parentValue) {
+        fetchOptions(parentValue).then(result => {
+          setOptions(result);
+          // Clear the current selection when parent changes
+          formik.setFieldValue(field, '');
+          setSelectedOption(null);
+        });
+      } else {
+        // If parent is cleared, clear options and selection
+        setOptions([]);
+        setSelectedOption(null);
+      }
+    }
+  }, [(column === null || column === void 0 ? void 0 : column.ParentRecordType) && (formik === null || formik === void 0 || (_formik$values3 = formik.values) === null || _formik$values3 === void 0 ? void 0 : _formik$values3[column.ParentRecordType.endsWith('Id') ? column.ParentRecordType : "".concat(column.ParentRecordType, "Id")])]);
   (0, _react.useEffect)(() => {
     if (!formik.values) return;
     const sourceOptions = initialOptions || options;

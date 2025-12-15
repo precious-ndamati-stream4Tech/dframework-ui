@@ -2,7 +2,6 @@
 
 require("core-js/modules/es.error.cause.js");
 require("core-js/modules/es.weak-map.js");
-require("core-js/modules/esnext.iterator.for-each.js");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -17,6 +16,7 @@ require("core-js/modules/es.string.includes.js");
 require("core-js/modules/esnext.iterator.constructor.js");
 require("core-js/modules/esnext.iterator.filter.js");
 require("core-js/modules/esnext.iterator.find.js");
+require("core-js/modules/esnext.iterator.for-each.js");
 require("core-js/modules/esnext.iterator.map.js");
 require("core-js/modules/esnext.iterator.reduce.js");
 require("core-js/modules/web.dom-collections.iterator.js");
@@ -155,6 +155,23 @@ const Form = _ref => {
         resetForm
       } = _ref2;
       setIsLoading(true);
+      // Remove display fields when selectField is specified
+      const fieldsToRemove = [];
+      model.columns.forEach(col => {
+        if (col.selectField && col.field !== col.selectField) {
+          fieldsToRemove.push(col.field);
+        }
+      });
+      fieldsToRemove.forEach(field => {
+        delete values[field];
+      });
+
+      // Remove fields specified in excludeColumnsOnSave
+      if (model.excludeColumnsOnSave) {
+        model.excludeColumnsOnSave.forEach(field => {
+          delete values[field];
+        });
+      }
       if (model.saveOnlyModifiedValues) {
         var _model$columns$filter;
         const formColumns = (_model$columns$filter = model.columns.filter(ele => ele.showOnForm !== false)) === null || _model$columns$filter === void 0 ? void 0 : _model$columns$filter.map(item => item.field);
@@ -174,7 +191,8 @@ const Form = _ref => {
         api: gridApi,
         values,
         setIsLoading,
-        setError: snackbar.showError
+        setError: snackbar.showError,
+        modelConfig: model
       }).then(success => {
         if (success) {
           snackbar.showMessage('Record Updated Successfully.');
@@ -229,6 +247,24 @@ const Form = _ref => {
         return !model.calculatedColumns.includes(key);
       }));
     }
+    if (isNew && !isCopy && userData) {
+      var _model$columns;
+      (_model$columns = model.columns) === null || _model$columns === void 0 || _model$columns.forEach(column => {
+        // Check if field has defaultToClientValue flag
+        if (column.defaultToClientValue) {
+          var _userData$tags;
+          // Use selectField if specified, otherwise use field
+          const fieldKey = column.selectField || column.field;
+          // Get the value from userData.tags using the fieldKey
+          const defaultValue = ((_userData$tags = userData.tags) === null || _userData$tags === void 0 ? void 0 : _userData$tags[fieldKey]) || userData[fieldKey];
+
+          // Only apply default if field is not already set and default value exists
+          if (defaultValue !== null && defaultValue !== undefined && !tempRecord[fieldKey]) {
+            tempRecord[fieldKey] = defaultValue;
+          }
+        }
+      });
+    }
     setData(tempRecord);
     setLookups(lookups);
     if (localValue !== "") {
@@ -263,7 +299,8 @@ const Form = _ref => {
         api: api || (model === null || model === void 0 ? void 0 : model.api),
         setIsLoading,
         setError: snackbar.showError,
-        setErrorMessage
+        setErrorMessage,
+        modelConfig: model
       });
       if (response === true) {
         snackbar.showMessage('Record Deleted Successfully.');

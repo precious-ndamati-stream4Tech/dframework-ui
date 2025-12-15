@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Autocomplete, TextField, FormControl, FormHelperText } from '@mui/material';
 import { useStateContext, useRouter } from '../../useRouter/StateProvider';
+import { transport } from '../../Grid/httpRequest';
 
 const Field = ({ column, field, formik, lookups, otherProps }) => {
     const { stateData } = useStateContext();
@@ -31,16 +32,21 @@ const Field = ({ column, field, formik, lookups, otherProps }) => {
     const fetchOptions = async () => {
         try {
             const start = optionParams.start;
-            const params = new URLSearchParams({
-                start,
-                limit: 50,
-                comboType: column?.comboType || 'ClientUserType',
-                asArray: 0,
-                query: inputValue,
-                ClientId: ClientId
-            });
-            
-            const response = await fetch(`${comboApi}?${params}`);
+            const params = { start, limit: 50, comboType: lookupKey || 'ClientUserType', asArray: 0, query: inputValue, ClientId: ClientId };
+            if (column?.ParentRecordType && constants.combosLookupIds[column.comboType]) {
+                if (parentRecordId === null || parentRecordId === undefined) {
+                    const parentFieldName = column.ParentRecordType.endsWith('Id')
+                        ? `${column.ParentRecordType}Id`
+                        : column.ParentRecordType;
+                    parentRecordId = formik?.values?.[parentFieldName];
+                }
+                params['ScopeId'] = parentRecordId;
+                params['ParentRecordType'] = column.ParentRecordType;
+                if (column.comboType === 'State') {
+                    delete params['ClientId'];
+                }
+            }
+            const response = await transport({ params, api: comboApi });
             const result = await response.json();
             
             if (result?.records && result.records.length > 0) {
@@ -69,6 +75,30 @@ const Field = ({ column, field, formik, lookups, otherProps }) => {
             fetchOptions().then((result) => setOptions(result));
         }
     }, [inputValue]);
+
+     // Watch parent field changes (for ParentRecordType)
+    useEffect(() => {
+        if (column?.ParentRecordType && formik?.values) {
+            const parentFieldName = column.ParentRecordType.endsWith('Id')
+                ? column.ParentRecordType
+                : `${column.ParentRecordType}Id`;
+            const parentValue = formik.values[parentFieldName];
+
+            // If parent value changes, re-fetch options and clear current selection
+            if (parentValue) {
+                fetchOptions(parentValue).then((result) => {
+                    setOptions(result);
+                    // Clear the current selection when parent changes
+                    formik.setFieldValue(field, '');
+                    setSelectedOption(null);
+                });
+            } else {
+                // If parent is cleared, clear options and selection
+                setOptions([]);
+                setSelectedOption(null);
+            }
+        }
+    }, [column?.ParentRecordType && formik?.values?.[column.ParentRecordType.endsWith('Id') ? column.ParentRecordType : `${column.ParentRecordType}Id`]]);
 
     useEffect(() => {
         if (!formik.values) return;

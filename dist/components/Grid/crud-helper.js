@@ -49,6 +49,7 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != typeof t || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != typeof i) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 _dayjs.default.extend(_utc.default);
 const dateDataTypes = ['date', 'dateTime'];
+const urlWithControllers = "/Controllers";
 const getList = async _ref => {
   var _filterModel$items;
   let {
@@ -524,18 +525,50 @@ const getRecord = async _ref3 => {
     searchParams.set("where", JSON.stringify(where));
   }
   ;
+  // Handle controllerType 'cs' for loading form data
+  let requestUrl = "".concat(url, "?").concat(searchParams.toString());
+  let requestMethod = 'GET';
   try {
-    const response = await (0, _httpRequest.transport)({
-      url: "".concat(url, "?").concat(searchParams.toString()),
-      method: 'GET',
-      credentials: 'include'
-    });
+    let requestConfig;
+    if ((modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.controllerType) === 'cs') {
+      // For 'cs' controllerType, use POST method with FormData containing action 'load' and id
+      requestConfig = {
+        url: "".concat(urlWithControllers).concat(api),
+        method: 'POST',
+        data: _utils.default.createCsControllerPayload('load', {
+          id,
+          comboTypes: modelConfig.apiComboTypes || []
+        })
+      };
+    } else {
+      // Default behavior for other controller types
+      requestConfig = {
+        url: requestUrl,
+        method: requestMethod,
+        credentials: 'include'
+      };
+    }
+    const response = await (0, _httpRequest.transport)(requestConfig);
     if (response.status === _httpRequest.HTTP_STATUS_CODES.OK) {
       const {
-        data: record,
-        lookups
+        data: record
       } = response.data;
       let title = record[modelConfig.linkColumn];
+      let lookups = response.data.lookups || response.data.combos;
+
+      // Transform combos from CS API format {LookupId, DisplayValue} to {value, label}
+      if (lookups && typeof lookups === 'object' && !Array.isArray(lookups)) {
+        const transformedLookups = {};
+        for (const [comboType, comboArray] of Object.entries(lookups)) {
+          if (Array.isArray(comboArray)) {
+            transformedLookups[comboType] = comboArray.map(item => ({
+              value: item.LookupId !== undefined ? item.LookupId : item.value,
+              label: item.DisplayValue !== undefined ? item.DisplayValue : item.label
+            }));
+          }
+        }
+        lookups = transformedLookups;
+      }
       const columnConfig = modelConfig.columns.find(a => a.field === modelConfig.linkColumn);
       if (columnConfig && columnConfig.lookup) {
         var _lookups$columnConfig;
@@ -576,7 +609,8 @@ const deleteRecord = exports.deleteRecord = async function deleteRecord(_ref4) {
     setError,
     setErrorMessage,
     tTranslate,
-    tOpts
+    tOpts,
+    modelConfig
   } = _ref4;
   let result = {
     success: false,
@@ -589,12 +623,34 @@ const deleteRecord = exports.deleteRecord = async function deleteRecord(_ref4) {
   }
   setIsLoading(true);
   try {
-    const response = await (0, _httpRequest.transport)({
-      url: "".concat(api, "/").concat(id),
-      method: 'DELETE',
-      credentials: 'include'
-    });
+    let requestConfig;
+    if ((modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.controllerType) === 'cs') {
+      // For 'cs' controllerType, use POST method with FormData containing action 'delete' and ids
+      requestConfig = {
+        url: "".concat(urlWithControllers).concat(api),
+        method: 'POST',
+        data: _utils.default.createCsControllerPayload('delete', {
+          ids: id
+        })
+      };
+    } else {
+      // Default behavior for other controller types
+      requestConfig = {
+        url: "".concat(api, "/").concat(id),
+        method: 'DELETE',
+        credentials: 'include'
+      };
+    }
+    const response = await (0, _httpRequest.transport)(requestConfig);
     if (response.status === _httpRequest.HTTP_STATUS_CODES.OK) {
+      const {
+        data
+      } = response;
+      if (data && !data.success) {
+        result.error = data.info || data.errors || tTranslate('Delete failed', tOpts);
+        setError(tTranslate(result.error, tOpts));
+        return result;
+      }
       result.success = true;
       return true;
     }
@@ -628,19 +684,28 @@ const saveRecord = exports.saveRecord = async function saveRecord(_ref5) {
     setIsLoading,
     setError,
     tTranslate,
-    tOpts
+    tOpts,
+    modelConfig
   } = _ref5;
-  let url, method;
-  if (id) {
-    url = "".concat(api, "/").concat(id);
-    method = 'PUT';
+  let requestConfig;
+  if ((modelConfig === null || modelConfig === void 0 ? void 0 : modelConfig.controllerType) === 'cs') {
+    // For 'cs' controllerType, use POST method with FormData containing action 'save' and data
+    requestConfig = {
+      url: "".concat(urlWithControllers).concat(api),
+      method: 'POST',
+      data: _utils.default.createCsControllerPayload('save', _objectSpread({}, values))
+    };
   } else {
-    url = api;
-    method = 'POST';
-  }
-  try {
-    setIsLoading(true);
-    const response = await (0, _httpRequest.transport)({
+    // Default behavior for other controller types
+    let url, method;
+    if (id) {
+      url = "".concat(api, "/").concat(id);
+      method = 'PUT';
+    } else {
+      url = api;
+      method = 'POST';
+    }
+    requestConfig = {
       url,
       method,
       data: values,
@@ -648,16 +713,20 @@ const saveRecord = exports.saveRecord = async function saveRecord(_ref5) {
         'Content-Type': 'application/json'
       },
       credentials: 'include'
-    });
+    };
+  }
+  try {
+    setIsLoading(true);
+    const response = await (0, _httpRequest.transport)(requestConfig);
     if (response.status === _httpRequest.HTTP_STATUS_CODES.OK) {
       const {
         data = {}
       } = response.data;
-      if (data.success) {
+      if (data.success || response.data.success) {
         return data;
       }
       const errorMsg = tTranslate ? tTranslate('Save failed', tOpts) : 'Save failed';
-      const dataMsg = tTranslate ? tTranslate(data.err || data.message, tOpts) : data.err || data.message;
+      const dataMsg = tTranslate ? tTranslate(data.err || data.message || data.info, tOpts) : data.err || data.message;
       setError(errorMsg, dataMsg);
       return;
     }

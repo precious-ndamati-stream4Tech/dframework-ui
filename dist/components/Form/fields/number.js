@@ -10,6 +10,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+require("core-js/modules/es.array.includes.js");
+require("core-js/modules/es.string.includes.js");
 var _react = _interopRequireDefault(require("react"));
 var _string = _interopRequireDefault(require("./string"));
 const _excluded = ["column", "otherProps", "formik", "field"];
@@ -34,27 +36,45 @@ const field = _ref => {
     minValue: min,
     maxValue: max
   } = column;
+  const isDecimal = column.type === 'decimal';
   const minKey = 47;
   const maxKey = 58;
   otherProps = _objectSpread(_objectSpread({
     InputProps: {
       inputProps: {
-        min: Math.max(0, min),
+        min: isDecimal ? min : Math.max(0, min),
         max,
         readOnly: (column === null || column === void 0 ? void 0 : column.readOnly) === true,
         onKeyPress: event => {
           const keyCode = event.which ? event.which : event.keyCode;
-          if (!(keyCode > minKey && keyCode < maxKey)) {
-            event.preventDefault();
+          const currentValue = event.target.value;
+
+          // Allow digits (48-57)
+          if (keyCode > minKey && keyCode < maxKey) {
+            return;
           }
+
+          // For decimal type, allow decimal point (46) and minus sign (45)
+          if (isDecimal) {
+            // Allow minus sign only at the beginning
+            if (keyCode === 45 && currentValue.length === 0) {
+              return;
+            }
+            // Allow decimal point only if not already present
+            if (keyCode === 46 && !currentValue.includes('.')) {
+              return;
+            }
+          }
+          event.preventDefault();
         }
       }
     },
     type: 'number'
   }, otherProps), {}, {
     onBlur: event => {
-      if (event.target.value < Math.max(0, min)) {
-        formik.setFieldValue(field, Math.max(0, min));
+      const minValue = isDecimal ? min !== undefined ? min : -Infinity : Math.max(0, min);
+      if (event.target.value && event.target.value < minValue) {
+        formik.setFieldValue(field, minValue === -Infinity ? 0 : minValue);
       }
       if (props.onBlur) {
         props.onBlur(event);

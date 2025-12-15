@@ -170,11 +170,11 @@ const getFormConfig = function ({ columns, tabs = {} }) {
         tabColumns[tab] = [];
     }
     for (const column of columns) {
-        let fieldType = column.type;
+        let fieldType = column.type || 'string'; // Default to string if no type specified
         if (column.fieldLabel === null) { /* If the field should not be shown in form mode, specify fieldLabel as null */
             continue;
         }
-        const { field, fieldLabel = column.header, tab } = column;
+        const { field, fieldLabel = column.label ||column.header, tab } = column;
         const otherProps = {};
         if (column.options) {
             otherProps.options = column.options;

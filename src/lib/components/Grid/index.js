@@ -964,7 +964,7 @@ const GridBase = memo(({
     const handleDelete = async function () {
 
         let gridApi = `${model.controllerType === 'cs' ? withControllersUrl : url}${model.api || api}`
-        const result = await deleteRecord({ id: record?.id, api: gridApi, setIsLoading, setError: snackbar.showError, setErrorMessage });
+        const result = await deleteRecord({ id: record?.id, api: gridApi, setIsLoading, setError: snackbar.showError, setErrorMessage, modelConfig: model });
         if (result === true) {
             setIsDeleting(false);
             snackbar.showMessage('Record Deleted Successfully.');

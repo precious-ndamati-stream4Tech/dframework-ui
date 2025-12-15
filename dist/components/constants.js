@@ -4,6 +4,12 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+require("core-js/modules/es.json.stringify.js");
+require("core-js/modules/es.regexp.exec.js");
+require("core-js/modules/es.regexp.test.js");
+require("core-js/modules/es.string.trim.js");
+require("core-js/modules/esnext.iterator.constructor.js");
+require("core-js/modules/esnext.iterator.for-each.js");
 const constants = {
   gridFilterModel: {
     items: [],
@@ -78,6 +84,58 @@ const constants = {
     Status: "Status"
   },
   defaultLanguage: 'en',
-  defaultPageSize: 10
+  defaultPageSize: 10,
+  combosLookupIds: {
+    State: 273
+  },
+  createCsControllerPayload: function createCsControllerPayload(action) {
+    let data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    const formData = new FormData();
+    formData.append('action', action);
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      if (value === null || value === undefined) return;
+
+      // 1. Handle arrays
+      if (Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+        return;
+      }
+
+      // 2. Handle Dayjs or Date objects
+      if (value instanceof Date || dayjs.isDayjs(value)) {
+        formData.append(key, dayjs(value).format('MM/DD/YYYY'));
+        return;
+      }
+
+      // 3. Auto-detect timestamp formats like: 20250226101918703 (17 digits) or 20250226 (8 digits)
+      if (typeof value === 'string' || typeof value === 'number') {
+        const stringVal = String(value).trim();
+
+        // YYYYMMDD or YYYYMMDDHHmmss or YYYYMMDDHHmmssSSS
+        if (/^\d{8}(\d{6}(\d{3})?)?$/.test(stringVal)) {
+          const parsed = dayjs(stringVal, ["YYYYMMDDHHmmssSSS", "YYYYMMDDHHmmss", "YYYYMMDD"]);
+          if (parsed.isValid()) {
+            formData.append(key, parsed.format("MM/DD/YYYY"));
+            return;
+          }
+        }
+
+        // Join primitive values
+        formData.append(key, value);
+        return;
+      }
+
+      // 4. Handle plain objects
+      if (typeof value === 'object') {
+        formData.append(key, JSON.stringify(value));
+        return;
+      }
+
+      // Default fallback for primitives
+      formData.append(key, value);
+    });
+    return formData;
+  }
 };
 var _default = exports.default = constants;

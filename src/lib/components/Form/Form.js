@@ -90,6 +90,23 @@ const Form = ({
         validateOnBlur: false,
         onSubmit: async (values, { resetForm }) => {
             setIsLoading(true);
+            // Remove display fields when selectField is specified
+            const fieldsToRemove = [];
+            model.columns.forEach(col => {
+                if (col.selectField && col.field !== col.selectField) {
+                    fieldsToRemove.push(col.field);
+                }
+            });
+            fieldsToRemove.forEach(field => {
+                delete values[field];
+            });
+
+            // Remove fields specified in excludeColumnsOnSave
+            if (model.excludeColumnsOnSave) {
+                model.excludeColumnsOnSave.forEach(field => {
+                    delete values[field];
+                });
+            }
             if (model.saveOnlyModifiedValues) {
                 const formColumns = model.columns.filter(ele => ele.showOnForm !== false)?.map(item => item.field);
                 if (!formColumns.includes('ClientId')) {
@@ -109,7 +126,8 @@ const Form = ({
                 api: gridApi,
                 values,
                 setIsLoading,
-                setError: snackbar.showError
+                setError: snackbar.showError,
+                modelConfig: model
             })
                 .then(success => {
                     if (success) {
@@ -161,6 +179,23 @@ const Form = ({
             );
         }
 
+        if (isNew && !isCopy && userData) {
+            model.columns?.forEach(column => {
+                // Check if field has defaultToClientValue flag
+                if (column.defaultToClientValue) {
+                    // Use selectField if specified, otherwise use field
+                    const fieldKey = column.selectField || column.field;
+                    // Get the value from userData.tags using the fieldKey
+                    const defaultValue = userData.tags?.[fieldKey] || userData[fieldKey];
+
+                    // Only apply default if field is not already set and default value exists
+                    if (defaultValue !== null && defaultValue !== undefined && !tempRecord[fieldKey]) {
+                        tempRecord[fieldKey] = defaultValue;
+                    }
+                }
+            });
+        }
+
         setData(tempRecord);
         setLookups(lookups);
 
@@ -193,7 +228,8 @@ const Form = ({
                 api: api || model?.api,
                 setIsLoading,
                 setError: snackbar.showError,
-                setErrorMessage
+                setErrorMessage,
+                modelConfig: model
             })
             if (response === true) {
                 snackbar.showMessage('Record Deleted Successfully.');
