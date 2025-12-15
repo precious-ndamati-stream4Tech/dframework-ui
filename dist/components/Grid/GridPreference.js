@@ -55,15 +55,6 @@ const formTypes = {
 };
 
 /**
- * Checks if a preference has a valid name for display
- * @param {Object} pref - The preference object to validate
- * @returns {boolean} True if the preference has a valid name, false otherwise
- */
-const hasValidPreferenceName = pref => {
-  return pref.prefName && pref.prefName.trim() !== '';
-};
-
-/**
  * Checks if a preference is valid for the management grid (excludes invalid names and CoolR Default)
  * @param {Object} pref - The preference object to validate
  * @returns {boolean} True if the preference should be displayed in management grid, false otherwise
@@ -78,7 +69,7 @@ const isValidForManagement = pref => {
   if (prefNameLower === 'coolr default') {
     return false;
   }
-  return hasValidPreferenceName(pref);
+  return true;
 };
 
 /**
@@ -564,7 +555,7 @@ const GridPreferences = _ref2 => {
     dense: true,
     divider: (preferences === null || preferences === void 0 ? void 0 : preferences.length) > 0,
     onClick: handleResetPreferences
-  }, tTranslate('Reset Preferences', tOpts)), preferences === null || preferences === void 0 ? void 0 : preferences.filter(hasValidPreferenceName).map((ele, key) => {
+  }, tTranslate('Reset Preferences', tOpts)), preferences.map((ele, key) => {
     const {
       prefName,
       prefDesc,

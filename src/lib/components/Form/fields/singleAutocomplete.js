@@ -71,16 +71,15 @@ const Field = ({ column, field, formik, lookups, otherProps }) => {
     }, [inputValue]);
 
     useEffect(() => {
-        if (formik.values) {
-            let option;
-            if (initialOptions) {
-                option = initialOptions.find(option => option.value === formik.values[field]);
-            } else if (options) {
-                option = options.find(option => option.value === formik.values[field]);
-            }
-            setSelectedOption(option);
-        }
-    }, [formik.values, options]);
+        if (!formik.values) return;
+
+        const sourceOptions = initialOptions || options;
+        const option = sourceOptions?.find(
+            opt => opt.value === formik.values[field]
+        );
+
+        setSelectedOption(option);
+    }, [formik.values, initialOptions, options])
 
     const handleInputChange = (event, newInputValue) => {
         setInputValue(newInputValue);
@@ -91,11 +90,9 @@ const Field = ({ column, field, formik, lookups, otherProps }) => {
     const handlePagiation = async (event) => {
         const listBox = event.target;
         if (listBox.scrollTop + listBox.clientHeight >= listBox.scrollHeight) {
-            let alreadyExistingOptions = options;
-            if (alreadyExistingOptions.length >= optionParams.recordCount || optionParams.start >= optionParams.recordCount) return;
+            if (options.length >= optionParams.recordCount || optionParams.start >= optionParams.recordCount) return;
             const result = await fetchOptions();
-            alreadyExistingOptions = alreadyExistingOptions.concat(result);
-            setOptions(alreadyExistingOptions);
+            setOptions(options.concat(result));
         }
     }
     
