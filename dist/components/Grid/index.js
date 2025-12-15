@@ -1096,12 +1096,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     let {
       mode
     } = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    console.log('openForm called', {
-      id,
-      mode,
-      pathname,
-      setActiveRecord
-    });
     if (setActiveRecord) {
       (0, _crudHelper.getRecord)({
         id,
@@ -1131,7 +1125,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
         payload: ''
       });
     }
-    console.log('Navigating to path:', path);
     navigate(path);
   };
   const externalFilterHandleChange = (event, operator, type) => {

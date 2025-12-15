@@ -846,7 +846,6 @@ const GridBase = memo(({
         });
     };
     const openForm = (id, { mode } = {}) => {
-        console.log('openForm called', { id, mode, pathname, setActiveRecord });
         if (setActiveRecord) {
             getRecord({ id, api: api || model?.api, setIsLoading, setActiveRecord, modelConfig: model, parentFilters, where });
             return;
@@ -863,7 +862,6 @@ const GridBase = memo(({
             path += id;
             dispatchData({ type: 'UPDATE_FORM_MODE', payload: '' })
         }
-        console.log('Navigating to path:', path);
         navigate(path);
     };
     const externalFilterHandleChange = (event, operator, type) => {

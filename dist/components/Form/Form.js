@@ -58,9 +58,8 @@ const Form = _ref => {
     },
     Layout = _fieldMapper.default
   } = _ref;
-  console.log('Form component mounted', {
-    model,
-    api
+  console.log('🔄 Form render', {
+    modelTitle: model === null || model === void 0 ? void 0 : model.title
   });
   const {
     dispatchData,
@@ -70,17 +69,12 @@ const Form = _ref => {
     navigate,
     useParams
   } = (0, _StateProvider.useRouter)();
-  console.log('useRouter result:', {
-    navigate,
-    useParams
-  });
   const params = useParams ? useParams() : {};
-  console.log('params from useParams:', params);
   const {
     id: idWithOptions
   } = params;
   const id = idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-')[0];
-  console.log('Extracted ID:', {
+  console.log('📍 IDs:', {
     idWithOptions,
     id
   });
@@ -119,6 +113,10 @@ const Form = _ref => {
   } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
   const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
+    console.log('⚡ useEffect triggered', {
+      id,
+      idWithOptions
+    });
     setValidationSchema(model === null || model === void 0 ? void 0 : model.getValidationSchema({
       id,
       snackbar,
@@ -252,6 +250,10 @@ const Form = _ref => {
       record,
       lookups
     } = _ref3;
+    console.log('📝 setActiveRecord called', {
+      id,
+      title
+    });
     const isCopy = idWithOptions.indexOf("-") > -1;
     const isNew = !id || id === "0";
     const localTitle = isNew ? "Create" : isCopy ? "Copy" : "Edit";
