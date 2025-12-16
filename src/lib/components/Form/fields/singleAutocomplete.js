@@ -5,12 +5,14 @@ import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useStateContext } from '../../useRouter/StateProvider';
 
+const comboUrl = '/Controllers/Combo.ashx';
+
 const Field = ({ column, field, formik, lookups, otherProps }) => {
     const { stateData } = useStateContext();
     const { ClientId } = stateData && stateData.userData && stateData.userData.tags ? stateData.userData.tags : 0;
     const initialOptions = lookups ? lookups[column?.lookup] : [];
     let initialInputValue = formik.values[field]?.length > 1 ? (formik.values[field]?.split(", ")?.map(Number) || []) : ([formik.values[field]] || []);
-    const { canSendError, errorUrl } = otherProps;
+    const { canSendError, errorUrl, comboAPI } = otherProps;
     const [options, setOptions] = useState(initialOptions);
     const [inputValue, setInputValue] = useState(initialInputValue);
     const [optionParams, setOptionParams] = useState({ start: 0, recordCount: 0 });
@@ -30,8 +32,8 @@ const Field = ({ column, field, formik, lookups, otherProps }) => {
     const fetchOptions = async () => {
         try {
             const start = optionParams.start;
-            const params = { start, limit: 50, comboType: column?.comboType || 'ClientUserType', asArray: 0, query: inputValue, ClientId: ClientId };
-            const result = await request({ url: apis.Combo, params: params, history, dispatch });
+            const params = { start, limit: 50, comboType: column?.comboType || column?.lookup, asArray: 0, query: inputValue, ClientId: ClientId };
+            const result = await request({ url: comboAPI || comboUrl, params: params, history, dispatch });
             if (result?.records && result.records.length > 0) {
                 setOptionParams({ start: start + params.limit, recordCount: result.recordCount });
                 return result.records.map(item => ({ label: item.DisplayValue, value: item.LookupId }));

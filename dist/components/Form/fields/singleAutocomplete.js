@@ -23,6 +23,7 @@ var _reactRouter = require("react-router");
 var _StateProvider = require("../../useRouter/StateProvider");
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function _interopRequireWildcard(e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+const comboUrl = '/Controllers/Combo.ashx';
 const Field = _ref => {
   var _formik$values$field, _formik$values$field2;
   let {
@@ -42,7 +43,8 @@ const Field = _ref => {
   let initialInputValue = ((_formik$values$field = formik.values[field]) === null || _formik$values$field === void 0 ? void 0 : _formik$values$field.length) > 1 ? ((_formik$values$field2 = formik.values[field]) === null || _formik$values$field2 === void 0 || (_formik$values$field2 = _formik$values$field2.split(", ")) === null || _formik$values$field2 === void 0 ? void 0 : _formik$values$field2.map(Number)) || [] : [formik.values[field]] || [];
   const {
     canSendError,
-    errorUrl
+    errorUrl,
+    comboAPI
   } = otherProps;
   const [options, setOptions] = (0, _react.useState)(initialOptions);
   const [inputValue, setInputValue] = (0, _react.useState)(initialInputValue);
@@ -72,13 +74,13 @@ const Field = _ref => {
       const params = {
         start,
         limit: 50,
-        comboType: (column === null || column === void 0 ? void 0 : column.comboType) || 'ClientUserType',
+        comboType: (column === null || column === void 0 ? void 0 : column.comboType) || (column === null || column === void 0 ? void 0 : column.lookup),
         asArray: 0,
         query: inputValue,
         ClientId: ClientId
       };
       const result = await (0, _httpUtil.request)({
-        url: _httpUtil.apis.Combo,
+        url: comboAPI || comboUrl,
         params: params,
         history,
         dispatch
