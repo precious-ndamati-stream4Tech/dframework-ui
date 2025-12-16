@@ -42,13 +42,7 @@ const Form = ({
     const fieldConfigs = model?.applyFieldConfig ? model?.applyFieldConfig({ data, lookups }) : defaultFieldConfigs;
     let gridApi = `${url}${model.api || api}`
     const { mode } = stateData.dataForm;
-    const urlId = mode === 'copy' ? idWithOptions?.split('-')[1] : id;
-    const isValidUrl = utils.isValidIdUrl(urlId);
-    const userData = stateData?.getUserData || {};
-    const { ClientId = 0 } = userData?.tags || {};
-    const isClientSelected = (ClientId && ClientId != 0);
     useEffect(() => {
-        if (!isValidUrl) return;
         setValidationSchema(model.getValidationSchema({ id, snackbar }));
         const options = idWithOptions?.split('-');
         try {
@@ -229,10 +223,6 @@ const Form = ({
                 Object.entries(formik.values).filter(([key]) => !model.calculatedColumns.includes(key))
             );
         }
-        if (!isClientSelected) {
-            snackbar.showError("Can't save without client. Please select client first", null, "error");
-            return;
-        }
         formik.handleSubmit();
         const fieldName = Object.keys(errors)[0];
         const errorMessage = errors[fieldName];
@@ -245,7 +235,7 @@ const Form = ({
             setActiveStep(tabKeys.indexOf(fieldConfig.tab));
         }
     }
-    return isValidUrl ? (
+    return (
         <ActiveStepContext.Provider value={{ activeStep, setActiveStep }}>
             <Paper sx={{ padding: 2 }}>
                 <form>
@@ -270,6 +260,6 @@ const Form = ({
                 <DialogComponent open={isDeleting} onConfirm={handleDelete} onCancel={() => { setIsDeleting(false); setDeleteError(null); }} title={deleteError ? "Error Deleting Record" : "Confirm Delete"}>{`Are you sure you want to delete ${data?.GroupName || data?.SurveyName}?`}</DialogComponent>
             </Paper>
         </ActiveStepContext.Provider >
-    ) : <div>{"Wrong action"}</div>
+    )
 }
 export default Form;

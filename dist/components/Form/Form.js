@@ -89,15 +89,7 @@ const Form = _ref => {
   const {
     mode
   } = stateData.dataForm;
-  const urlId = mode === 'copy' ? idWithOptions === null || idWithOptions === void 0 ? void 0 : idWithOptions.split('-')[1] : id;
-  const isValidUrl = _utils.default.isValidIdUrl(urlId);
-  const userData = (stateData === null || stateData === void 0 ? void 0 : stateData.getUserData) || {};
-  const {
-    ClientId = 0
-  } = (userData === null || userData === void 0 ? void 0 : userData.tags) || {};
-  const isClientSelected = ClientId && ClientId != 0;
   (0, _react.useEffect)(() => {
-    if (!isValidUrl) return;
     setValidationSchema(model.getValidationSchema({
       id,
       snackbar
@@ -308,10 +300,6 @@ const Form = _ref => {
         return !model.calculatedColumns.includes(key);
       }));
     }
-    if (!isClientSelected) {
-      snackbar.showError("Can't save without client. Please select client first", null, "error");
-      return;
-    }
     formik.handleSubmit();
     const fieldName = Object.keys(errors)[0];
     const errorMessage = errors[fieldName];
@@ -324,7 +312,7 @@ const Form = _ref => {
       setActiveStep(tabKeys.indexOf(fieldConfig.tab));
     }
   };
-  return isValidUrl ? /*#__PURE__*/_react.default.createElement(ActiveStepContext.Provider, {
+  return /*#__PURE__*/_react.default.createElement(ActiveStepContext.Provider, {
     value: {
       activeStep,
       setActiveStep
@@ -383,6 +371,6 @@ const Form = _ref => {
       setDeleteError(null);
     },
     title: deleteError ? "Error Deleting Record" : "Confirm Delete"
-  }, "Are you sure you want to delete ".concat((data === null || data === void 0 ? void 0 : data.GroupName) || (data === null || data === void 0 ? void 0 : data.SurveyName), "?")))) : /*#__PURE__*/_react.default.createElement("div", null, "Wrong action");
+  }, "Are you sure you want to delete ".concat((data === null || data === void 0 ? void 0 : data.GroupName) || (data === null || data === void 0 ? void 0 : data.SurveyName), "?"))));
 };
 var _default = exports.default = Form;

@@ -53,9 +53,6 @@ const utils = {
 			return transformed[0].toUpperCase() + transformed.substring(1)
 		}
 	},
-	isAdminORSuperAdmin(value) {
-		return Number(value) === 1;
-	},
 	/**
 	 * Build portal-controller style filter parameters from a "where" array.
 	 *
