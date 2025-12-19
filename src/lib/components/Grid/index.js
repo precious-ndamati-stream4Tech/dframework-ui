@@ -10,15 +10,11 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import CopyIcon from '@mui/icons-material/FileCopy';
 import EditIcon from '@mui/icons-material/Edit';
-import FilterListOffIcon from '@mui/icons-material/FilterListOff';
 import {
     GridActionsCellItem,
     useGridApiRef
 } from '@mui/x-data-grid-premium';
 import { useMemo, useEffect, memo, useRef, useState } from 'react';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import { useSnackbar } from '../SnackBar/index';
 import { DialogComponent } from '../Dialog/index';
@@ -142,9 +138,6 @@ const GridBase = memo(({
     parent,
     where,
     customHeaderComponent,
-    title,
-    showModal,
-    OrderModal,
     permissions,
     selected,
     assigned,
@@ -164,7 +157,6 @@ const GridBase = memo(({
     gridStyle,
     reRenderKey,
     additionalFilters,
-    selectedClients = null,
     onExportMenuClick 
 }) => {
     const [paginationModel, setPaginationModel] = useState({ pageSize: defaultPageSize, page: 0 });
@@ -608,47 +600,6 @@ const GridBase = memo(({
             onRowDoubleClick(event);
         }
     };
-
-    const handleAddRecords = async () => {
-        if (selectedSet.current.size < 1) {
-            snackbar.showError("Please select at least one record to proceed");
-            return;
-        }
-
-        const selectedIds = Array.from(selectedSet.current);
-        const recordMap = new Map(data.records.map(record => [record[idProperty], record]));
-        let selectedRecords = selectedIds.map(id => ({ ...baseSaveData, ...recordMap.get(id) }));
-
-        // If selectionUpdateKeys is defined, filter each record to only those keys
-        if (Array.isArray(model.selectionUpdateKeys) && model.selectionUpdateKeys.length) {
-            selectedRecords = selectedRecords.map(item =>
-                Object.fromEntries(model.selectionUpdateKeys.map(key => [key, item[key]]))
-            );
-        }
-
-        try {
-            const result = await saveRecord({
-                id: 0,
-                api: `${url}${selectionApi || api}/updateMany`,
-                values: { items: selectedRecords },
-                setIsLoading,
-                setError: snackbar.showError
-            });
-
-            if (result) {
-                fetchData();
-                const message = result.info ? result.info : "Record Added Successfully.";
-                snackbar.showMessage(message);
-            }
-        } catch (err) {
-            snackbar.showError(err.message || "An error occurred, please try again later.");
-        } finally {
-            selectedSet.current.clear();
-            setIsLoading(false);
-            setShowAddConfirmation(false);
-        }
-    };
-
 
     const onAdd = () => {
         openForm(0);
