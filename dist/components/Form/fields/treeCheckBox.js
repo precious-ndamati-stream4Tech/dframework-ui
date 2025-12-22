@@ -12,7 +12,8 @@ require("core-js/modules/esnext.iterator.map.js");
 require("core-js/modules/web.dom-collections.iterator.js");
 var _react = _interopRequireDefault(require("react"));
 var _Box = _interopRequireDefault(require("@mui/material/Box"));
-var _xTreeView = require("@mui/x-tree-view");
+var _SimpleTreeView = require("@mui/x-tree-view/SimpleTreeView");
+var _TreeItem = require("@mui/x-tree-view/TreeItem");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 /**
  * Builds a tree structure from a flat array of data.
@@ -88,17 +89,17 @@ function treeCheckBox(_ref) {
     sx: {
       minHeight: 350
     }
-  }, /*#__PURE__*/_react.default.createElement(_xTreeView.SimpleTreeView, {
+  }, /*#__PURE__*/_react.default.createElement(_SimpleTreeView.SimpleTreeView, {
     selectedItems: inputValue,
     onSelectedItemsChange: handleChange,
     disabled: isDisabled,
     multiSelect: true,
     checkboxSelection: true
-  }, tree.map(node => /*#__PURE__*/_react.default.createElement(_xTreeView.TreeItem, {
+  }, tree.map(node => /*#__PURE__*/_react.default.createElement(_TreeItem.TreeItem, {
     key: node.value,
     itemId: node.value,
     label: node.label
-  }, node.children.map(child => /*#__PURE__*/_react.default.createElement(_xTreeView.TreeItem, {
+  }, node.children.map(child => /*#__PURE__*/_react.default.createElement(_TreeItem.TreeItem, {
     key: child.value,
     itemId: child.value,
     label: child.label
