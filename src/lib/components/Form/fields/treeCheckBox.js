@@ -1,7 +1,7 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
-import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import SimpleTreeView from '@mui/x-tree-view/SimpleTreeView';
+import TreeItem from '@mui/x-tree-view/TreeItem';
 
 /**
  * Builds a tree structure from a flat array of data.
