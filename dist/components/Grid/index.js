@@ -10,7 +10,6 @@ require("core-js/modules/es.array.includes.js");
 require("core-js/modules/es.array.push.js");
 require("core-js/modules/es.json.stringify.js");
 require("core-js/modules/es.object.assign.js");
-require("core-js/modules/es.object.from-entries.js");
 require("core-js/modules/es.parse-int.js");
 require("core-js/modules/es.promise.js");
 require("core-js/modules/es.regexp.exec.js");
@@ -31,10 +30,6 @@ var _xDataGridPremium = require("@mui/x-data-grid-premium");
 var _Delete = _interopRequireDefault(require("@mui/icons-material/Delete"));
 var _FileCopy = _interopRequireDefault(require("@mui/icons-material/FileCopy"));
 var _Edit = _interopRequireDefault(require("@mui/icons-material/Edit"));
-var _FilterListOff = _interopRequireDefault(require("@mui/icons-material/FilterListOff"));
-var _Add = _interopRequireDefault(require("@mui/icons-material/Add"));
-var _Remove = _interopRequireDefault(require("@mui/icons-material/Remove"));
-var _Typography = _interopRequireDefault(require("@mui/material/Typography"));
 var _MenuItem = _interopRequireDefault(require("@mui/material/MenuItem"));
 var _index = require("../SnackBar/index");
 var _index2 = require("../Dialog/index");
@@ -231,9 +226,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     parent,
     where,
     customHeaderComponent,
-    title,
-    showModal,
-    OrderModal,
     permissions,
     selected,
     assigned,
@@ -253,7 +245,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     gridStyle,
     reRenderKey,
     additionalFilters,
-    selectedClients = null,
     onExportMenuClick
   } = _ref2;
   const [paginationModel, setPaginationModel] = (0, _react.useState)({
@@ -695,8 +686,8 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       history: navigate,
       baseFilters,
       isElasticExport,
-      tOpts,
-      tTranslate
+      tTranslate,
+      tOpts
     });
   };
   const openForm = function openForm(id) {
@@ -841,42 +832,6 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
     }
     if (onRowDoubleClick) {
       onRowDoubleClick(event);
-    }
-  };
-  const handleAddRecords = async () => {
-    if (selectedSet.current.size < 1) {
-      snackbar.showError("Please select at least one record to proceed");
-      return;
-    }
-    const selectedIds = Array.from(selectedSet.current);
-    const recordMap = new Map(data.records.map(record => [record[idProperty], record]));
-    let selectedRecords = selectedIds.map(id => _objectSpread(_objectSpread({}, baseSaveData), recordMap.get(id)));
-
-    // If selectionUpdateKeys is defined, filter each record to only those keys
-    if (Array.isArray(model.selectionUpdateKeys) && model.selectionUpdateKeys.length) {
-      selectedRecords = selectedRecords.map(item => Object.fromEntries(model.selectionUpdateKeys.map(key => [key, item[key]])));
-    }
-    try {
-      const result = await saveRecord({
-        id: 0,
-        api: "".concat(url).concat(selectionApi || api, "/updateMany"),
-        values: {
-          items: selectedRecords
-        },
-        setIsLoading,
-        setError: snackbar.showError
-      });
-      if (result) {
-        fetchData();
-        const message = result.info ? result.info : "Record Added Successfully.";
-        snackbar.showMessage(message);
-      }
-    } catch (err) {
-      snackbar.showError(err.message || "An error occurred, please try again later.");
-    } finally {
-      selectedSet.current.clear();
-      setIsLoading(false);
-      setShowAddConfirmation(false);
     }
   };
   const onAdd = () => {
@@ -1176,16 +1131,31 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       pinnedColumns: pinnedColumns
     },
     localeText: {
+      filterValueTrue: 'Yes',
+      filterValueFalse: 'No',
+      filterOperatorDoesNotContain: t('does not contain', tOpts),
+      filterOperatorDoesNotEqual: t('does not equal', tOpts),
+      paginationRowsPerPage: t('Rows per page', tOpts),
+      paginationDisplayedRows: _ref5 => {
+        let {
+          from,
+          to,
+          count
+        } = _ref5;
+        return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
+      },
+      toolbarQuickFilterLabel: t('Search', tOpts),
+      columnsManagementSearchTitle: t('Search', tOpts),
       noRowsLabel: t('No data', tOpts),
       footerTotalRows: "".concat(t('Total rows', tOpts), ":"),
       MuiTablePagination: {
         labelRowsPerPage: t('Rows per page', tOpts),
-        labelDisplayedRows: _ref5 => {
+        labelDisplayedRows: _ref6 => {
           let {
             from,
             to,
             count
-          } = _ref5;
+          } = _ref6;
           return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
         }
       },
@@ -1272,12 +1242,12 @@ const GridBase = /*#__PURE__*/(0, _react.memo)(_ref2 => {
       columnsManagementSearchTitle: t('Search', tOpts),
       columnsManagementNoColumns: t('No columns', tOpts),
       paginationRowsPerPage: t('Rows per page', tOpts),
-      paginationDisplayedRows: _ref6 => {
+      paginationDisplayedRows: _ref7 => {
         let {
           from,
           to,
           count
-        } = _ref6;
+        } = _ref7;
         return "".concat(from, "\u2013").concat(to, " ").concat(t('of', tOpts), " ").concat(count);
       },
       toolbarQuickFilterLabel: t('Search', tOpts),

@@ -105,15 +105,11 @@ const GridPreferences = _ref => {
   var _stateData$gridSettin, _stateData$gridSettin2;
   let {
     tTranslate = key => key,
-    model,
+    preferenceName,
     gridRef,
     columns = [],
-    setIsGridPreferenceFetched,
-    initialGridRef
-  } = _ref2;
-  const {
-    preferenceId: preferenceName
-  } = model;
+    setIsGridPreferenceFetched
+  } = _ref;
   const {
     stateData,
     dispatchData,
@@ -570,7 +566,23 @@ const GridPreferences = _ref => {
     disableAggregation: true,
     disableRowGrouping: true,
     disableRowSelectionOnClick: true,
-    autoHeight: true
+    autoHeight: true,
+    localeText: {
+      toolbarColumnsLabel: tTranslate('Select columns', tOpts),
+      toolbarExportLabel: tTranslate('Export', tOpts),
+      booleanCellFalseLabel: tTranslate('No', tOpts),
+      paginationRowsPerPage: tTranslate('Rows per page', tOpts),
+      paginationDisplayedRows: _ref4 => {
+        let {
+          from,
+          to,
+          count
+        } = _ref4;
+        return "".concat(from, "\u2013").concat(to, " ").concat(tTranslate('of', tOpts), " ").concat(count);
+      },
+      toolbarQuickFilterLabel: tTranslate('Search', tOpts),
+      columnsManagementSearchTitle: tTranslate('Search', tOpts)
+    }
   })), /*#__PURE__*/_react.default.createElement(_material.Grid, {
     size: 12
   }, /*#__PURE__*/_react.default.createElement(_material.Stack, {
